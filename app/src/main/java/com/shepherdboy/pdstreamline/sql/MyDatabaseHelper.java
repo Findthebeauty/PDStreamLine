@@ -419,7 +419,6 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                     deleteSql = "delete from " + FRESH_TIMESTREAM_TABLE_NAME + " where " + selection + "<='" + selectionArg + "'";
                     sqLiteDatabase.execSQL(sql);
                     sqLiteDatabase.execSQL(deleteSql);
-//                    sqLiteDatabase.delete(FRESH_TIMESTREAM_TABLE_NAME, selection, new String[]{selectionArg});
 
                     break;
 
@@ -430,7 +429,6 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                     deleteSql = "delete from " + PROMOTION_TIMESTREAM_TABLE_NAME + " where " + selection + "<'" + selectionArg + "'";
                     sqLiteDatabase.execSQL(sql);
                     sqLiteDatabase.execSQL(deleteSql);
-//                    sqLiteDatabase.delete(PROMOTION_TIMESTREAM_TABLE_NAME, selection, new String[]{selectionArg});
                     break;
 
             }
