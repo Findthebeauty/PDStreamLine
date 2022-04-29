@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="dopTextViewTSize">12dp</dimen>
+    <dimen name="dopEditTextTSize">12dp</dimen>
+    <dimen name="coordinateTextViewTSize">12dp</dimen>
+    <dimen name="coordinateEditTextTSize">12dp</dimen>
+    <dimen name="inventoryTextViewTSize">12dp</dimen>
+    <dimen name="inventoryEditTextTSize">12dp</dimen>
+</resources>

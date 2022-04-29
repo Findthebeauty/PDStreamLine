@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.PDInfoActivity"
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/pd_info_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+    <Button
+            android:id="@+id/possible_promotion_activity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+    <Button
+            android:id="@+id/stop_midnight_manager_service"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="停止定时检查服务"
+            />
+
+</LinearLayout>

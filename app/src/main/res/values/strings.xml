@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">PDStreamline</string>
+    <string name="codeTextView">条码号:</string>
+    <string name="expTextView">保质期:</string>
+    <string name="dopTextView">生产日期:</string>
+    <string name="coordinateTextView">坐标:</string>
+    <string name="inventoryTextView">库存:</string>
+    <string name="search">查询</string>
+</resources>

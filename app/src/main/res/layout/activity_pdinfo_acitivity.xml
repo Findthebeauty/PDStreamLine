@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.shepherdboy.pdstreamline.view.DraggableLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    app:activityIndex="@integer/product_inf_activity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+
+        >
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:text="@string/codeTextView"
+            />
+        <EditText
+            android:id="@+id/product_code"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="10"
+            android:inputType="number"
+            android:selectAllOnFocus="true"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:text="商品名:"
+            />
+        <EditText
+            android:id="@+id/product_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="10"
+            android:inputType="text"
+            android:selectAllOnFocus="true"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        >
+
+        <TextView
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:text="@string/expTextView"
+            />
+
+        <EditText
+            android:id="@+id/product_exp"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:inputType="number"
+            android:selectAllOnFocus="true"
+            />
+
+        <Button
+            android:id="@+id/time_unit"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:text="天"
+            />
+
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        android:id="@+id/time_stream_0"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#4Dffffff"
+        android:orientation="horizontal"
+        android:alpha="0.8"
+        >
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2.7"
+            android:text="@string/dopTextView"
+            android:textSize="@dimen/dopTextViewTSize"
+            android:gravity="center"
+            />
+
+        <EditText
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="4"
+            android:textSize="@dimen/dopEditTextTSize"
+            android:gravity="center"
+            android:inputType="number"
+            android:selectAllOnFocus="true"
+            android:text="111111111111111"
+            android:theme="@style/MyEditText"
+            />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.2"
+            android:textSize="@dimen/coordinateTextViewTSize"
+            android:text="@string/coordinateTextView"
+            android:gravity="center"
+
+            />
+        <EditText
+            android:id="@+id/product_coordinate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.6"
+            android:textSize="@dimen/coordinateEditTextTSize"
+            android:inputType="number"
+            android:gravity="center"
+            android:selectAllOnFocus="true"
+            />
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.2"
+            android:textSize="@dimen/inventoryTextViewTSize"
+            android:text="@string/inventoryTextView"
+            android:gravity="center"
+            />
+        <EditText
+            android:id="@+id/product_inventory"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="@dimen/inventoryEditTextTSize"
+            android:hint="3"
+            android:inputType="number"
+            android:gravity="center"
+            android:selectAllOnFocus="true"
+            />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/add_product"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:text="@string/search"
+        android:layout_marginTop="15dp"
+        />
+
+</com.shepherdboy.pdstreamline.view.DraggableLinearLayout>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="time_stream_0" type="id" />
+    <item name="time_stream_1" type="id" />
+    <item name="time_stream_2" type="id" />
+    <item name="time_stream_3" type="id" />
+    <item name="time_stream_4" type="id" />
+    <item name="time_stream_5" type="id" />
+    <item name="time_stream_6" type="id" />
+    <item name="time_stream_7" type="id" />
+    <item name="time_stream_8" type="id" />
+    <item name="time_stream_9" type="id" />
+    <integer name="main_activity">0</integer>
+    <integer name="product_inf_activity">1</integer>
+    <integer name="possible_promotion_timestream_activity">2</integer>
+    <integer name="promotion_timestream_activity">3</integer>
+    <integer name="possible_expired_timestream_activity">4</integer>
+    <integer name="expired_timestream_activity">5</integer>
+</resources>

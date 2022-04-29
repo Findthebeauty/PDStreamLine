@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="DraggableLinearLayout">
+        <attr name="verticalDraggable" format="boolean"/>
+        <attr name="horizontalDraggable" format="boolean"/>
+        <attr name="activityIndex" format="integer"/>
+    </declare-styleable>
+</resources>
