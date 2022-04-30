@@ -1,6 +1,7 @@
 package com.shepherdboy.pdstreamline.activities;
 
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
+import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.setTimeStreamViewOriginalBackgroundColor;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 
@@ -9,6 +10,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -16,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -24,6 +27,7 @@ import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
+import com.shepherdboy.pdstreamline.utils.ScanEventReceiver;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 import com.shepherdboy.pdstreamline.view.MyTextWatcher;
 
@@ -42,14 +46,17 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
     public static LinkedList<Timestream> newPromotionTimestreams = new LinkedList<>();
 
     public static void pickOutPossiblePromotionTimestream() {
-
-        MyDatabaseHelper.PDInfoWrapper.getAndMoveTimestreamBySelection(sqLiteDatabase,
-                MyDatabaseHelper.PROMOTION_DATE_SELECTION, DateUtil.typeMach(MyApplication.today));
+        MyApplication.pickupChanges();
+        ScanEventReceiver.executeChanges(MyApplication.thingsToSaveList);
+        MyDatabaseHelper.PDInfoWrapper.getAndMoveTimestreamByDate(sqLiteDatabase,
+                DateUtil.typeMach(MyApplication.today));
     }
 
     public static void onTimestreamViewReleased(View releasedChild, float horizontalDistance) {
 
         int viewState = getViewState(releasedChild, horizontalDistance);
+
+        Timestream rmTs;
 
         switch (viewState) {
 
@@ -57,6 +64,8 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
 //                todo 移除timestreamView，从possiblePromotionTimestream表中移除timestream，
 //                 将timestream添加到newPromotionTimestreams中
+                rmTs = MyApplication.removeTimestream((LinearLayout) releasedChild);
+                newPromotionTimestreams.add(rmTs);
 
                 break;
 
@@ -64,7 +73,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
 //              todo 移除timestreamView，从possiblePromotionTimestream表中移除timestream
 
-                Timestream rmTs = MyApplication.removeTimestream((LinearLayout) releasedChild);
+                rmTs = MyApplication.removeTimestream((LinearLayout) releasedChild);
 
                 break;
 
@@ -72,6 +81,16 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
                 draggableLinearLayout.putBack(releasedChild);
                 break;
+        }
+
+        if (onShowTimeStreamsHashMap.size() == 0) {
+
+            for(Timestream t : newPromotionTimestreams) {
+
+                Log.d("I'm in!", t.toString());
+            }
+
+            Toast.makeText(draggableLinearLayout.getContext(), "新增临期商品已全部捡出!", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -129,6 +148,13 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
         timestreams = MyDatabaseHelper.PDInfoWrapper.getStaleTimestreams(sqLiteDatabase,
                 MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM);
+
+        if (timestreams.size() == 0) {
+
+            Toast.makeText(this,"好消息，今日无新增临期商品!", Toast.LENGTH_LONG).show();
+            this.startActivity(new Intent(this, MainActivity.class));
+            return;
+        }
 
         initTimestreamsView(timestreams);
 

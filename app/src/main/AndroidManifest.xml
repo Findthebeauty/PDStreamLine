@@ -20,6 +20,7 @@
         android:theme="@style/Theme.PDStreamLine">
         <activity
             android:name=".activities.PossiblePromotionTimestreamActivity"
+            android:launchMode="singleTask"
             android:exported="true" />
 
         <service
@@ -37,6 +38,7 @@
             android:launchMode="singleTask" />
         <activity
             android:name=".activities.MainActivity"
+            android:launchMode="singleTask"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

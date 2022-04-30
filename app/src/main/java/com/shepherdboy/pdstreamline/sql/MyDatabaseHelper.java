@@ -31,10 +31,15 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
     public static final int POSSIBLE_EXPIRED_TIMESTREAM = 2;
 
+    public static final int PROMOTION_TIMESTREAM = 3;
+
+    public static final int OFF_SHELVES_HISTORY= 4;
+
+    public static final int NEW_TIMESTREAM = 5;
 
     public static final String PROMOTION_DATE_SELECTION = "product_promotion_date";
 
-    public static final String EXPIRE_DATE_SELECTION = "product_expired_date";
+    public static final String EXPIRE_DATE_SELECTION = "product_expire_date";
 
 
     public static final String PRODUCT_INFO_TABLE_NAME = "product_inf";
@@ -44,6 +49,8 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
     public static final String PROMOTION_TIMESTREAM_TABLE_NAME = "promotion_timestream";
 
     public static final String POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME = "possible_promotion_timestream";
+
+    public static final String OFF_SHELVES_HISTORY_TABLE_NAME = "off_shelves_history";
 
     public static final String POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME = "possible_expired_timestream";
 
@@ -404,35 +411,32 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             return tsLList;
         }
 
-        public static void getAndMoveTimestreamBySelection(SQLiteDatabase sqLiteDatabase,
-            String selection, String selectionArg) {
+        /**
+         * @param sqLiteDatabase
+         * @param date
+         */
+        public static void getAndMoveTimestreamByDate(SQLiteDatabase sqLiteDatabase, String date) {
 
             String sql;
             String deleteSql;
 
-            switch (selection) {
+            sql = "replace into " + POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME + " select * from " +
+                    FRESH_TIMESTREAM_TABLE_NAME + " where " + PROMOTION_DATE_SELECTION + "<= '" + date + "'";
+            deleteSql = "delete from " + FRESH_TIMESTREAM_TABLE_NAME + " where " + PROMOTION_DATE_SELECTION + "<='" + date + "'";
+            sqLiteDatabase.execSQL(sql);
+            sqLiteDatabase.execSQL(deleteSql);
 
-                case PROMOTION_DATE_SELECTION:
+            sql = "replace into " + POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME + " select * from " +
+                    POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME + " where " + EXPIRE_DATE_SELECTION + "<'" + date + "'";
+            deleteSql = "delete from " + POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME + " where " + EXPIRE_DATE_SELECTION + "<'" + date + "'";
+            sqLiteDatabase.execSQL(sql);
+            sqLiteDatabase.execSQL(deleteSql);
 
-                    sql = "replace into " + POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME + " select * from " +
-                            FRESH_TIMESTREAM_TABLE_NAME + " where " + selection + "<= '" + selectionArg + "'";
-                    deleteSql = "delete from " + FRESH_TIMESTREAM_TABLE_NAME + " where " + selection + "<='" + selectionArg + "'";
-                    sqLiteDatabase.execSQL(sql);
-                    sqLiteDatabase.execSQL(deleteSql);
-
-                    break;
-
-                case EXPIRE_DATE_SELECTION:
-
-                    sql = "replace into " + POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME + " select * from " +
-                            PROMOTION_TIMESTREAM_TABLE_NAME + " where " + selection + "<'" + selectionArg + "'";
-                    deleteSql = "delete from " + PROMOTION_TIMESTREAM_TABLE_NAME + " where " + selection + "<'" + selectionArg + "'";
-                    sqLiteDatabase.execSQL(sql);
-                    sqLiteDatabase.execSQL(deleteSql);
-                    break;
-
-            }
-
+            sql = "replace into " + POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME + " select * from " +
+                    PROMOTION_TIMESTREAM_TABLE_NAME + " where " + EXPIRE_DATE_SELECTION + "<'" + date + "'";
+            deleteSql = "delete from " + PROMOTION_TIMESTREAM_TABLE_NAME + " where " + EXPIRE_DATE_SELECTION + "<'" + date + "'";
+            sqLiteDatabase.execSQL(sql);
+            sqLiteDatabase.execSQL(deleteSql);
 
         }
 
@@ -521,15 +525,69 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
         }
 
-        public static void updateInfo(SQLiteDatabase sqLiteDatabase, Timestream timeStream) {
+        public static void updateInfo(SQLiteDatabase sqLiteDatabase, Timestream timestream, int transactionCode) {
 
-            String id = timeStream.getId();
-            String productCode = timeStream.getProductCode();
-            String productDOP = DateUtil.typeMach(timeStream.getProductDOP());
-            String productPromotionDate = DateUtil.typeMach(timeStream.getProductPromotionDate());
-            String productExpireDate = DateUtil.typeMach(timeStream.getProductExpireDate());
-            String productCoordinate = timeStream.getProductCoordinate();
-            String productInventory = timeStream.getProductInventory();
+            String id = timestream.getId();
+            String productCode = timestream.getProductCode();
+            String productDOP = DateUtil.typeMach(timestream.getProductDOP());
+            String productPromotionDate = DateUtil.typeMach(timestream.getProductPromotionDate());
+            String productExpireDate = DateUtil.typeMach(timestream.getProductExpireDate());
+            String productCoordinate = timestream.getProductCoordinate();
+            String productInventory = timestream.getProductInventory();
+            String discountRate = timestream.getDiscountRate();
+            String siblingPromotionId = timestream.getSiblingPromotionId();
+
+            String sql = null;
+
+            switch (transactionCode) {
+
+                case NEW_TIMESTREAM:
+
+                    sql = "insert or replace into " + FRESH_TIMESTREAM_TABLE_NAME + "(" +
+                            FRESH_TIMESTREAM_COLUMNS + ") " + "values " + "('" + id + "','" + productCode +
+                            "','" + productDOP + "','" + productPromotionDate + "','" + productExpireDate +
+                            "','" + productCoordinate + "','" + productInventory + "')";
+                    break;
+
+                case PROMOTION_TIMESTREAM:
+
+                    sql = "insert or replace into " + PROMOTION_TIMESTREAM_TABLE_NAME + "(" +
+                            PROMOTION_TIMESTREAM_COLUMNS + ") " + "values " + "('" + id + "','" + productCode +
+                            "','" + productDOP + "','" + productPromotionDate + "','" + productExpireDate +
+                            "','" + productCoordinate + "','" + productInventory + "','" + discountRate +
+                            "','" + siblingPromotionId + "')";
+                    break;
+
+                case OFF_SHELVES_HISTORY:
+
+                    sql = "insert into " + OFF_SHELVES_HISTORY_TABLE_NAME + "(" +
+                            OFF_SHELVES_HISTORY_COLUMNS + ") " + "values " + "('" + id + "','" + productCode +
+                            "','" + productDOP + "','" + productPromotionDate + "','" + productExpireDate +
+                            "','" + productCoordinate + "','" + productInventory + "')";
+                    break;
+
+                default:
+                    break;
+
+            }
+
+
+            if (sql != null) {
+
+                sqLiteDatabase.execSQL(sql);
+                timestream.setUpdated(true);
+            }
+        }
+
+        public static void updateInfo(SQLiteDatabase sqLiteDatabase, Timestream timestream) {
+
+            String id = timestream.getId();
+            String productCode = timestream.getProductCode();
+            String productDOP = DateUtil.typeMach(timestream.getProductDOP());
+            String productPromotionDate = DateUtil.typeMach(timestream.getProductPromotionDate());
+            String productExpireDate = DateUtil.typeMach(timestream.getProductExpireDate());
+            String productCoordinate = timestream.getProductCoordinate();
+            String productInventory = timestream.getProductInventory();
 
             if ("".equals(productDOP)) {
 
@@ -543,7 +601,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                     "','" + productCoordinate + "','" + productInventory + "')";
 
             sqLiteDatabase.execSQL(sql);
-            timeStream.setUpdated(true);
+            timestream.setUpdated(true);
 
         }
 

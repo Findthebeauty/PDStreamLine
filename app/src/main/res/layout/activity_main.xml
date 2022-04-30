@@ -8,19 +8,22 @@
 
     <Button
         android:id="@+id/pd_info_activity"
+        android:text="生产日期增删改查"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         />
+
     <Button
-            android:id="@+id/possible_promotion_activity"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            />
+        android:id="@+id/find_possible_promotion_timestream"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="未处理临期商品记录" />
+
     <Button
-            android:id="@+id/stop_midnight_manager_service"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="停止定时检查服务"
-            />
+        android:id="@+id/stop_midnight_manager_service"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="停止定时检查服务"
+        />
 
 </LinearLayout>

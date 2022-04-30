@@ -99,8 +99,16 @@ public class MainActivity extends AppCompatActivity {
 
         //开始信息录入模式
         Button startPDInfoActivityButton = findViewById(R.id.pd_info_activity);
-        Button startPossiblePromotionActivityButton = findViewById(R.id.possible_promotion_activity);
         Button stopMNSBT = findViewById(R.id.stop_midnight_manager_service);
+        Button findPossiblePromotionTimestream = findViewById(R.id.find_possible_promotion_timestream);
+
+        findPossiblePromotionTimestream.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PossiblePromotionTimestreamActivity.pickOutPossiblePromotionTimestream();
+                PossiblePromotionTimestreamActivity.actionStart(MainActivity.this);
+            }
+        });
 
         startPDInfoActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -108,14 +116,6 @@ public class MainActivity extends AppCompatActivity {
 
                 PDInfoActivity.actionStart(MainActivity.this);
 
-            }
-        });
-
-        startPossiblePromotionActivityButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                PossiblePromotionTimestreamActivity.actionStart(MainActivity.this);
             }
         });
 

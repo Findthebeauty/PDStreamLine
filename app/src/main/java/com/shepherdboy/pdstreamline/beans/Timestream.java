@@ -45,6 +45,10 @@ public class Timestream {
 
     private String productInventory;
 
+    private String discountRate;
+
+    private String siblingPromotionId;
+
     private boolean promoting = false;
 
     // todo bug 正常日期有几率显示颜色为过期灰
@@ -67,6 +71,22 @@ public class Timestream {
         }
 
         return 0;
+    }
+
+    public String getSiblingPromotionId() {
+        return siblingPromotionId;
+    }
+
+    public void setSiblingPromotionId(String siblingPromotionId) {
+        this.siblingPromotionId = siblingPromotionId;
+    }
+
+    public String getDiscountRate() {
+        return discountRate;
+    }
+
+    public void setDiscountRate(String discountRate) {
+        this.discountRate = discountRate;
     }
 
     public String getProductName() {
