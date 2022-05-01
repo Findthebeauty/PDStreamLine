@@ -420,19 +420,22 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             String sql;
             String deleteSql;
 
-            sql = "replace into " + POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME + " select * from " +
+            sql = "replace into " + POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME + " select " +
+                    POSSIBLE_PROMOTION_TIMESTREAM_COLUMNS +" from " +
                     FRESH_TIMESTREAM_TABLE_NAME + " where " + PROMOTION_DATE_SELECTION + "<= '" + date + "'";
             deleteSql = "delete from " + FRESH_TIMESTREAM_TABLE_NAME + " where " + PROMOTION_DATE_SELECTION + "<='" + date + "'";
             sqLiteDatabase.execSQL(sql);
             sqLiteDatabase.execSQL(deleteSql);
 
-            sql = "replace into " + POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME + " select * from " +
+            sql = "replace into " + POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME + " select " +
+                    POSSIBLE_EXPIRED_TIMESTREAM_COLUMNS +" from " +
                     POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME + " where " + EXPIRE_DATE_SELECTION + "<'" + date + "'";
             deleteSql = "delete from " + POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME + " where " + EXPIRE_DATE_SELECTION + "<'" + date + "'";
             sqLiteDatabase.execSQL(sql);
             sqLiteDatabase.execSQL(deleteSql);
 
-            sql = "replace into " + POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME + " select * from " +
+            sql = "replace into " + POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME + " select " +
+                    POSSIBLE_EXPIRED_TIMESTREAM_COLUMNS +" from " +
                     PROMOTION_TIMESTREAM_TABLE_NAME + " where " + EXPIRE_DATE_SELECTION + "<'" + date + "'";
             deleteSql = "delete from " + PROMOTION_TIMESTREAM_TABLE_NAME + " where " + EXPIRE_DATE_SELECTION + "<'" + date + "'";
             sqLiteDatabase.execSQL(sql);
