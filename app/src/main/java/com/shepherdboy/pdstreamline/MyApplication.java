@@ -56,6 +56,7 @@ public class MyApplication extends Application {
     //数据库助手，全局
     public static MyDatabaseHelper databaseHelper;
     public static SQLiteDatabase sqLiteDatabase;
+    public static LinkedList<Timestream> newPromotionTimestreams = new LinkedList<>();
 
     static Point originalPosition;
 

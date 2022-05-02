@@ -19,9 +19,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PDStreamLine">
         <activity
-            android:name=".activities.PossiblePromotionTimestreamActivity"
+            android:name=".activities.PromotionActivity"
             android:launchMode="singleTask"
             android:exported="true" />
+        <activity
+            android:name=".activities.PossiblePromotionTimestreamActivity"
+            android:exported="true"
+            android:launchMode="singleTask" />
 
         <service
             android:name=".services.MidnightTimestreamManagerService"
@@ -38,8 +42,8 @@
             android:launchMode="singleTask" />
         <activity
             android:name=".activities.MainActivity"
-            android:launchMode="singleTask"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

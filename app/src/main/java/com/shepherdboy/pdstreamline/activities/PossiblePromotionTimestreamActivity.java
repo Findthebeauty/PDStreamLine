@@ -42,8 +42,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
     private static TextView[] textViews = new TextView[4]; //用于临时存放创建新timestream view时的textview的引用
 
-    private static LinkedList<Timestream> timestreams;
-    public static LinkedList<Timestream> newPromotionTimestreams = new LinkedList<>();
+    private static LinkedList<Timestream> possiblePromotionTimestreams;
 
     public static void pickOutPossiblePromotionTimestream() {
         MyApplication.pickupChanges();
@@ -65,7 +64,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 //                todo 移除timestreamView，从possiblePromotionTimestream表中移除timestream，
 //                 将timestream添加到newPromotionTimestreams中
                 rmTs = MyApplication.removeTimestream((LinearLayout) releasedChild);
-                newPromotionTimestreams.add(rmTs);
+                MyApplication.newPromotionTimestreams.add(rmTs);
 
                 break;
 
@@ -85,7 +84,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
         if (onShowTimeStreamsHashMap.size() == 0) {
 
-            for(Timestream t : newPromotionTimestreams) {
+            for(Timestream t : MyApplication.newPromotionTimestreams) {
 
                 Log.d("I'm in!", t.toString());
             }
@@ -146,19 +145,19 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
         MyApplication.initDatabase(this);
 
-        timestreams = MyDatabaseHelper.PDInfoWrapper.getStaleTimestreams(sqLiteDatabase,
+        possiblePromotionTimestreams = MyDatabaseHelper.PDInfoWrapper.getStaleTimestreams(sqLiteDatabase,
                 MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM);
 
-        if (timestreams.size() == 0) {
+        if (possiblePromotionTimestreams.size() == 0) {
 
             Toast.makeText(this,"好消息，今日无新增临期商品!", Toast.LENGTH_LONG).show();
             this.startActivity(new Intent(this, MainActivity.class));
             return;
         }
 
-        initTimestreamsView(timestreams);
+        initTimestreamsView(possiblePromotionTimestreams);
 
-        loadTimestreams(timestreams);
+        loadTimestreams(possiblePromotionTimestreams);
 
     }
 
