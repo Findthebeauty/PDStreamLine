@@ -63,7 +63,7 @@ public class PDInfoActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_pdinfo_acitivity);
+        setContentView(R.layout.activity_pdinfo);
 
         draggableLinearLayout = findViewById(R.id.parent);
         productCodeEditText = findViewById(R.id.product_code);
