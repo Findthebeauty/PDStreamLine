@@ -1,16 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".activities.SettingActivity">
+    android:layout_height="match_parent">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:textAlignment="center"
-        android:gravity="center"
-        android:text="I'm in"/>
+        android:orientation="vertical">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:textSize="15sp"
+                android:layout_marginLeft="5dp"
+                android:text="保质期：" />
+            <EditText
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"/>
+            <TextView
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:textSize="15sp"
+                android:layout_marginLeft="5dp"
+                android:text="到期时间" />
+            <EditText
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                />
+            <TextView
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:textSize="15sp"
+                android:layout_marginLeft="5dp"
+                android:text="下架时间" />
+            <EditText
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                />
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</ScrollView>
