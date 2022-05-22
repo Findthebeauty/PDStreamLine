@@ -70,7 +70,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
     public static final String PROMOTION_TIMESTREAM_COLUMNS = "id,product_code,product_dop," +
             "product_promotion_date,product_expire_date,product_coordinate,product_inventory," +
-            "product_discount_rate,sibling_promotion_id";
+            "product_discount_rate,product_buy_specs,product_giveaway_specs,sibling_promotion_id";
 
     public static final String OFF_SHELVES_HISTORY_COLUMNS = "id,product_code,product_dop," +
             "product_promotion_date,product_expire_date,product_coordinate,product_off_shelves_inventory";
@@ -128,6 +128,8 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "product_coordinate text," +
             "product_inventory text," +
             "product_discount_rate text," +
+            "product_buy_specs text," +
+            "product_giveaway_specs text," +
             "sibling_promotion_id text)";
 
     public static final String CREATE_TABLE_POSSIBLE_EXPIRED_TIMESTREAM = "create table possible_expired_timestream(" +
@@ -582,7 +584,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             }
         }
 
-        public static void updateInfo(SQLiteDatabase sqLiteDatabase, Timestream timestream) {
+        public static void updateInfo(SQLiteDatabase sqLiteDatabase, Timestream timestream, String tableName) {
 
             String id = timestream.getId();
             String productCode = timestream.getProductCode();
@@ -598,7 +600,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             }
 
 
-            String sql = "insert or replace into " + FRESH_TIMESTREAM_TABLE_NAME + "(" +
+            String sql = "insert or replace into " + tableName + "(" +
                     FRESH_TIMESTREAM_COLUMNS + ") " + "values " + "('" + id + "','" + productCode +
                     "','" + productDOP + "','" + productPromotionDate + "','" + productExpireDate +
                     "','" + productCoordinate + "','" + productInventory + "')";

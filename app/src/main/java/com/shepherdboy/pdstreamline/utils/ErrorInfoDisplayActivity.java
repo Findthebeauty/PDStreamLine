@@ -7,6 +7,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 
 public class ErrorInfoDisplayActivity extends AppCompatActivity {
@@ -23,6 +24,7 @@ public class ErrorInfoDisplayActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_error_info_display);
+        MyApplication.initActionBar(getSupportActionBar());
 
         Intent intent = getIntent();
         String errorLog = intent.getStringExtra("error_log");

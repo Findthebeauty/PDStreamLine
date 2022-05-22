@@ -51,7 +51,7 @@ public class DraggableLinearLayout extends LinearLayout {
                 if (child instanceof LinearLayout) {
 
                     Set<Integer> timestreamIds = MyApplication.originalPositionHashMap.keySet();
-                    return timestreamIds.contains(child.getId());
+                    return timestreamIds.contains(child.getId()) || MyApplication.activityIndex == getResources().getInteger(R.integer.promotion_timestream_activity);
                 }
 
                 return false;
@@ -238,6 +238,12 @@ public class DraggableLinearLayout extends LinearLayout {
     public static float dpToFloat(int dpInt, Context context) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,dpInt,
                 context.getResources().getDisplayMetrics());
+    }
+
+    public static DraggableLinearLayout getContainer(View child) {
+
+        if (child instanceof DraggableLinearLayout) return (DraggableLinearLayout) child;
+        return getContainer((View) child.getParent());
     }
 
     @Override

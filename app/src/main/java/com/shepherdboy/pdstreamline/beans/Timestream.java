@@ -21,14 +21,6 @@ public class Timestream {
 
     private boolean updated = false; // 数据是否为最新，否则需要更新到数据库
 
-    public String getBoundLayoutId() {
-        return boundLayoutId;
-    }
-
-    public void setBoundLayoutId(String boundLayoutId) {
-        this.boundLayoutId = boundLayoutId;
-    }
-
     private String boundLayoutId = null; // 是否已绑定到布局中，默认为false
 
     private String productCode;
@@ -44,6 +36,10 @@ public class Timestream {
     private String productCoordinate;
 
     private String productInventory;
+
+    private String buySpecs;
+
+    private String giveawaySpecs;
 
     private String discountRate;
 
@@ -71,6 +67,30 @@ public class Timestream {
         }
 
         return 0;
+    }
+
+    public String getBoundLayoutId() {
+        return boundLayoutId;
+    }
+
+    public void setBoundLayoutId(String boundLayoutId) {
+        this.boundLayoutId = boundLayoutId;
+    }
+
+    public String getBuySpecs() {
+        return buySpecs;
+    }
+
+    public void setBuySpecs(String buySpecs) {
+        this.buySpecs = buySpecs;
+    }
+
+    public String getGiveawaySpecs() {
+        return giveawaySpecs;
+    }
+
+    public void setGiveawaySpecs(String giveawaySpecs) {
+        this.giveawaySpecs = giveawaySpecs;
     }
 
     public String getSiblingPromotionId() {
@@ -166,14 +186,10 @@ public class Timestream {
         setId(UUID.randomUUID().toString());
     }
 
-    ;
-
     public Timestream(String productCode) {
         this();
         setProductCode(productCode);
     }
-
-    ;
 
     public Timestream(String productCode, String productEXP, String productEXPTimeUnit, Date productDOP,
                       @Nullable String productCoordinate, @Nullable String productInventory) {

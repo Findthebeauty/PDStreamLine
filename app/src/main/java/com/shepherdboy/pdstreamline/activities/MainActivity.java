@@ -1,6 +1,7 @@
 package com.shepherdboy.pdstreamline.activities;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -61,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        MyApplication.initActionBar(getSupportActionBar());
+
+        MyApplication.setContext(this);
         mainHandler = new Handler(Looper.getMainLooper());
 
         databasePath = this.getFilesDir().getPath().replaceAll("files", "databases/ProductDateStreamline.db");
@@ -87,8 +91,6 @@ public class MainActivity extends AppCompatActivity {
 
                 String errorLog = stringBuilder.toString();
 
-
-
                 ErrorInfoDisplayActivity.actionStart(MainActivity.this, errorLog);
 
                 defaultHandler.uncaughtException(thread, exception);
@@ -106,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 PossiblePromotionTimestreamActivity.pickOutPossiblePromotionTimestream();
-                PossiblePromotionTimestreamActivity.actionStart(MainActivity.this);
+                PossiblePromotionTimestreamActivity.actionStart();
             }
         });
 
@@ -114,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                PDInfoActivity.actionStart(MainActivity.this);
+                PDInfoActivity.actionStart();
 
             }
         });
@@ -187,5 +189,10 @@ public class MainActivity extends AppCompatActivity {
         MyDatabaseHelper.copyDataBase(databasePath,
                 tempDataBasePath);
         super.onDestroy();
+    }
+
+    public static void actionStart() {
+
+        MyApplication.getContext().startActivity(new Intent(MyApplication.getContext(), MainActivity.class));
     }
 }

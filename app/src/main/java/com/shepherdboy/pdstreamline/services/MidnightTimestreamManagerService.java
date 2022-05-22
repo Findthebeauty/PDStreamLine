@@ -3,20 +3,31 @@ package com.shepherdboy.pdstreamline.services;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+
+import androidx.annotation.NonNull;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.activities.PossiblePromotionTimestreamActivity;
+import com.shepherdboy.pdstreamline.beans.Timestream;
 
+import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class MidnightTimestreamManagerService extends Service {
 
     public static Timer midnightTimer;
+    public static LinkedList<Timestream> newPromotionTimestreams = new LinkedList<>();
 
-    private int inTime = 2 * 1000;
-    private int periodTime = 2 * 1000;
+    public static Timer timestreamRestoreTimer;
+    public static TimerTask timestreamRestoreTask;
+    public static Handler timestreamRestoreHandler;
+
+    private int inTime = 60 * 1000;
+    private int periodTime = 10 * 1000;
 
     public MidnightTimestreamManagerService() {
 
@@ -39,6 +50,16 @@ public class MidnightTimestreamManagerService extends Service {
         MidNightTask midNightTask = new MidNightTask();
         midnightTimer.schedule(midNightTask, inTime, periodTime);
 
+        timestreamRestoreHandler = new Handler() {
+
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+
+                MyApplication.restoreTimestreams(MidnightTimestreamManagerService.newPromotionTimestreams);
+                timestreamRestoreTimer.cancel();
+                super.handleMessage(msg);
+            }
+        };
         super.onCreate();
     }
 

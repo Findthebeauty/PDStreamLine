@@ -19,9 +19,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PDStreamLine">
         <activity
+            android:name=".activities.SettingActivity"
+            android:exported="true"
+            android:launchMode="singleTask" />
+        <activity
             android:name=".activities.PromotionActivity"
-            android:launchMode="singleTask"
-            android:exported="true" />
+            android:exported="true"
+            android:launchMode="singleTask" />
         <activity
             android:name=".activities.PossiblePromotionTimestreamActivity"
             android:exported="true"

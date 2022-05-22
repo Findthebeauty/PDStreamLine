@@ -4,11 +4,16 @@ import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.setTimeStreamViewOriginalBackgroundColor;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
+import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.newPromotionTimestreams;
+import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.timestreamRestoreHandler;
+import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.timestreamRestoreTask;
+import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.timestreamRestoreTimer;
 
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Message;
 import android.text.InputType;
 import android.util.Log;
 import android.util.TypedValue;
@@ -27,12 +32,12 @@ import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
-import com.shepherdboy.pdstreamline.utils.ScanEventReceiver;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 import com.shepherdboy.pdstreamline.view.MyTextWatcher;
 
 import java.util.LinkedList;
-
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
@@ -40,13 +45,58 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
     private static final int PICK_OUT = 1;
     private static final int DELETE = 2;
 
+
     private static TextView[] textViews = new TextView[4]; //用于临时存放创建新timestream view时的textview的引用
 
     private static LinkedList<Timestream> possiblePromotionTimestreams;
 
+    private void cancelTimerTask() {
+
+        if (timestreamRestoreTimer != null) timestreamRestoreTimer.cancel();
+    }
+    private void startTimerTask(){
+
+        if (timestreamRestoreTimer != null) {
+
+            timestreamRestoreTimer.cancel();
+        }
+
+        timestreamRestoreTimer = new Timer();
+
+        if (timestreamRestoreTask == null) {
+
+            timestreamRestoreTask = new TimerTask() {
+                @Override
+                public void run() {
+                    Message m = new Message();
+                    m.what = 1;
+                    timestreamRestoreHandler.sendMessage(m);
+                }
+            };
+        }
+
+        timestreamRestoreTimer.schedule(timestreamRestoreTask, (long) (1.5 * 60 * 60 * 1000), 1);
+        timestreamRestoreTask = null;
+    }
+
+    @Override
+    protected void onStop() {
+
+
+        startTimerTask();
+        super.onStop();
+    }
+
+    @Override
+    protected void onPostResume() {
+
+        cancelTimerTask();
+        super.onPostResume();
+    }
+
     public static void pickOutPossiblePromotionTimestream() {
         MyApplication.pickupChanges();
-        ScanEventReceiver.executeChanges(MyApplication.thingsToSaveList);
+        MyApplication.saveChanges(MyApplication.thingsToSaveList);
         MyDatabaseHelper.PDInfoWrapper.getAndMoveTimestreamByDate(sqLiteDatabase,
                 DateUtil.typeMach(MyApplication.today));
     }
@@ -64,7 +114,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 //                todo 移除timestreamView，从possiblePromotionTimestream表中移除timestream，
 //                 将timestream添加到newPromotionTimestreams中
                 rmTs = MyApplication.removeTimestream((LinearLayout) releasedChild);
-                MyApplication.newPromotionTimestreams.add(rmTs);
+                newPromotionTimestreams.add(rmTs);
 
                 break;
 
@@ -84,7 +134,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
         if (onShowTimeStreamsHashMap.size() == 0) {
 
-            for(Timestream t : MyApplication.newPromotionTimestreams) {
+            for(Timestream t : newPromotionTimestreams) {
 
                 Log.d("I'm in!", t.toString());
             }
@@ -140,6 +190,10 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_possible_promotion_timestream);
+        MyApplication.initActionBar(getSupportActionBar());
+
+        MyApplication.init();
+        MyApplication.initDatabase(this);
 
         draggableLinearLayout = findViewById(R.id.parent);
 
@@ -150,8 +204,9 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
         if (possiblePromotionTimestreams.size() == 0) {
 
-            Toast.makeText(this,"好消息，今日无新增临期商品!", Toast.LENGTH_LONG).show();
-            this.startActivity(new Intent(this, MainActivity.class));
+            Toast.makeText(this,"所有临期商品已捡出!", Toast.LENGTH_LONG).show();
+//            this.startActivity(new Intent(this, MainActivity.class));
+            PromotionActivity.actionStart();
             return;
         }
 
@@ -159,6 +214,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
         loadTimestreams(possiblePromotionTimestreams);
 
+        cancelTimerTask();
     }
 
     /**将timestreams链表中的所有timestream加载到预先生成的timestreamView中*/
@@ -308,9 +364,9 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
     }
 
-    public static void actionStart(Context context) {
+    public static void actionStart() {
 
-        context.startActivity(new Intent(context, PossiblePromotionTimestreamActivity.class));
+        MyApplication.getContext().startActivity(new Intent(MyApplication.getContext(), PossiblePromotionTimestreamActivity.class));
     }
 
 

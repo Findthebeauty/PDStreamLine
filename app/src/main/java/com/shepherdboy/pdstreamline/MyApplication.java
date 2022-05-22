@@ -6,13 +6,18 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 
+import com.shepherdboy.pdstreamline.activities.MainActivity;
 import com.shepherdboy.pdstreamline.activities.PDInfoActivity;
 import com.shepherdboy.pdstreamline.activities.PossiblePromotionTimestreamActivity;
+import com.shepherdboy.pdstreamline.activities.SettingActivity;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
@@ -40,6 +45,8 @@ public class MyApplication extends Application {
     public static final int TIMESTREAM_DOP = 15;
     public static final int TIMESTREAM_COORDINATE = 16;
     public static final int TIMESTREAM_INVENTORY = 17;
+    public static final int TIMESTREAM_BUY_SPECS = 18;
+    public static final int TIMESTREAM_PRESENT_SPECS= 19;
 
     public static final int MAIN_ACTIVITY = 0;
     public static final int PD_INFO_ACTIVITY = 1;
@@ -56,9 +63,10 @@ public class MyApplication extends Application {
     //数据库助手，全局
     public static MyDatabaseHelper databaseHelper;
     public static SQLiteDatabase sqLiteDatabase;
-    public static LinkedList<Timestream> newPromotionTimestreams = new LinkedList<>();
 
     static Point originalPosition;
+
+    private static Context context;
 
     static LinearLayout temp;
 
@@ -69,12 +77,85 @@ public class MyApplication extends Application {
     public static LinkedList thingsToSaveList = new LinkedList();
 
     public static Date today = DateUtil.getNow();
+
+    public static void setContext(Context context) {
+        MyApplication.context = context;
+    }
+
+    public static void initActionBar(ActionBar actionBar) {
+
+        actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        actionBar.setCustomView(R.layout.actionbar_layout);
+
+        TextView mainPage = actionBar.getCustomView().findViewById(R.id.main_page);
+        TextView setting = actionBar.getCustomView().findViewById(R.id.setting);
+
+        mainPage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                MainActivity.actionStart();
+            }
+        });
+
+        setting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                SettingActivity.actionStart();
+            }
+        });
+    }
+
+    public static void restoreTimestreams(LinkedList linkedList) {
+
+        while (!linkedList.isEmpty()) {
+
+            Timestream t = (Timestream) linkedList.remove();
+            MyDatabaseHelper.PDInfoWrapper.updateInfo(sqLiteDatabase, t, MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME);
+        }
+    }
+
+    public static void saveChanges(LinkedList linkedList) {
+
+        while (!linkedList.isEmpty()) {
+
+            Object view = linkedList.remove();
+
+            if (view instanceof Product) {
+
+                MyDatabaseHelper.PDInfoWrapper.updateInfo(sqLiteDatabase, (Product) view);
+
+            }
+
+            if (view instanceof Timestream) {
+
+                MyDatabaseHelper.PDInfoWrapper.updateInfo(sqLiteDatabase, (Timestream) view, MyDatabaseHelper.FRESH_TIMESTREAM_TABLE_NAME);
+
+            }
+
+        }
+
+    }
 //
 //    static {
 //
 //        TimeZone.setDefault(MyApplication.timeZone);
 //
 //    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        context = getApplicationContext();
+        initDatabase(context);
+
+    }
+
+    public static Context getContext() {
+        return context;
+    }
 
     // 将改变的信息保存到thingsToSaveList里面
     public static void pickupChanges() {
@@ -114,7 +195,7 @@ public class MyApplication extends Application {
 
                     for (int i = 0; i < draggableLinearLayout.getChildCount() - 4; i++) {
 
-                        recordViewStateByChildIndex(i + 3);
+                        recordViewStateByChildIndex(draggableLinearLayout, i + 3);
                     }
                     break;
 
@@ -122,8 +203,27 @@ public class MyApplication extends Application {
 
                     for (int i = 0; i < draggableLinearLayout.getChildCount() - 1; i++) {
 
-                        recordViewStateByChildIndex(i + 1);
+                        recordViewStateByChildIndex(draggableLinearLayout, i + 1);
 
+                    }
+                    break;
+
+                case PROMOTION_TIMESTREAM_ACTIVITY:
+
+                    for (int i = 0; i < draggableLinearLayout.getChildCount(); i++) {
+
+
+                        recordViewStateByChildIndex(draggableLinearLayout, i);
+
+                        temp = (LinearLayout) draggableLinearLayout.getChildAt(i);
+
+                        if (temp instanceof DraggableLinearLayout) {
+
+                            for (int j = 0; j < temp.getChildCount(); j++) {
+
+                                recordViewStateByChildIndex(temp, j);
+                            }
+                        }
                     }
                     break;
             }
@@ -133,9 +233,9 @@ public class MyApplication extends Application {
         DraggableLinearLayout.setLayoutChanged(false);
     }
 
-    private static void recordViewStateByChildIndex(int childIndex) {
+    private static void recordViewStateByChildIndex(ViewGroup parent, int childIndex) {
 
-        temp = (LinearLayout) draggableLinearLayout.getChildAt(childIndex);
+        temp = (LinearLayout) parent.getChildAt(childIndex);
 
         originalPosition = new Point(temp.getLeft(), temp.getTop());
         MyApplication.originalPositionHashMap.put(temp.getId(), originalPosition);
@@ -176,6 +276,11 @@ public class MyApplication extends Application {
 
             case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
                 PossiblePromotionTimestreamActivity.onTimestreamViewReleased(releasedChild, horizontalDistance);
+                break;
+
+            default:
+                DraggableLinearLayout container = DraggableLinearLayout.getContainer(releasedChild);
+                container.putBack(releasedChild);
                 break;
 
         }
@@ -257,8 +362,17 @@ public class MyApplication extends Application {
                     timestream.setProductInventory(after);
                     timestream.setUpdated(false);
                     break;
-                }
 
+                case TIMESTREAM_BUY_SPECS:
+                    timestream.setBuySpecs(after);
+                    timestream.setUpdated(false);
+                    break;
+
+                case TIMESTREAM_PRESENT_SPECS:
+                    timestream.setGiveawaySpecs(after);
+                    timestream.setUpdated(false);
+                    break;
+                }
 
         }
 
@@ -269,6 +383,8 @@ public class MyApplication extends Application {
      */
 
     public static void setTimeStreamViewOriginalBackgroundColor(Timestream ts) {
+
+        if (ts == null) return;
 
         int timeStreamStateCode = ts.getTimeStreamStateCode();
         LinearLayout timeStreamLinearLayout =

@@ -53,10 +53,10 @@ public class PDInfoActivity extends AppCompatActivity {
     public static EditText productEXPEditText;
     public static Button productEXPTimeUnitButton;
 
-    public static void actionStart(Context context) {
+    public static void actionStart() {
 
-        Intent intent = new Intent(context, PDInfoActivity.class);
-        context.startActivity(intent);
+        Intent intent = new Intent(MyApplication.getContext(), PDInfoActivity.class);
+        MyApplication.getContext().startActivity(intent);
 
     }
 
@@ -64,6 +64,7 @@ public class PDInfoActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pdinfo);
+        MyApplication.initActionBar(getSupportActionBar());
 
         draggableLinearLayout = findViewById(R.id.parent);
         productCodeEditText = findViewById(R.id.product_code);
