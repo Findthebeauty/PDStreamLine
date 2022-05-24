@@ -60,6 +60,8 @@ public class MyApplication extends Application {
     public static Product currentProduct;
 
     public static int activityIndex;
+
+    public static final HashMap<Object, Object> settingsMap = new HashMap<>();
     //数据库助手，全局
     public static MyDatabaseHelper databaseHelper;
     public static SQLiteDatabase sqLiteDatabase;
@@ -150,7 +152,7 @@ public class MyApplication extends Application {
 
         context = getApplicationContext();
         initDatabase(context);
-
+        SettingActivity.initSetting();
     }
 
     public static Context getContext() {

@@ -54,6 +54,8 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
     public static final String POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME = "possible_expired_timestream";
 
+    public static final String SETTING_TABLE_NAME = "settings";
+
     public static final String PRODUCT_INFO_COLUMNS = "product_code,product_name," +
             "product_exp,product_exp_time_unit,product_group_number," +
             "product_shelves_indexes,product_last_check_date,product_next_check_date," +
@@ -85,6 +87,8 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
     public static final String DOP_INTERVALS_COLUMNS = "id,product_code,product_dop," +
             "dop_interval,dop_interval_count";
+
+    public static final String SETTING_COLUMNS = "id,setting_index,setting_value";
 
     public static final String CREATE_TABLE_PRODUCT_INF = "create table product_inf(" +
             "product_code text primary key," +
@@ -177,9 +181,23 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "dop_interval_count text," +
             "unique(product_code,dop_interval))";
 
+    public static final String CREATE_TABLE_SETTING = "create table settings(" +
+            "id integer primary key autoincrement," +
+            "setting_index text unique," +
+            "setting_value text)";
+
     public MyDatabaseHelper(Context context, String name,
                             SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);
+    }
+
+    public static Cursor query(SQLiteDatabase sqLiteDatabase, String tableName, String[] columns, String selection,
+                           String[] selectionArgs) {
+
+        return sqLiteDatabase.query(tableName, columns,
+                selection, selectionArgs, null,
+                null, null);
+
     }
 
     @Override
@@ -194,6 +212,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(CREATE_TABLE_OFF_SHELVES_HISTORY);
         sqLiteDatabase.execSQL(CREATE_TABLE_OBSERVER);
         sqLiteDatabase.execSQL(CREATE_TABLE_DOP_INTERVALS);
+        sqLiteDatabase.execSQL(CREATE_TABLE_SETTING);
     }
 
     @Override
@@ -217,8 +236,6 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
         FileChannel inChannel = null;
         FileChannel outChannel = null;
-
-
 
         try {
             tempDataBaseFile.createNewFile();
@@ -257,6 +274,35 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             }
 
         }
+    }
+    public static void saveSetting(String index, String value, SQLiteDatabase sqLiteDatabase) {
+
+        String sql = "insert or replace into " + SETTING_TABLE_NAME + "(" +
+                SETTING_COLUMNS + ")" + "values (" + null + ",'" + index + "','" + value
+                +"')";
+
+        sqLiteDatabase.execSQL(sql);
+    }
+
+    public static String getSetting(String index, SQLiteDatabase sqLiteDatabase) {
+
+        String value = null;
+
+        Cursor cursor = query(sqLiteDatabase, SETTING_TABLE_NAME, new String[]{"*"},
+                "setting_index=?", new String[] {index});
+
+
+        try {
+
+            cursor.moveToFirst();
+            value = cursor.getString(cursor.getColumnIndex("setting_value"));
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+
+        return value;
     }
 
     /**
@@ -519,7 +565,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             String productDefaultCoordinate = product.getDefaultCoordinate();
 
             String sql = "insert or replace into " + PRODUCT_INFO_TABLE_NAME + "(" +
-                    PRODUCT_INFO_COLUMNS + ") " + "values " + "('" + productCode +
+                    PRODUCT_INFO_COLUMNS + ") " + "values ('" + productCode +
                     "','" + productName + "','" + productEXP + "','" + productEXPTimeUnit +
                     "','" + productGroupNumber + "','" + productShelvesIndexes +
                     "','" + productLastCheckDate + "','" + productNextCheckDate +
@@ -622,15 +668,6 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             sqLiteDatabase.execSQL(sql1);
             sqLiteDatabase.execSQL(sql2);
             sqLiteDatabase.execSQL(sql3);
-
-        }
-
-        public static Cursor query(SQLiteDatabase sqLiteDatabase, String tableName, String[] columns, String selection,
-                             String[] selectionArgs) {
-
-            return sqLiteDatabase.query(tableName, columns,
-                    selection, selectionArgs, null,
-                    null, null);
 
         }
 

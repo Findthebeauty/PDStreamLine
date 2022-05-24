@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <scope>
+        <item>2年</item>
+        <item>-90天</item>
+        <item>-15天</item>
+    </scope>
+    <scope>
+        <item>1年</item>
+        <item>-60天</item>
+        <item>-15天</item>
+    </scope>
+    <scope>
+        <item>6月</item>
+        <item>-30天</item>
+        <item>-10天</item>
+    </scope>
+    <scope>
+        <item>90天</item>
+        <item>-20天</item>
+        <item>-5天</item>
+    </scope>
+    <scope>
+        <item>30天</item>
+        <item>-15天</item>
+        <item>-5天</item>
+    </scope>
+    <scope>
+        <item>21天</item>
+        <item>-7天</item>
+        <item>-1天</item>
+    </scope>
+    <scope>
+        <item>7天</item>
+        <item>-4天</item>
+        <item>-1天</item>
+    </scope>
+</resources>
