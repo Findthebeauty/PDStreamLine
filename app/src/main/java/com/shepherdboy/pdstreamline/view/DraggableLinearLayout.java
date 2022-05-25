@@ -5,9 +5,11 @@ import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -140,7 +142,7 @@ public class DraggableLinearLayout extends LinearLayout {
 
         viewDragHelper.settleCapturedViewAt(originalPoint.x, originalPoint.y);
 
-        Timestream ts = MyApplication.onShowTimeStreamsHashMap.get(view.getId());
+        Timestream ts = (Timestream) MyApplication.onShowTimeStreamsHashMap.get(view.getId());
         MyApplication.setTimeStreamViewOriginalBackgroundColor(ts);
 
         currentTimestreamView.invalidate();
@@ -223,7 +225,7 @@ public class DraggableLinearLayout extends LinearLayout {
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
             currentTimestreamView = getCurrentView(event);
-            MyApplication.recordTimeStreamView();
+            MyApplication.recordDraggableView();
         }
 
 
@@ -238,6 +240,13 @@ public class DraggableLinearLayout extends LinearLayout {
     public static float dpToFloat(int dpInt, Context context) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,dpInt,
                 context.getResources().getDisplayMetrics());
+    }
+
+    public static int dpToPx(int dpInt, WindowManager windowManager) {
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        windowManager.getDefaultDisplay().getRealMetrics(displayMetrics);
+        return (dpInt * displayMetrics.densityDpi) / DisplayMetrics.DENSITY_DEFAULT;
     }
 
     public static DraggableLinearLayout getContainer(View child) {
@@ -275,7 +284,7 @@ public class DraggableLinearLayout extends LinearLayout {
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
 
-        MyApplication.recordTimeStreamView();
+        MyApplication.recordDraggableView();
 
     }
 

@@ -26,6 +26,7 @@ import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 import com.shepherdboy.pdstreamline.view.MyTextWatcher;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -54,6 +55,7 @@ public class MyApplication extends Application {
     public static final int PROMOTION_TIMESTREAM_ACTIVITY = 3;
     public static final int POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY = 4;
     public static final int EXPIRED_TIMESTREAM_ACTIVITY = 5;
+    public static final int SETTING_ACTIVITY = 6;
 
     public static DraggableLinearLayout draggableLinearLayout;
 
@@ -61,7 +63,9 @@ public class MyApplication extends Application {
 
     public static int activityIndex;
 
-    public static final HashMap<Object, Object> settingsMap = new HashMap<>();
+    public static final HashMap<Long, String[]> dateSettingMap = new HashMap<>();
+    public static final HashMap<Integer, String[]> onShowScopeMap = new HashMap<>();
+    public static ArrayList dateSettingIndex;
     //数据库助手，全局
     public static MyDatabaseHelper databaseHelper;
     public static SQLiteDatabase sqLiteDatabase;
@@ -187,7 +191,7 @@ public class MyApplication extends Application {
         }
     }
 
-    public static void recordTimeStreamView() {
+    public static void recordDraggableView() {
 
         if (DraggableLinearLayout.isLayoutChanged()) {
 
@@ -202,6 +206,8 @@ public class MyApplication extends Application {
                     break;
 
                 case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
+
+                case SETTING_ACTIVITY:
 
                     for (int i = 0; i < draggableLinearLayout.getChildCount() - 1; i++) {
 
@@ -228,6 +234,7 @@ public class MyApplication extends Application {
                         }
                     }
                     break;
+
             }
 
 
@@ -288,6 +295,30 @@ public class MyApplication extends Application {
         }
     }
 
+
+    public static void afterInfoChanged(String[] scope, int index, String before, String after, int productExpTimeUnit) {
+
+        scope[index] = scope[index].replace(before, after);
+    }
+    public static void afterInfoChanged(String[] scope, int scopeIndex, String after) {
+
+        String info = scope[scopeIndex];
+
+        switch (scopeIndex) {
+
+            case 0:
+                scope[scopeIndex] = after + info.substring(info.length() - 1);
+                break;
+
+            case 1:
+            case 2:
+                scope[scopeIndex] = info.replace(info.substring(1,info.length()-1), after);
+                break;
+
+            default:
+                break;
+        }
+    }
     public static void afterInfoChanged(String after, EditText watchedEditText, Timestream timestream, int filedIndex) {
 
         boolean infoValidated = AIInputter.validate(after, timestream, filedIndex);

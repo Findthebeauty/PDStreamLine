@@ -16,4 +16,5 @@
     <integer name="promotion_timestream_activity">3</integer>
     <integer name="possible_expired_timestream_activity">4</integer>
     <integer name="expired_timestream_activity">5</integer>
+    <integer name="setting_activity">6</integer>
 </resources>

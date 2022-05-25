@@ -197,8 +197,6 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
         draggableLinearLayout = findViewById(R.id.parent);
 
-        MyApplication.initDatabase(this);
-
         possiblePromotionTimestreams = MyDatabaseHelper.PDInfoWrapper.getStaleTimestreams(sqLiteDatabase,
                 MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM);
 

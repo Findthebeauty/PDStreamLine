@@ -5,6 +5,7 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
@@ -31,6 +32,7 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
 
     private EditText watchedEditText;
     private Timestream timestream;
+    private String[] scope;
     private int filedIndex;
     private static boolean shouldWatch = true;
     private String preInf = "";
@@ -48,6 +50,62 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
         myTextWatchers.put(editText, myTextWatcher);
     }
 
+    public static void watch(String[] scope, EditText editText, int index) {
+
+        MyTextWatcher myTextWatcher = new MyTextWatcher();
+        editText.addTextChangedListener(myTextWatcher);
+
+        myTextWatcher.scope = scope;
+        myTextWatcher.watchedEditText = editText;
+        myTextWatcher.filedIndex = index;
+
+        myTextWatchers.put(editText, myTextWatcher);
+    }
+
+    public static void watch(String[] scope, TextView t,  int index) {
+
+        t.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+
+                if (!shouldWatch) {
+                    return true;
+                }
+
+                String oldTimeUnit;
+                String newTimeUnit = null;
+
+                oldTimeUnit = (String) t.getText();
+
+                switch (oldTimeUnit) {
+
+                    case "天":
+
+                        newTimeUnit = "年";
+                        break;
+
+                    case "年":
+
+                        newTimeUnit = "月";
+                        break;
+
+                    case "月":
+
+                        newTimeUnit = "天";
+                        break;
+
+                }
+
+                t.setText(newTimeUnit);
+
+                MyApplication.afterInfoChanged( scope, index, oldTimeUnit, newTimeUnit,MyApplication.PRODUCT_EXP_TIME_UNIT);
+
+                return true;
+            }
+        });
+
+
+    }
     public static void watch(Button button) {
 
         button.setOnLongClickListener(new View.OnLongClickListener() {
@@ -156,7 +214,14 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
 
             if (!preInf.equals(currentInf)) {
 
-                MyApplication.afterInfoChanged(currentInf, watchedEditText, timestream, filedIndex);
+                if (timestream != null) {
+
+                    MyApplication.afterInfoChanged(currentInf, watchedEditText, timestream, filedIndex);
+
+                } else {
+
+                    MyApplication.afterInfoChanged(scope, filedIndex, currentInf );
+                }
 
             }
         }
