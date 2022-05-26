@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -143,11 +142,6 @@ public class PDInfoActivity extends AppCompatActivity {
         } else {
 
             timestreamDOPEditText.setText(productDOP.substring(0, 10));
-
-            Log.d("width", timestreamDOPEditText.getWidth() + "");
-            Log.d("width", timestreamDOPEditText.getWidth() / 1.6 + "");
-            Log.d("width", timestreamDOPEditText.getWidth() / 16 * 3 + "");
-
         }
 
         timestreamCoordinateEditText.setText(timestream.getProductCoordinate());

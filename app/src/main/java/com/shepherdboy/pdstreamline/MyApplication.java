@@ -18,6 +18,7 @@ import com.shepherdboy.pdstreamline.activities.MainActivity;
 import com.shepherdboy.pdstreamline.activities.PDInfoActivity;
 import com.shepherdboy.pdstreamline.activities.PossiblePromotionTimestreamActivity;
 import com.shepherdboy.pdstreamline.activities.SettingActivity;
+import com.shepherdboy.pdstreamline.beans.DateScope;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
@@ -63,9 +64,10 @@ public class MyApplication extends Application {
 
     public static int activityIndex;
 
-    public static final HashMap<Long, String[]> dateSettingMap = new HashMap<>();
-    public static final HashMap<Integer, String[]> onShowScopeMap = new HashMap<>();
-    public static ArrayList dateSettingIndex;
+    public static final HashMap<String, DateScope> dateSettingMap = new HashMap<>();
+    public static final HashMap<Long, DateScope> mlScopeMap = new HashMap<>();
+    public static final HashMap<Integer, DateScope> onShowScopeMap = new HashMap<>();
+    public static ArrayList<Long> dateSettingIndex;
     //数据库助手，全局
     public static MyDatabaseHelper databaseHelper;
     public static SQLiteDatabase sqLiteDatabase;
@@ -287,6 +289,10 @@ public class MyApplication extends Application {
                 PossiblePromotionTimestreamActivity.onTimestreamViewReleased(releasedChild, horizontalDistance);
                 break;
 
+            case SETTING_ACTIVITY:
+                SettingActivity.onScopeViewReleased(releasedChild, horizontalDistance);
+                break;
+
             default:
                 DraggableLinearLayout container = DraggableLinearLayout.getContainer(releasedChild);
                 container.putBack(releasedChild);
@@ -296,29 +302,47 @@ public class MyApplication extends Application {
     }
 
 
-    public static void afterInfoChanged(String[] scope, int index, String before, String after, int productExpTimeUnit) {
+    public static void afterInfoChanged(View v, DateScope scope, int index, String after, int productExpTimeUnit) {
 
-        scope[index] = scope[index].replace(before, after);
-    }
-    public static void afterInfoChanged(String[] scope, int scopeIndex, String after) {
+        String preRange = scope.getRange();
 
-        String info = scope[scopeIndex];
+        switch (index) {
 
-        switch (scopeIndex) {
+            case DateScope.RANGE_VALUE:
 
-            case 0:
-                scope[scopeIndex] = after + info.substring(info.length() - 1);
+                scope.setRangeValue(after);
                 break;
 
-            case 1:
-            case 2:
-                scope[scopeIndex] = info.replace(info.substring(1,info.length()-1), after);
+            case DateScope.RANGE_UNIT:
+
+                scope.setRangeUnit(after);
                 break;
 
-            default:
+            case DateScope.PROMOTION_OFFSET_VALUE:
+
+                scope.setPromotionOffsetValue(after);
                 break;
+
+            case DateScope.PROMOTION_OFFSET_UNIT:
+
+                scope.setPromotionOffsetUnit(after);
+                break;
+
+            case DateScope.EXPIRE_OFFSET_VALUE:
+
+                scope.setExpireOffsetValue(after);
+                break;
+
+            case DateScope.EXPIRE_OFFSET_UNIT:
+
+                scope.setExpireOffsetUnit(after);
+                break;
+
         }
+        synchronizeSetting(preRange, scope, index);
+        SettingActivity.setDateSettingChanged(true);
     }
+
     public static void afterInfoChanged(String after, EditText watchedEditText, Timestream timestream, int filedIndex) {
 
         boolean infoValidated = AIInputter.validate(after, timestream, filedIndex);
@@ -474,6 +498,15 @@ public class MyApplication extends Application {
 
     }
 
+
+    private static void synchronizeSetting(String preRange, DateScope scope, int index) {
+
+        if (index == DateScope.RANGE_VALUE || index == DateScope.RANGE_UNIT) {
+
+            SettingActivity.synchronizeUpperBound(preRange, scope);
+        }
+    }
+
     private static void synchronize(@Nullable Timestream timestream, int filedIndex) {
 
         switch (filedIndex) {
@@ -531,6 +564,9 @@ public class MyApplication extends Application {
 
                 PossiblePromotionTimestreamActivity.onTimestreamViewPositionChanged(changedView, horizontalDistance);
                 break;
+
+            case SETTING_ACTIVITY:
+                SettingActivity.onScopeViewPositionChanged(changedView, horizontalDistance);
         }
     }
 

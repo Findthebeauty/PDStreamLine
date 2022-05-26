@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.activities.PDInfoActivity;
+import com.shepherdboy.pdstreamline.beans.DateScope;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 
@@ -32,7 +33,7 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
 
     private EditText watchedEditText;
     private Timestream timestream;
-    private String[] scope;
+    private DateScope scope;
     private int filedIndex;
     private static boolean shouldWatch = true;
     private String preInf = "";
@@ -50,7 +51,7 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
         myTextWatchers.put(editText, myTextWatcher);
     }
 
-    public static void watch(String[] scope, EditText editText, int index) {
+    public static void watch(DateScope scope, EditText editText, int index) {
 
         MyTextWatcher myTextWatcher = new MyTextWatcher();
         editText.addTextChangedListener(myTextWatcher);
@@ -62,7 +63,7 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
         myTextWatchers.put(editText, myTextWatcher);
     }
 
-    public static void watch(String[] scope, TextView t,  int index) {
+    public static void watch(DateScope scope, TextView t, int index) {
 
         t.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -98,12 +99,11 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
 
                 t.setText(newTimeUnit);
 
-                MyApplication.afterInfoChanged( scope, index, oldTimeUnit, newTimeUnit,MyApplication.PRODUCT_EXP_TIME_UNIT);
+                MyApplication.afterInfoChanged( t, scope, index, newTimeUnit, MyApplication.PRODUCT_EXP_TIME_UNIT);
 
                 return true;
             }
         });
-
 
     }
     public static void watch(Button button) {
@@ -220,7 +220,7 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
 
                 } else {
 
-                    MyApplication.afterInfoChanged(scope, filedIndex, currentInf );
+                    MyApplication.afterInfoChanged(watchedEditText, scope, filedIndex, currentInf, MyApplication.PRODUCT_EXP );
                 }
 
             }
