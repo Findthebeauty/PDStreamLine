@@ -5,6 +5,8 @@ import android.widget.EditText;
 import androidx.annotation.Nullable;
 
 import com.shepherdboy.pdstreamline.MyApplication;
+import com.shepherdboy.pdstreamline.activities.SettingActivity;
+import com.shepherdboy.pdstreamline.beans.DateScope;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 
@@ -309,5 +311,67 @@ public class AIInputter {
 
         return "0" + after;
 
+    }
+
+    public static boolean validate(DateScope scope, int index, String after) {
+
+        long upperBoundMls = SettingActivity.getUpperBoundMls(scope);
+        long lowerBoundMls = SettingActivity.getLowerBoundMls(scope);
+        long newBoundMls;
+        long promotionOffsetMls;
+        long expireOffsetMls;
+
+        DateScope newScope = new DateScope(scope);
+        newBoundMls = SettingActivity.stringToMillionSeconds(
+                newScope.getRangeValue(), newScope.getRangeUnit()
+        );
+        promotionOffsetMls = SettingActivity.stringToMillionSeconds(
+                newScope.getPromotionOffsetValue(),
+                newScope.getPromotionOffsetUnit()
+        );
+        expireOffsetMls = SettingActivity.stringToMillionSeconds(
+                newScope.getExpireOffsetValue(),
+                newScope.getExpireOffsetUnit()
+        );
+
+        switch (index) {
+
+            case DateScope.RANGE_VALUE:
+
+                newScope.setRangeValue(after);
+                newBoundMls = SettingActivity.stringToMillionSeconds(
+                        newScope.getRangeValue(), newScope.getRangeUnit()
+                );
+                return newBoundMls > lowerBoundMls && newBoundMls < upperBoundMls;
+
+            case DateScope.RANGE_UNIT:
+
+                newScope.setRangeUnit(after);
+                newBoundMls = SettingActivity.stringToMillionSeconds(
+                        newScope.getRangeValue(), newScope.getRangeUnit()
+                );
+                return newBoundMls > lowerBoundMls && newBoundMls < upperBoundMls;
+
+            case DateScope.PROMOTION_OFFSET_VALUE:
+
+                newScope.setPromotionOffsetValue(after);
+                promotionOffsetMls = SettingActivity.stringToMillionSeconds(
+                        newScope.getPromotionOffsetValue(),
+                        newScope.getPromotionOffsetUnit()
+                );
+               return promotionOffsetMls < newBoundMls && promotionOffsetMls > expireOffsetMls;
+
+            case DateScope.EXPIRE_OFFSET_VALUE:
+
+                newScope.setExpireOffsetValue(after);
+                expireOffsetMls = SettingActivity.stringToMillionSeconds(
+                        newScope.getExpireOffsetValue(),
+                        newScope.getExpireOffsetUnit()
+                );
+                return expireOffsetMls > 0 && expireOffsetMls < promotionOffsetMls;
+
+            default:
+                return false;
+        }
     }
 }

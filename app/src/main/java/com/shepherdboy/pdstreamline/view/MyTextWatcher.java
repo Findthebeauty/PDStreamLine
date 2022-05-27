@@ -99,7 +99,7 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
 
                 t.setText(newTimeUnit);
 
-                MyApplication.afterInfoChanged( t, scope, index, newTimeUnit, MyApplication.PRODUCT_EXP_TIME_UNIT);
+                MyApplication.afterInfoChanged( t, scope, index, newTimeUnit);
 
                 return true;
             }
@@ -220,7 +220,7 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
 
                 } else {
 
-                    MyApplication.afterInfoChanged(watchedEditText, scope, filedIndex, currentInf, MyApplication.PRODUCT_EXP );
+                    MyApplication.afterInfoChanged(watchedEditText, scope, filedIndex, currentInf);
                 }
 
             }

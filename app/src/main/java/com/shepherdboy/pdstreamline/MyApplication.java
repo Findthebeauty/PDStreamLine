@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -301,41 +302,62 @@ public class MyApplication extends Application {
         }
     }
 
+    public static void makeToast(Context context, String info, int duration) {
 
-    public static void afterInfoChanged(View v, DateScope scope, int index, String after, int productExpTimeUnit) {
+        Toast.makeText(context,info, duration).show();
+
+    }
+
+    public static void afterInfoChanged(TextView v, DateScope scope, int index, String after) {
 
         String preRange = scope.getRange();
+
+        boolean validated = AIInputter.validate(scope, index, after);
 
         switch (index) {
 
             case DateScope.RANGE_VALUE:
 
+                if (!validated) {
+
+                    v.setText(scope.getRangeValue());
+                    makeToast(SettingActivity.getInstance(), "下限值超界", Toast.LENGTH_SHORT);
+                    return;
+                }
                 scope.setRangeValue(after);
                 break;
 
             case DateScope.RANGE_UNIT:
 
+                if (!validated) {
+
+                    v.setText(scope.getRangeUnit());
+                    makeToast(SettingActivity.getInstance(), "下限单位超界", Toast.LENGTH_SHORT);
+                    return;
+                }
                 scope.setRangeUnit(after);
                 break;
 
             case DateScope.PROMOTION_OFFSET_VALUE:
 
+                if (!validated) {
+
+                    v.setText(scope.getPromotionOffsetValue());
+                    makeToast(SettingActivity.getInstance(), "临期偏移量值超界", Toast.LENGTH_SHORT);
+                    return;
+                }
                 scope.setPromotionOffsetValue(after);
-                break;
-
-            case DateScope.PROMOTION_OFFSET_UNIT:
-
-                scope.setPromotionOffsetUnit(after);
                 break;
 
             case DateScope.EXPIRE_OFFSET_VALUE:
 
+                if (!validated) {
+
+                    v.setText(scope.getExpireOffsetValue());
+                    makeToast(SettingActivity.getInstance(), "下架偏移量值超界", Toast.LENGTH_SHORT);
+                    return;
+                }
                 scope.setExpireOffsetValue(after);
-                break;
-
-            case DateScope.EXPIRE_OFFSET_UNIT:
-
-                scope.setExpireOffsetUnit(after);
                 break;
 
         }

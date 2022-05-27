@@ -86,6 +86,42 @@ public class SettingActivity extends AppCompatActivity {
         }
     }
 
+    public static long getUpperBoundMls(DateScope scope) {
+
+
+        long mlsIndex = SettingActivity.stringToMillionSeconds(
+                scope.getRangeValue(),scope.getRangeUnit()
+        );
+
+        long upperBoundMls = Long.MAX_VALUE;
+
+        int i = MyApplication.dateSettingIndex.indexOf(mlsIndex);
+
+        if ( i > 0 ) {
+            upperBoundMls = dateSettingIndex.get(i - 1);
+        }
+
+        return upperBoundMls;
+    }
+
+    public static long getLowerBoundMls(DateScope scope) {
+
+
+        long mlsIndex = SettingActivity.stringToMillionSeconds(
+                scope.getRangeValue(),scope.getRangeUnit()
+        );
+
+        long lowerBoundMls = 0;
+
+        int i = MyApplication.dateSettingIndex.indexOf(mlsIndex);
+
+        if ( i < dateSettingIndex.size() - 1 ) {
+            lowerBoundMls = dateSettingIndex.get(i + 1);
+        }
+
+        return lowerBoundMls;
+    }
+
 
     /** 根据左右拖动的距离返回int值*/
     public static int getViewState(View draggedView, double horizontalDraggedDistance) {
@@ -396,13 +432,11 @@ public class SettingActivity extends AppCompatActivity {
 
         editTexts[1].setText(pOffsetValue);
         MyTextWatcher.watch(scope, editTexts[1], DateScope.PROMOTION_OFFSET_VALUE);
-        textViews[3].setText(pOffsetUnit);
-        MyTextWatcher.watch(scope, textViews[3], DateScope.PROMOTION_OFFSET_UNIT);
+        textViews[3].setText("天");
 
         editTexts[2].setText(eOffsetValue);
         MyTextWatcher.watch(scope, editTexts[2], DateScope.EXPIRE_OFFSET_VALUE);
-        textViews[4].setText(eOffsetUnit);
-        MyTextWatcher.watch(scope, textViews[4], DateScope.EXPIRE_OFFSET_UNIT);
+        textViews[4].setText("天");
     }
 
     public static boolean isDateSettingChanged() {
@@ -543,7 +577,7 @@ public class SettingActivity extends AppCompatActivity {
         return scope;
     }
 
-    private static long stringToMillionSeconds(String valueStr, String unit) {
+    public static long stringToMillionSeconds(String valueStr, String unit) {
 
         long value = Long.parseLong(valueStr);
         switch (unit) {
