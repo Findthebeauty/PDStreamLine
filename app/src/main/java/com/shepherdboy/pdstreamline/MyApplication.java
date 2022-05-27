@@ -28,7 +28,6 @@ import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 import com.shepherdboy.pdstreamline.view.MyTextWatcher;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -65,10 +64,6 @@ public class MyApplication extends Application {
 
     public static int activityIndex;
 
-    public static final HashMap<String, DateScope> dateSettingMap = new HashMap<>();
-    public static final HashMap<Long, DateScope> mlScopeMap = new HashMap<>();
-    public static final HashMap<Integer, DateScope> onShowScopeMap = new HashMap<>();
-    public static ArrayList<Long> dateSettingIndex;
     //数据库助手，全局
     public static MyDatabaseHelper databaseHelper;
     public static SQLiteDatabase sqLiteDatabase;
@@ -159,7 +154,7 @@ public class MyApplication extends Application {
 
         context = getApplicationContext();
         initDatabase(context);
-        SettingActivity.initSetting();
+        SettingActivity.initSetting(SettingActivity.getDateSetting());
     }
 
     public static Context getContext() {
@@ -310,8 +305,6 @@ public class MyApplication extends Application {
 
     public static void afterInfoChanged(TextView v, DateScope scope, int index, String after) {
 
-        String preRange = scope.getRange();
-
         boolean validated = AIInputter.validate(scope, index, after);
 
         switch (index) {
@@ -320,7 +313,6 @@ public class MyApplication extends Application {
 
                 if (!validated) {
 
-                    v.setText(scope.getRangeValue());
                     makeToast(SettingActivity.getInstance(), "下限值超界", Toast.LENGTH_SHORT);
                     return;
                 }
@@ -331,18 +323,17 @@ public class MyApplication extends Application {
 
                 if (!validated) {
 
-                    v.setText(scope.getRangeUnit());
                     makeToast(SettingActivity.getInstance(), "下限单位超界", Toast.LENGTH_SHORT);
+                    scope.setRangeUnit(after);
+                    synchronizeSetting(scope, index);
                     return;
                 }
-                scope.setRangeUnit(after);
                 break;
 
             case DateScope.PROMOTION_OFFSET_VALUE:
 
                 if (!validated) {
 
-                    v.setText(scope.getPromotionOffsetValue());
                     makeToast(SettingActivity.getInstance(), "临期偏移量值超界", Toast.LENGTH_SHORT);
                     return;
                 }
@@ -353,7 +344,6 @@ public class MyApplication extends Application {
 
                 if (!validated) {
 
-                    v.setText(scope.getExpireOffsetValue());
                     makeToast(SettingActivity.getInstance(), "下架偏移量值超界", Toast.LENGTH_SHORT);
                     return;
                 }
@@ -361,7 +351,7 @@ public class MyApplication extends Application {
                 break;
 
         }
-        synchronizeSetting(preRange, scope, index);
+        synchronizeSetting(scope, index);
         SettingActivity.setDateSettingChanged(true);
     }
 
@@ -521,11 +511,20 @@ public class MyApplication extends Application {
     }
 
 
-    private static void synchronizeSetting(String preRange, DateScope scope, int index) {
+    private static void synchronizeSetting(DateScope scope, int index) {
 
-        if (index == DateScope.RANGE_VALUE || index == DateScope.RANGE_UNIT) {
+        switch (index) {
 
-            SettingActivity.synchronizeUpperBound(preRange, scope);
+            case DateScope.RANGE_VALUE:
+            case DateScope.RANGE_UNIT:
+
+                SettingActivity.initScopeIndex();
+                SettingActivity.synchronizeUpperBound(scope);
+                break;
+
+            case DateScope.PROMOTION_OFFSET_VALUE:
+            case DateScope.EXPIRE_OFFSET_VALUE:
+
         }
     }
 

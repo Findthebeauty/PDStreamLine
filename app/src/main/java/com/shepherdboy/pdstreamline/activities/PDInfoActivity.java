@@ -365,10 +365,8 @@ public class PDInfoActivity extends AppCompatActivity {
     }
 
     public static void serialize() {
-//
-//        MyDragLayout.pickupChanges();
-//        ScanEventReceiver.executeChanges(MyDragLayout.thingsToSaveList);
 
+        MyApplication.pickupChanges();
+        MyApplication.saveChanges(MyApplication.thingsToSaveList);
     }
-
 }

@@ -1,10 +1,6 @@
 package com.shepherdboy.pdstreamline.activities;
 
-import static com.shepherdboy.pdstreamline.MyApplication.dateSettingIndex;
-import static com.shepherdboy.pdstreamline.MyApplication.dateSettingMap;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
-import static com.shepherdboy.pdstreamline.MyApplication.mlScopeMap;
-import static com.shepherdboy.pdstreamline.MyApplication.onShowScopeMap;
 
 import android.content.Context;
 import android.content.Intent;
@@ -19,6 +15,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -49,6 +46,12 @@ import java.util.List;
  */
 public class SettingActivity extends AppCompatActivity {
 
+    public static final HashMap<String, DateScope> dateSettingMap = new HashMap<>();
+    public static final HashMap<Long, DateScope> mlScopeMap = new HashMap<>();
+    public static final HashMap<Integer, DateScope> onShowScopeMap = new HashMap<>();
+    public static ArrayList<Long> dateSettingIndex;
+    private static final HashMap<String, TextView> upperBoundTextViewMap = new HashMap<>();
+
     private static final int ADD_SCOPE = 1;
     private static final int DELETE_SCOPE = 2;
 
@@ -58,7 +61,6 @@ public class SettingActivity extends AppCompatActivity {
     private final EditText[] editTexts = new EditText[3];
     private final LinearLayout[] box = new LinearLayout[3];
 
-    private static final HashMap<String, TextView> upperBoundMap = new HashMap<>();
 
     private static boolean dateSettingChanged = false;
 
@@ -88,14 +90,13 @@ public class SettingActivity extends AppCompatActivity {
 
     public static long getUpperBoundMls(DateScope scope) {
 
-
         long mlsIndex = SettingActivity.stringToMillionSeconds(
                 scope.getRangeValue(),scope.getRangeUnit()
         );
 
         long upperBoundMls = Long.MAX_VALUE;
 
-        int i = MyApplication.dateSettingIndex.indexOf(mlsIndex);
+        int i = dateSettingIndex.indexOf(mlsIndex);
 
         if ( i > 0 ) {
             upperBoundMls = dateSettingIndex.get(i - 1);
@@ -113,7 +114,7 @@ public class SettingActivity extends AppCompatActivity {
 
         long lowerBoundMls = 0;
 
-        int i = MyApplication.dateSettingIndex.indexOf(mlsIndex);
+        int i = dateSettingIndex.indexOf(mlsIndex);
 
         if ( i < dateSettingIndex.size() - 1 ) {
             lowerBoundMls = dateSettingIndex.get(i + 1);
@@ -149,13 +150,57 @@ public class SettingActivity extends AppCompatActivity {
             case ADD_SCOPE:
 
                 addScopeBeyond(releasedChild);
+                releasedChild.setBackgroundColor(0);
                 break;
 
+            case DELETE_SCOPE:
+
+                deleteScope(releasedChild);
+                break;
+
+            default:
+
+                draggableLinearLayout.putBack(releasedChild);
+                break;
         }
 
     }
 
+    private static void deleteScope(View releasedChild) {
+
+        MyTextWatcher.setShouldWatch(false);
+
+        int id = releasedChild.getId();
+        DateScope scope = onShowScopeMap.remove(id);
+
+        long mls = stringToMillionSeconds(scope.getRangeValue(), scope.getRangeUnit());
+
+        int removeIndex = dateSettingIndex.indexOf(mls) + 1;
+        dateSettingIndex.remove(mls);
+        mlScopeMap.remove(mls);
+        dateSettingMap.remove(scope.getScopeId());
+        upperBoundTextViewMap.remove(scope.getScopeId());
+        initScopeIndex();
+
+        ViewGroup p = (ViewGroup) releasedChild.getParent();
+        p.removeView(releasedChild);
+
+        MyTextWatcher.removeWatcher(releasedChild);
+
+        LinearLayout nextScopeView = (LinearLayout) draggableLinearLayout.getChildAt(removeIndex);
+        LinearLayout upperScopeView = null;
+
+        if (removeIndex > 1) upperScopeView = (LinearLayout) draggableLinearLayout.getChildAt(removeIndex - 1);
+
+        connectScopeView(nextScopeView, upperScopeView);
+        MyTextWatcher.setShouldWatch(true);
+        setDateSettingChanged(true);
+        DraggableLinearLayout.setLayoutChanged(true);
+    }
+
     private static void addScopeBeyond(View releasedChild) {
+
+        MyTextWatcher.setShouldWatch(false);
 
         LinearLayout parent = (LinearLayout) releasedChild.getParent();
         int addIndex = 1;
@@ -169,41 +214,63 @@ public class SettingActivity extends AppCompatActivity {
             }
         }
 
-        MyTextWatcher.setShouldWatch(false);
-
         LinearLayout newScopeView = getInstance().addScopeView(parent, addIndex);
-        DateScope scope = generateScope(onShowScopeMap.get(releasedChild.getId()), addIndex);
+        LinearLayout lowerScopeView = (LinearLayout) releasedChild;
+        LinearLayout upperScopeView = null;
 
-        if (addIndex == 1) {
+        if (addIndex > 1) {
 
-            TextView preTopUpperBoundTextView = (TextView) ((LinearLayout)((LinearLayout)(parent.getChildAt(2))).getChildAt(0)).getChildAt(3);
-            TextView preTopConnectorTextView = (TextView) ((LinearLayout)((LinearLayout)(parent.getChildAt(2))).getChildAt(0)).getChildAt(2);
-            preTopConnectorTextView.setText("(含)~");
-            String range = scope.getRange();
-            preTopUpperBoundTextView.setText(range);
-            upperBoundMap.put(range, preTopUpperBoundTextView);
+            upperScopeView = (LinearLayout) draggableLinearLayout.getChildAt(addIndex - 1);
         }
 
-        long upperBound = getUpperBound(addIndex);
-        long lowerBound = stringToMillionSeconds(scope.getRangeValue(), scope.getRangeUnit());
+        DateScope newScope = generateScope(onShowScopeMap.get(releasedChild.getId()), addIndex);
 
-        dateSettingMap.put(scope.getScopeId(),scope);
-
+        long newBound = stringToMillionSeconds(newScope.getRangeValue(), newScope.getRangeUnit());
+        dateSettingMap.put(newScope.getScopeId(),newScope);
+        mlScopeMap.put(newBound, newScope);
         initScopeIndex();
-        getInstance().loadScope(lowerBound, upperBound, newScopeView);
+
+        long upperBound = getUpperBoundMls(newScope);
+
+        getInstance().loadScope(newBound, upperBound, newScopeView);
+
+        connectScopeView(lowerScopeView, newScopeView);
+        connectScopeView(newScopeView, upperScopeView);
 
         EditText lEditText = ((EditText)((LinearLayout)(newScopeView.getChildAt(0))).getChildAt(0));
 
         MyTextWatcher.setShouldWatch(true);
+        setDateSettingChanged(true);
         DraggableLinearLayout.setFocus(lEditText);
+        DraggableLinearLayout.setLayoutChanged(true);
     }
 
-    private static long getUpperBound(int addIndex) {
+    private static void connectScopeView(LinearLayout lowerScopeView, LinearLayout upperScopeView) {
 
-        long upperBound = 0;
-        if (addIndex > 1) upperBound = (long) dateSettingIndex.get(addIndex - 1);
+        if (lowerScopeView == null) {
 
-        return upperBound;
+            int lastId = draggableLinearLayout.getChildAt(draggableLinearLayout.getChildCount() - 1).getId();
+            DateScope lastScope = onShowScopeMap.get(lastId);
+            upperBoundTextViewMap.remove(lastScope.getScopeId());
+            return;
+        }
+
+        TextView t = (TextView) ((LinearLayout)(lowerScopeView.getChildAt(0))).getChildAt(3);
+        TextView connector = (TextView) ((LinearLayout)(lowerScopeView.getChildAt(0))).getChildAt(2);
+
+        if (upperScopeView == null) {
+
+            connector.setText("及");
+            t.setText("以上");
+            return;
+        }
+
+        DateScope upperScope = onShowScopeMap.get(upperScopeView.getId());
+        connector.setText("(含)~");
+        t.setText(upperScope.getRange());
+
+        upperBoundTextViewMap.put(upperScope.getScopeId(), t);
+
     }
 
     private static DateScope generateScope(DateScope template, int addIndex) {
@@ -252,8 +319,8 @@ public class SettingActivity extends AppCompatActivity {
         MyApplication.initDatabase(this);
         draggableLinearLayout = findViewById(R.id.date_offset_setting_table);
 
-        initDateSettingView(dateSettingMap);
-
+        initDateSettingView(dateSettingMap.size());
+        initSetting(getDateSetting());
         loadDateSetting();
 
         TextView textView = getSupportActionBar().getCustomView().findViewById(R.id.setting);
@@ -269,22 +336,62 @@ public class SettingActivity extends AppCompatActivity {
                 SettingActivity.this.finish();
             }
         });
+
+        Button setDefaultBt = findViewById(R.id.default_setting);
+        Button saveSettingBt = findViewById(R.id.save_setting);
+
+        setDefaultBt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                setToDefaultDateSetting();
+            }
+        });
+
+        saveSettingBt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                saveDateSetting(new ArrayList(dateSettingMap.values()));
+            }
+        });
     }
 
-    private void initDateSettingView(HashMap<String, DateScope> settingsMap) {
+    private void setToDefaultDateSetting() {
+
+        List<DateScope> scopes = getDefaultDateSetting();
+        initDateSettingView(scopes.size());
+        initSetting(scopes);
+        loadDateSetting();
+        setDateSettingChanged(true);
+    }
+
+    private void initDateSettingView(int scopesCount) {
 
         MyApplication.init();
         MyTextWatcher.clearWatchers();
-        DraggableLinearLayout.setLayoutChanged(true);
 
-        int scopesCount = draggableLinearLayout.getChildCount() - 1;
+        int scopesViewCount = draggableLinearLayout.getChildCount() - 1;
 
-        while (scopesCount < settingsMap.size()) {
+        while (scopesViewCount < scopesCount) {
 
             addScopeView(draggableLinearLayout, null);
-            scopesCount++;
+            scopesViewCount++;
         }
 
+        while (scopesViewCount > scopesCount) {
+
+            deleteScope(draggableLinearLayout.getChildAt(1));
+            scopesViewCount--;
+        }
+
+        DraggableLinearLayout.setLayoutChanged(true);
+
+        if (mlScopeMap != null) mlScopeMap.clear();
+        if (upperBoundTextViewMap != null) upperBoundTextViewMap.clear();
+        if (dateSettingMap != null) dateSettingMap.clear();
+        if (onShowScopeMap != null) onShowScopeMap.clear();
+        if (dateSettingIndex != null) dateSettingIndex.clear();
     }
 
     private LinearLayout addScopeView(LinearLayout rootView, Integer index) {
@@ -359,13 +466,15 @@ public class SettingActivity extends AppCompatActivity {
     }
 
 
-    public static void synchronizeUpperBound(String preRange, DateScope scope) {
+    public static void synchronizeUpperBound(DateScope scope) {
+
+        long mls = stringToMillionSeconds(scope.getRangeValue(), scope.getRangeUnit());
+
+        if (dateSettingIndex.indexOf(mls) == dateSettingIndex.size() - 1) return;
 
         String range = scope.getRange();
-        TextView t = upperBoundMap.get(preRange);
+        TextView t = upperBoundTextViewMap.get(scope.getScopeId());
         t.setText(range);
-        upperBoundMap.remove(preRange);
-        upperBoundMap.put(range, t);
     }
 
     private void loadDateSetting() {
@@ -405,13 +514,10 @@ public class SettingActivity extends AppCompatActivity {
         textViews[3] = (TextView) box[1].getChildAt(1);
         textViews[4] = (TextView) box[2].getChildAt(1);
 
-        assert scope != null;
         String rangeValue = scope.getRangeValue();
         String rangeUnit = scope.getRangeUnit();
         String pOffsetValue = scope.getPromotionOffsetValue();
-        String pOffsetUnit = scope.getPromotionOffsetUnit();
         String eOffsetValue = scope.getExpireOffsetValue();
-        String eOffsetUnit = scope.getExpireOffsetUnit();
         editTexts[0].setText(rangeValue);
         MyTextWatcher.watch(scope, editTexts[0], DateScope.RANGE_VALUE);
 
@@ -422,7 +528,7 @@ public class SettingActivity extends AppCompatActivity {
             textViews[1].setText("(含)~");
             String range1 = scope1.getRange();
             textViews[2].setText(range1);
-            upperBoundMap.put(range1, textViews[2]);
+            upperBoundTextViewMap.put(scope1.getScopeId(), textViews[2]);
 
         } else {
 
@@ -460,12 +566,10 @@ public class SettingActivity extends AppCompatActivity {
 
         String setting = JSON.toJSONString(dateSetting);
         MyDatabaseHelper.saveSetting(DATE_OFFSET_INDEX, setting, MyApplication.sqLiteDatabase);
-        setDateSettingChanged(true);
+        setDateSettingChanged(false);
     }
 
-    public static void initSetting() {
-
-        List<DateScope> dateSetting = getDateSetting();
+    public static void initSetting(List<DateScope> dateSetting) {
 
         for (DateScope s : dateSetting) {
 
@@ -475,7 +579,7 @@ public class SettingActivity extends AppCompatActivity {
         initScopeIndex();
     }
 
-    private static void initScopeIndex() {
+    public static void initScopeIndex() {
 
         if (dateSettingIndex != null) {
             dateSettingIndex.clear();
@@ -493,7 +597,7 @@ public class SettingActivity extends AppCompatActivity {
         Collections.sort(dateSettingIndex,Collections.reverseOrder());
     }
 
-    private static List<DateScope> getDateSetting() {
+    public static List<DateScope> getDateSetting() {
 
         String setting = MyDatabaseHelper.getSetting(DATE_OFFSET_INDEX, MyApplication.sqLiteDatabase);
         List<DateScope> dateSetting;
@@ -511,7 +615,7 @@ public class SettingActivity extends AppCompatActivity {
         return dateSetting;
     }
 
-    private static List<DateScope> getDefaultDateSetting() {
+    public static List<DateScope> getDefaultDateSetting() {
 
         List<DateScope> setting = new ArrayList<>();
         String packageName = MyApplication.getContext().getPackageName();

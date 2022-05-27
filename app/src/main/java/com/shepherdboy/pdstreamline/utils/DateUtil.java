@@ -2,6 +2,9 @@ package com.shepherdboy.pdstreamline.utils;
 
 import androidx.annotation.Nullable;
 
+import com.shepherdboy.pdstreamline.activities.SettingActivity;
+import com.shepherdboy.pdstreamline.beans.DateScope;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -179,87 +182,110 @@ public class DateUtil {
         Calendar calendar = Calendar.getInstance();
 
         calendar.setTime(productDOP);
-        calendar.add(calendar.DATE, -1);
+        calendar.add(Calendar.DATE, -1);
+
+        long mlsEXP = SettingActivity.stringToMillionSeconds(String.valueOf(productEXP), productEXPTimeUnit);
+
+        DateScope scope = getDateScope(mlsEXP);
+        int promotionOffset = Integer.parseInt(scope.getPromotionOffsetValue());
 
         switch (productEXPTimeUnit) {
 
             case "年":
 
                 calendar.add(Calendar.YEAR, productEXP);
-
-                if (productEXP >= 2) {
-
-                    calendar.add(Calendar.DATE, -90);
-
-                } else if (productEXP >= 1) {
-
-                    calendar.add(Calendar.DATE, -60);
-
-                }
+//
+//                if (productEXP >= 2) {
+//
+//                    calendar.add(Calendar.DATE, -90);
+//
+//                } else if (productEXP >= 1) {
+//
+//                    calendar.add(Calendar.DATE, -60);
+//
+//                }
 
             case "月":
 
                 calendar.add(Calendar.MONTH, productEXP);
-
-                if (productEXP >= 24) {
-
-                    calendar.add(Calendar.DATE, -90);
-
-                } else if (productEXP >= 12) {
-
-                    calendar.add(Calendar.DATE, -60);
-
-                } else if (productEXP >= 6) {
-
-                    calendar.add(Calendar.DATE, -30);
-
-                } else {
-
-                    calendar.add(Calendar.DATE, -20);
-
-                }
+//
+//                if (productEXP >= 24) {
+//
+//                    calendar.add(Calendar.DATE, -90);
+//
+//                } else if (productEXP >= 12) {
+//
+//                    calendar.add(Calendar.DATE, -60);
+//
+//                } else if (productEXP >= 6) {
+//
+//                    calendar.add(Calendar.DATE, -30);
+//
+//                } else {
+//
+//                    calendar.add(Calendar.DATE, -20);
+//
+//                }
 
             case "天":
 
                 calendar.add(Calendar.DATE, productEXP);
-
-                if (productEXP >= 730) {
-
-                    calendar.add(Calendar.DATE, -90);
-
-                } else if (productEXP >= 365) {
-
-                    calendar.add(Calendar.DATE, -60);
-
-                } else if (productEXP >= 180) {
-
-                    calendar.add(Calendar.DATE, -30);
-
-                } else if (productEXP >= 90){
-
-                    calendar.add(Calendar.DATE, -20);
-
-                } else if (productEXP >= 30) {
-
-                    calendar.add(Calendar.DATE, -15);
-
-                } else if (productEXP >= 16) {
-
-                    calendar.add(Calendar.DATE, -5);
-
-                } else if (productEXP == 7) {
-
-                    calendar.add(Calendar.DATE, -2);
-
-                } else {
-
-                    calendar.add(Calendar.DATE, -4);
-
-                }
+//
+//                if (productEXP >= 730) {
+//
+//                    calendar.add(Calendar.DATE, -90);
+//
+//                } else if (productEXP >= 365) {
+//
+//                    calendar.add(Calendar.DATE, -60);
+//
+//                } else if (productEXP >= 180) {
+//
+//                    calendar.add(Calendar.DATE, -30);
+//
+//                } else if (productEXP >= 90){
+//
+//                    calendar.add(Calendar.DATE, -20);
+//
+//                } else if (productEXP >= 30) {
+//
+//                    calendar.add(Calendar.DATE, -15);
+//
+//                } else if (productEXP >= 16) {
+//
+//                    calendar.add(Calendar.DATE, -5);
+//
+//                } else if (productEXP == 7) {
+//
+//                    calendar.add(Calendar.DATE, -2);
+//
+//                } else {
+//
+//                    calendar.add(Calendar.DATE, -4);
+//
+//                }
 
         }
 
+        calendar.add(Calendar.DATE, -promotionOffset);
         return calendar.getTime();
+    }
+
+    private static DateScope getDateScope(long mlsEXP) {
+
+        DateScope scope = null;
+        for (int i = 0; i < SettingActivity.dateSettingIndex.size(); i++){
+
+            long lowerBoundIndex = SettingActivity.dateSettingIndex.get(i);
+
+            if (mlsEXP >= lowerBoundIndex) {
+
+                scope = SettingActivity.mlScopeMap.get(lowerBoundIndex);
+                break;
+            }
+        }
+
+        return scope;
     }
 
     // 根据生产日期与保质期计算到期时间
@@ -270,27 +296,34 @@ public class DateUtil {
 
         calendar.setTime(productDOP);
 
-        calendar.add(calendar.DATE, -1);
+        calendar.add(Calendar.DATE, -1);
+
+        long mlsIndex = SettingActivity.stringToMillionSeconds(String.valueOf(productEXP), productEXPTimeUnit);
+
+        DateScope scope = getDateScope(mlsIndex);
+
+        int expireOffset = Integer.parseInt(scope.getExpireOffsetValue());
 
         switch (productEXPTimeUnit) {
 
             case "年":
 
-                calendar.add(calendar.YEAR, productEXP);
+                calendar.add(Calendar.YEAR, productEXP);
                 break;
 
             case "月":
 
-                calendar.add(calendar.MONTH, productEXP);
+                calendar.add(Calendar.MONTH, productEXP);
                 break;
 
             case "天":
 
-                calendar.add(calendar.DATE, productEXP);
+                calendar.add(Calendar.DATE, productEXP);
                 break;
 
         }
 
+        calendar.add(Calendar.DATE, -expireOffset);
         return calendar.getTime();
     }
 

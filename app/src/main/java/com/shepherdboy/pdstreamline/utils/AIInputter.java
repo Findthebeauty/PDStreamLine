@@ -111,7 +111,7 @@ public class AIInputter {
         } else if ("月".equals(productEXPTimeUnit)) {
             calendar.add(calendar.DATE, -(int) ((Integer.parseInt(productEXP) * 31) / 3));
         } else {
-            calendar.add(calendar.DATE, -(int) (Integer.parseInt(productEXP) / 3));
+            calendar.add(calendar.DATE, -(int) (Integer.parseInt(productEXP) / 4));
         }
 
         Date result = DateUtil.getMidnightDate(calendar.getTime());
@@ -167,7 +167,7 @@ public class AIInputter {
     public static void fillTheBlanks(Product product) {
 
         product.setProductName("新商品，请输入商品名");
-        product.setProductEXP("1");
+        product.setProductEXP("7");
         product.setProductEXPTimeUnit("天");
 
     }
@@ -212,12 +212,14 @@ public class AIInputter {
                         return false;
                     }
 
-                    if (EXP == preEXP) {
+                    long mls = SettingActivity.stringToMillionSeconds(information,
+                            MyApplication.currentProduct.getProductEXPTimeUnit());
 
-                        return false;
-                    }
+                    long minMls = SettingActivity.dateSettingIndex.get(SettingActivity.dateSettingIndex.size() - 1);
 
-                    return true;
+                    if (mls < minMls) return false;
+
+                    return EXP != preEXP;
 
                 } catch (Exception e) {
 
@@ -297,7 +299,6 @@ public class AIInputter {
                 DOP = DateUtil.getLastYear(DOP);
 
                 result = DateUtil.typeMach(DOP).substring(0,10);
-
 
             }
 

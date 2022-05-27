@@ -1,8 +1,11 @@
 package com.shepherdboy.pdstreamline.view;
 
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -17,19 +20,18 @@ import com.shepherdboy.pdstreamline.utils.DateUtil;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
 
     public static HashMap<EditText, MyTextWatcher> myTextWatchers = new HashMap<>();
 
-    private int delayCount = 0;
+    private static boolean scheduled = false;
+    private static Handler handler;
+    private static Runnable runnable;
+    private static long timeMillis = 0;
+    private static MyTextWatcher currentWatcher;
+    private static String info;
 
-
-    private boolean scheduled = false;
-    private static Timer timer = new Timer();
-    private TimerTask timerTask;
 
     private EditText watchedEditText;
     private Timestream timestream;
@@ -162,6 +164,24 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
         myTextWatchers.clear();
     }
 
+    public static void removeWatcher(View view) {
+
+        if (view instanceof EditText) {
+
+            removeWatcher((EditText) view);
+            return;
+        }
+
+        if (view instanceof ViewGroup) {
+
+            for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
+
+                View v = ((ViewGroup) view).getChildAt(i);
+                removeWatcher(v);
+            }
+        }
+    }
+
     public static void removeWatcher(EditText editText) {
 
         MyTextWatcher myTextWatcher;
@@ -170,6 +190,7 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
 
             myTextWatcher = myTextWatchers.remove(editText);
             myTextWatcher.watchedEditText.removeTextChangedListener(myTextWatcher);
+            myTextWatcher = null;
         }
     }
 
@@ -214,13 +235,16 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
 
             if (!preInf.equals(currentInf)) {
 
-                if (timestream != null) {
+                if (MyApplication.activityIndex == MyApplication.SETTING_ACTIVITY) {
 
-                    MyApplication.afterInfoChanged(currentInf, watchedEditText, timestream, filedIndex);
+                    MyApplication.afterInfoChanged(watchedEditText, scope, filedIndex, currentInf);
 
                 } else {
 
-                    MyApplication.afterInfoChanged(watchedEditText, scope, filedIndex, currentInf);
+                    currentWatcher = this;
+                    info = currentInf;
+                    timeMillis = System.currentTimeMillis();
+                    startAutoCommit();
                 }
 
             }
@@ -228,13 +252,55 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
 
     }
 
-    public void setScheduled(boolean scheduled) {
-        this.scheduled = scheduled;
+    public static void setScheduled(boolean scheduled) {
+        MyTextWatcher.scheduled = scheduled;
     }
 
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
 
 
+    }
+
+    public static void startAutoCommit() {
+
+        if (scheduled) return;
+
+        handler = new Handler();
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+
+                long interval = System.currentTimeMillis() - timeMillis;
+
+                if (interval >= 1234) {
+
+                    Log.d("autoCommit", "I'm in!" + interval);
+                    MyApplication.afterInfoChanged(info, currentWatcher.watchedEditText, currentWatcher.timestream,
+                            currentWatcher.filedIndex);
+
+                    handler.postDelayed(this, 1000000);
+                    stopAutoCommit();
+                    return;
+                }
+
+                Log.d("autoCommit", "NormalTick" + interval);
+                handler.postDelayed(this, 10);
+            }
+        };
+
+        handler.postDelayed(runnable, 10);
+        setScheduled(true);
+    }
+
+    public static void stopAutoCommit() {
+
+        if (handler != null) {
+
+            handler.removeCallbacks(runnable);
+            handler = null;
+            runnable = null;
+            setScheduled(false);
+        }
     }
 }

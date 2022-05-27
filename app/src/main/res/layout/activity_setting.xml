@@ -106,6 +106,24 @@
 
             </com.shepherdboy.pdstreamline.view.DraggableLinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <Button
+                android:id="@+id/default_setting"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="默认设置"/>
+            <Button
+                android:id="@+id/save_setting"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="保存设置"/>
+        </LinearLayout>
+
     </LinearLayout>
 
 </ScrollView>
