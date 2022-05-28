@@ -4,7 +4,7 @@ import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.setTimeStreamViewOriginalBackgroundColor;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
-import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.newPromotionTimestreams;
+import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.basket;
 import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.timestreamRestoreHandler;
 import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.timestreamRestoreTask;
 import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.timestreamRestoreTimer;
@@ -75,7 +75,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
             };
         }
 
-        timestreamRestoreTimer.schedule(timestreamRestoreTask, (long) (1.5 * 60 * 60 * 1000), 1);
+        timestreamRestoreTimer.schedule(timestreamRestoreTask, 6 * 60 * 60 * 1000, 1);
         timestreamRestoreTask = null;
     }
 
@@ -113,17 +113,20 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
 //                todo 移除timestreamView，从possiblePromotionTimestream表中移除timestream，
 //                 将timestream添加到newPromotionTimestreams中
-                rmTs = MyApplication.removeTimestream((LinearLayout) releasedChild);
-                newPromotionTimestreams.add(rmTs);
+                rmTs = MyApplication.unloadTimestream((LinearLayout) releasedChild);
+                rmTs.setInBasket(true);
+                MyDatabaseHelper.PDInfoWrapper.updateInfo(MyApplication.sqLiteDatabase, rmTs,
+                        MyDatabaseHelper.UPDATE_BASKET);
 
+                basket.add(rmTs);
                 break;
 
             case DELETE:
 
 //              todo 移除timestreamView，从possiblePromotionTimestream表中移除timestream
 
-                rmTs = MyApplication.removeTimestream((LinearLayout) releasedChild);
-
+                rmTs = MyApplication.unloadTimestream((LinearLayout) releasedChild);
+                MyDatabaseHelper.PDInfoWrapper.deleteTimestream(MyApplication.sqLiteDatabase, rmTs.getId());
                 break;
 
             case 0:
@@ -134,7 +137,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
         if (onShowTimeStreamsHashMap.size() == 0) {
 
-            for(Timestream t : newPromotionTimestreams) {
+            for(Timestream t : basket) {
 
                 Log.d("I'm in!", t.toString());
             }
@@ -200,7 +203,9 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
         possiblePromotionTimestreams = MyDatabaseHelper.PDInfoWrapper.getStaleTimestreams(sqLiteDatabase,
                 MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM);
 
-        if (possiblePromotionTimestreams.size() == 0) {
+        int notInBasket = sortTimestream(possiblePromotionTimestreams);
+
+        if (notInBasket == 0) {
 
             Toast.makeText(this,"所有临期商品已捡出!", Toast.LENGTH_LONG).show();
 //            this.startActivity(new Intent(this, MainActivity.class));
@@ -208,11 +213,28 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
             return;
         }
 
-        initTimestreamsView(possiblePromotionTimestreams);
+        initTimestreamsView(notInBasket);
 
         loadTimestreams(possiblePromotionTimestreams);
 
         cancelTimerTask();
+    }
+
+    /**
+     * 将in_basket为true即已经检出到篮子里的timestream放入basket容器中，返回未放入篮子中的timestream数量
+     * @param possiblePromotionTimestreams 所有可能临期的timestream，包括已经放入篮子中的和货架上的
+     * @return 未放入篮子即还在货架上的timestream
+     */
+    private int sortTimestream(LinkedList<Timestream> possiblePromotionTimestreams) {
+
+        basket.clear();
+
+        for (Timestream t : possiblePromotionTimestreams) {
+
+            if (t.isInBasket()) basket.add(t);
+        }
+
+        return possiblePromotionTimestreams.size() - basket.size();
     }
 
     /**将timestreams链表中的所有timestream加载到预先生成的timestreamView中*/
@@ -222,6 +244,8 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
         LinearLayout tsView;
 
         for (Timestream timestream : timestreams) {
+
+            if (timestream.isInBasket()) continue;
 
             tsView = (LinearLayout) draggableLinearLayout.getChildAt(childViewIndex);
             loadTimestream(timestream, tsView);
@@ -258,8 +282,11 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
     }
 
-    /**根据timestream的数量预先生成timestreamView*/
-    private static void initTimestreamsView(LinkedList<Timestream> timestreams) {
+    /**根据timestream的数量预先生成timestreamView
+     * @param timestreamsCount timestreams数量
+     *
+     * */
+    private static void initTimestreamsView(int timestreamsCount) {
 
         MyApplication.init();
         MyTextWatcher.clearWatchers();
@@ -267,7 +294,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
         int tsViewCount = draggableLinearLayout.getChildCount() - 1;
 
-        while (tsViewCount < timestreams.size()) {
+        while (tsViewCount < timestreamsCount) {
 
             addTimestreamView(draggableLinearLayout);
             tsViewCount++;

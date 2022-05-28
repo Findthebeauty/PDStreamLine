@@ -25,6 +25,7 @@ import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Timestream;
+import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.utils.ScanEventReceiver;
@@ -266,9 +267,11 @@ public class PDInfoActivity extends AppCompatActivity {
 
             case REMOVE_TIMESTREAM_LAYOUT:
 
-                Timestream rmTs = MyApplication.removeTimestream((LinearLayout) releasedChild);
-                currentProduct.getTimeStreams().remove(rmTs.getId());
+                Timestream rmTs = MyApplication.unloadTimestream((LinearLayout) releasedChild);
 
+                MyDatabaseHelper.PDInfoWrapper.deleteTimestream(MyApplication.sqLiteDatabase, rmTs.getId());
+
+                currentProduct.getTimeStreams().remove(rmTs.getId());
 
                 if (originalPositionHashMap.size() < 1) {
 

@@ -116,6 +116,7 @@ public class MyApplication extends Application {
         while (!linkedList.isEmpty()) {
 
             Timestream t = (Timestream) linkedList.remove();
+            t.setInBasket(false);
             MyDatabaseHelper.PDInfoWrapper.updateInfo(sqLiteDatabase, t, MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME);
         }
     }
@@ -591,12 +592,9 @@ public class MyApplication extends Application {
         }
     }
 
-    public static Timestream removeTimestream(LinearLayout releasedChild) {
-
+    public static Timestream unloadTimestream(LinearLayout releasedChild) {
 
         Timestream mT = onShowTimeStreamsHashMap.remove(releasedChild.getId());
-
-        MyDatabaseHelper.PDInfoWrapper.deleteProductDOP(MyApplication.sqLiteDatabase, mT.getId());
 
         originalPositionHashMap.remove(releasedChild.getId());
 

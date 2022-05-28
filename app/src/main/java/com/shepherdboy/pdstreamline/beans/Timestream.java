@@ -45,7 +45,17 @@ public class Timestream {
 
     private String siblingPromotionId;
 
+    private boolean inBasket;
+
     private boolean promoting = false;
+
+    public boolean isInBasket() {
+        return inBasket;
+    }
+
+    public void setInBasket(boolean inBasket) {
+        this.inBasket = inBasket;
+    }
 
     // todo bug 正常日期有几率显示颜色为过期灰
     public int getTimeStreamStateCode() {

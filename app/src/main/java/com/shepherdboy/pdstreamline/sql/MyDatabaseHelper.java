@@ -37,10 +37,13 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
     public static final int NEW_TIMESTREAM = 5;
 
+    public static final int UPDATE_BASKET = 6;
+
     public static final String PROMOTION_DATE_SELECTION = "product_promotion_date";
 
     public static final String EXPIRE_DATE_SELECTION = "product_expire_date";
 
+    public static final String IN_BASKET_SELECTION = "in_basket";
 
     public static final String PRODUCT_INFO_TABLE_NAME = "product_inf";
 
@@ -121,6 +124,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "product_expire_date text," +
             "product_coordinate text," +
             "product_inventory text," +
+            "in_basket text default 'false'," +
             "unique(product_code,product_dop))";
 
     public static final String CREATE_TABLE_PROMOTION_TIMESTREAM = "create table promotion_timestream(" +
@@ -447,6 +451,9 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
                     tempTs.setProductName(getProductName(tempTs.getProductCode(), sqLiteDatabase));
 
+                    if (intentCode == POSSIBLE_PROMOTION_TIMESTREAM)
+                        tempTs.setInBasket(Boolean.parseBoolean(cursor.getString(7)));
+
                     tsLList.add(tempTs);
                 } while (cursor.moveToNext());
             }
@@ -468,7 +475,8 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             String sql;
             String deleteSql;
 
-            sql = "replace into " + POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME + " select " +
+            sql = "replace into " + POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME + "(" +
+                    POSSIBLE_PROMOTION_TIMESTREAM_COLUMNS + ") select " +
                     POSSIBLE_PROMOTION_TIMESTREAM_COLUMNS +" from " +
                     FRESH_TIMESTREAM_TABLE_NAME + " where " + PROMOTION_DATE_SELECTION + "<= '" + date + "'";
             deleteSql = "delete from " + FRESH_TIMESTREAM_TABLE_NAME + " where " + PROMOTION_DATE_SELECTION + "<='" + date + "'";
@@ -541,6 +549,13 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
                     temp.setProductCoordinate(cursor.getString(5));
                     temp.setProductInventory(cursor.getString(6));
+
+                    if (tableName.equals(POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME)) {
+
+                        temp.setInBasket(Boolean.parseBoolean(cursor.getString(7)));
+                    }
+
+                    temp.setUpdated(true);
                     temp.setPromoting(isPromoting);
 
                     timestreamHashMap.put(temp.getId(), temp);
@@ -587,6 +602,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             String productInventory = timestream.getProductInventory();
             String discountRate = timestream.getDiscountRate();
             String siblingPromotionId = timestream.getSiblingPromotionId();
+            String inBasket = String.valueOf(timestream.isInBasket());
 
             String sql = null;
 
@@ -617,6 +633,12 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                             "','" + productCoordinate + "','" + productInventory + "')";
                     break;
 
+                case UPDATE_BASKET:
+
+                    sql = "update " + POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME + " set " + IN_BASKET_SELECTION +
+                            "='" + inBasket + "' where id='" + id +"'";
+                    break;
+
                 default:
                     break;
 
@@ -642,7 +664,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
             if ("".equals(productDOP)) {
 
-                deleteProductDOP(sqLiteDatabase, id);
+                deleteTimestream(sqLiteDatabase, id);
             }
 
 
@@ -656,7 +678,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
         }
 
-        public static void deleteProductDOP(SQLiteDatabase sqLiteDatabase, String timeStreamId) {
+        public static void deleteTimestream(SQLiteDatabase sqLiteDatabase, String timeStreamId) {
 
             String sql1 = "delete from " + FRESH_TIMESTREAM_TABLE_NAME + " where " +
                     "id='" + timeStreamId + "'";

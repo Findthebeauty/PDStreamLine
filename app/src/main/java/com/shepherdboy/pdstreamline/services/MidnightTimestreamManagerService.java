@@ -20,14 +20,14 @@ import java.util.TimerTask;
 public class MidnightTimestreamManagerService extends Service {
 
     public static Timer midnightTimer;
-    public static LinkedList<Timestream> newPromotionTimestreams = new LinkedList<>();
+    public static LinkedList<Timestream> basket = new LinkedList<>();
 
     public static Timer timestreamRestoreTimer;
     public static TimerTask timestreamRestoreTask;
     public static Handler timestreamRestoreHandler;
 
-    private int inTime = 60 * 1000;
-    private int periodTime = 10 * 1000;
+    private int inTime = 60 * 60 * 1000;
+    private int periodTime = 60 * 60 * 1000;
 
     public MidnightTimestreamManagerService() {
 
@@ -55,7 +55,7 @@ public class MidnightTimestreamManagerService extends Service {
             @Override
             public void handleMessage(@NonNull Message msg) {
 
-                MyApplication.restoreTimestreams(MidnightTimestreamManagerService.newPromotionTimestreams);
+                MyApplication.restoreTimestreams(MidnightTimestreamManagerService.basket);
                 timestreamRestoreTimer.cancel();
                 super.handleMessage(msg);
             }

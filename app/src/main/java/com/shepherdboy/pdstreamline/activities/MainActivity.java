@@ -6,8 +6,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
 
@@ -27,8 +25,6 @@ import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 
 public class MainActivity extends AppCompatActivity {
-
-    public static Handler mainHandler;
 
     //将未处理一场打印到界面上，全局
     final Thread.UncaughtExceptionHandler defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
@@ -65,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
         MyApplication.initActionBar(getSupportActionBar());
 
         MyApplication.setContext(this);
-        mainHandler = new Handler(Looper.getMainLooper());
 
         databasePath = this.getFilesDir().getPath().replaceAll("files", "databases/ProductDateStreamline.db");
 
