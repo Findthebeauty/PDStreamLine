@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 
 import com.shepherdboy.pdstreamline.MyApplication;
+import com.shepherdboy.pdstreamline.activities.SettingActivity;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
@@ -18,9 +19,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.channels.FileChannel;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 
 public class MyDatabaseHelper extends SQLiteOpenHelper {
@@ -71,7 +75,8 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "product_promotion_date,product_expire_date,product_coordinate,product_inventory";
 
     public static final String POSSIBLE_EXPIRED_TIMESTREAM_COLUMNS = "id,product_code,product_dop," +
-            "product_promotion_date,product_expire_date,product_coordinate,product_inventory";
+            "product_promotion_date,product_expire_date,product_coordinate,product_inventory," +
+            "product_discount_rate,product_buy_specs,product_giveaway_specs,sibling_promotion_id";
 
     public static final String PROMOTION_TIMESTREAM_COLUMNS = "id,product_code,product_dop," +
             "product_promotion_date,product_expire_date,product_coordinate,product_inventory," +
@@ -141,13 +146,17 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "sibling_promotion_id text)";
 
     public static final String CREATE_TABLE_POSSIBLE_EXPIRED_TIMESTREAM = "create table possible_expired_timestream(" +
-            "promotion_id text primary key," +
+            "id text primary key," +
             "product_code text," +
             "product_dop text," +
             "product_promotion_date text," +
             "product_expire_date text," +
             "product_coordinate text," +
-            "product_inventory text)";
+            "product_inventory text," +
+            "product_discount_rate text," +
+            "product_buy_specs text," +
+            "product_giveaway_specs text," +
+            "sibling_promotion_id text)";
 
     public static final String CREATE_TABLE_PROMOTION_HISTORY = "create table promotion_history(" +
             "promotion_id text primary key," +
@@ -156,10 +165,9 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "product_promotion_date text," +
             "product_expire_date text," +
             "product_coordinate text," +
-            "product_exact_promotion_inventory text," +
+            "product_inventory text," +
             "product_discount_rate text," +
-            "sibling_promotion_id text," +
-            "product_exact_promotion_date text)";
+            "sibling_promotion_id text)";
 
     public static final String CREATE_TABLE_OFF_SHELVES_HISTORY = "create table off_shevles_history(" +
             "id text primary key," +
@@ -442,7 +450,9 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                         tempTs.setProductDOP(DateUtil.typeMach(cursor.getString(2)));
                         tempTs.setProductPromotionDate(DateUtil.typeMach(cursor.getString(3)));
                         tempTs.setProductExpireDate(DateUtil.typeMach(cursor.getString(4)));
+
                     } catch (ParseException e) {
+
                         e.printStackTrace();
                     }
 
@@ -451,8 +461,21 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
                     tempTs.setProductName(getProductName(tempTs.getProductCode(), sqLiteDatabase));
 
-                    if (intentCode == POSSIBLE_PROMOTION_TIMESTREAM)
-                        tempTs.setInBasket(Boolean.parseBoolean(cursor.getString(7)));
+                    switch (intentCode) {
+
+                        case POSSIBLE_PROMOTION_TIMESTREAM:
+
+                            tempTs.setInBasket(Boolean.parseBoolean(cursor.getString(7)));
+                            break;
+
+                        case POSSIBLE_EXPIRED_TIMESTREAM:
+
+                            tempTs.setDiscountRate(cursor.getString(7));
+                            tempTs.setBuySpecs(cursor.getString(8));
+                            tempTs.setGiveawaySpecs(cursor.getString(9));
+                            tempTs.setSiblingPromotionId(cursor.getString(10));
+                            break;
+                    }
 
                     tsLList.add(tempTs);
                 } while (cursor.moveToNext());
@@ -468,7 +491,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
         /**
          * @param sqLiteDatabase
-         * @param date
+         * @param date 当前日期
          */
         public static void getAndMoveTimestreamByDate(SQLiteDatabase sqLiteDatabase, String date) {
 
@@ -483,8 +506,9 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             sqLiteDatabase.execSQL(sql);
             sqLiteDatabase.execSQL(deleteSql);
 
-            sql = "replace into " + POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME + " select " +
-                    POSSIBLE_EXPIRED_TIMESTREAM_COLUMNS +" from " +
+            sql = "replace into " + POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME + "(" +
+                    POSSIBLE_PROMOTION_TIMESTREAM_COLUMNS + ") select " +
+                    POSSIBLE_PROMOTION_TIMESTREAM_COLUMNS +" from " +
                     POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME + " where " + EXPIRE_DATE_SELECTION + "<'" + date + "'";
             deleteSql = "delete from " + POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME + " where " + EXPIRE_DATE_SELECTION + "<'" + date + "'";
             sqLiteDatabase.execSQL(sql);
@@ -505,6 +529,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             queryAndGenerateTimestream(product, sqLiteDatabase, timestreamHashMap, FRESH_TIMESTREAM_TABLE_NAME);
             queryAndGenerateTimestream(product, sqLiteDatabase, timestreamHashMap, POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME);
             queryAndGenerateTimestream(product, sqLiteDatabase, timestreamHashMap, PROMOTION_TIMESTREAM_TABLE_NAME);
+            queryAndGenerateTimestream(product, sqLiteDatabase, timestreamHashMap, POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME);
 
             if (timestreamHashMap.size() == 0) {
 
@@ -523,7 +548,8 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             cursor = query(sqLiteDatabase, tableName,
                     new String[]{ "*" }, "product_code=?", new String[]{ product.getProductCode() });
 
-            boolean isPromoting = Objects.equals(tableName, PROMOTION_TIMESTREAM_TABLE_NAME);
+            boolean isPromoting = Objects.equals(tableName, PROMOTION_TIMESTREAM_TABLE_NAME) ||
+                    Objects.equals(tableName, POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME);
 
             Timestream temp;
 
@@ -661,20 +687,44 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             String productExpireDate = DateUtil.typeMach(timestream.getProductExpireDate());
             String productCoordinate = timestream.getProductCoordinate();
             String productInventory = timestream.getProductInventory();
+            String productDiscountRate = timestream.getDiscountRate();
+            String productBuySpecs = timestream.getBuySpecs();
+            String productGiveawaySpecs = timestream.getGiveawaySpecs();
+            String siblingPromotionId = timestream.getSiblingPromotionId();
 
-            if ("".equals(productDOP)) {
+            deleteTimestream(sqLiteDatabase, id);
 
-                deleteTimestream(sqLiteDatabase, id);
+            String sql;
+
+            switch (tableName) {
+
+                case FRESH_TIMESTREAM_TABLE_NAME:
+                case POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME:
+
+                    sql = "insert into " + tableName + "(" +
+                            FRESH_TIMESTREAM_COLUMNS + ") " + "values " + "('" + id + "','" + productCode +
+                            "','" + productDOP + "','" + productPromotionDate + "','" + productExpireDate +
+                            "','" + productCoordinate + "','" + productInventory + "')";
+
+                    sqLiteDatabase.execSQL(sql);
+                    timestream.setUpdated(true);
+                    break;
+
+                case PROMOTION_TIMESTREAM_TABLE_NAME:
+                case POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME:
+
+                    sql = "insert into " + tableName + "(" +
+                            PROMOTION_TIMESTREAM_COLUMNS + ") " + "values " + "('" + id + "','" + productCode +
+                            "','" + productDOP + "','" + productPromotionDate + "','" + productExpireDate +
+                            "','" + productCoordinate + "','" + productInventory + "','" + productDiscountRate +
+                            "','" + productBuySpecs +"','" + productGiveawaySpecs + "','" + siblingPromotionId + "')";
+
+                    sqLiteDatabase.execSQL(sql);
+                    timestream.setUpdated(true);
+                    break;
+
             }
 
-
-            String sql = "insert or replace into " + tableName + "(" +
-                    FRESH_TIMESTREAM_COLUMNS + ") " + "values " + "('" + id + "','" + productCode +
-                    "','" + productDOP + "','" + productPromotionDate + "','" + productExpireDate +
-                    "','" + productCoordinate + "','" + productInventory + "')";
-
-            sqLiteDatabase.execSQL(sql);
-            timestream.setUpdated(true);
 
         }
 
@@ -686,12 +736,116 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                     "id='" + timeStreamId + "'";
             String sql3 = "delete from " + PROMOTION_TIMESTREAM_TABLE_NAME + " where " +
                     "id='" + timeStreamId + "'";
+            String sql4 = "delete from " + POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME + " where " +
+                    "id='" + timeStreamId + "'";
 
             sqLiteDatabase.execSQL(sql1);
             sqLiteDatabase.execSQL(sql2);
             sqLiteDatabase.execSQL(sql3);
+            sqLiteDatabase.execSQL(sql4);
 
         }
 
+        public static HashMap<String, Product> getAllProduct() {
+
+            HashMap<String, Product> r = new HashMap<>();
+
+            Cursor cursor = query(MyApplication.sqLiteDatabase, PRODUCT_INFO_TABLE_NAME,
+                    new String[]{"product_code", "product_exp", "product_exp_time_unit"},
+                    null, null);
+
+            if (!cursor.moveToFirst()) return r;
+
+            do {
+
+                Product p = new Product();
+                p.setProductCode(cursor.getString(0));
+                p.setProductEXP(cursor.getString(1));
+                p.setProductEXPTimeUnit(cursor.getString(2));
+                r.put(p.getProductCode(),p);
+
+            } while ( cursor.moveToNext());
+
+            return r;
+        }
+
+        public static void truncate(String tableName) {
+
+            MyApplication.sqLiteDatabase.execSQL("delete from " + tableName);
+        }
+
+        /**
+         * @param timestreamState
+         * SettingActivity.TIMESTREAM_IN_PROMOTING,
+         * SettingActivity.TIMESTREAM_NOT_IN_PROMOTING
+         * @return ArrayList促销中的所有timestream，或者未促销的所有timestream
+         */
+        public static List<Timestream> getAllTimestreams(int timestreamState) {
+
+            ArrayList<Timestream> list = new ArrayList<>();
+            Cursor cursor;
+
+            switch (timestreamState) {
+
+                case SettingActivity.TIMESTREAM_IN_PROMOTION:
+
+                    cursor = query(MyApplication.sqLiteDatabase,
+                            POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME,new String[]{"*"}, null, null);
+                    generateAndAppendTimestream(list, cursor, timestreamState);
+
+                    cursor = query(MyApplication.sqLiteDatabase,
+                            PROMOTION_TIMESTREAM_TABLE_NAME,new String[]{"*"}, null, null);
+                    generateAndAppendTimestream(list, cursor, timestreamState);
+                    return list;
+
+                case SettingActivity.TIMESTREAM_NOT_IN_PROMOTION:
+
+                    cursor = query(MyApplication.sqLiteDatabase,
+                            POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME,new String[]{"*"}, null, null);
+                    generateAndAppendTimestream(list, cursor, timestreamState);
+
+                    cursor = query(MyApplication.sqLiteDatabase,
+                            FRESH_TIMESTREAM_TABLE_NAME,new String[]{"*"}, null, null);
+                    generateAndAppendTimestream(list, cursor, timestreamState);
+
+                    return list;
+            }
+            return list;
+        }
+
+        private static void generateAndAppendTimestream(ArrayList<Timestream> list, Cursor cursor, int timestreamState) {
+
+            if (!cursor.moveToFirst()) return;
+
+            do {
+
+                Timestream t = new Timestream();
+
+                t.setId(cursor.getString(0));
+                t.setProductCode(cursor.getString(1));
+
+                try {
+                    t.setProductDOP(DateUtil.typeMach(cursor.getString(2)));
+                    t.setProductPromotionDate(DateUtil.typeMach(cursor.getString(3)));
+                    t.setProductExpireDate(DateUtil.typeMach(cursor.getString(4)));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                t.setProductCoordinate(cursor.getString(5));
+                t.setProductInventory(cursor.getString(6));
+
+                if (timestreamState == SettingActivity.TIMESTREAM_IN_PROMOTION) {
+
+                    t.setDiscountRate(cursor.getString(7));
+                    t.setBuySpecs(cursor.getString(8));
+                    t.setGiveawaySpecs(cursor.getString(9));
+                    t.setSiblingPromotionId(cursor.getString(10));
+                }
+
+                list.add(t);
+
+            } while (cursor.moveToNext());
+
+        }
     }
 }

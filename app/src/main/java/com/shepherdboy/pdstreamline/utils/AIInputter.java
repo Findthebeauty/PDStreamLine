@@ -167,7 +167,9 @@ public class AIInputter {
     public static void fillTheBlanks(Product product) {
 
         product.setProductName("新商品，请输入商品名");
-        product.setProductEXP("7");
+
+        DateScope scope = SettingActivity.mlScopeMap.get(SettingActivity.dateSettingIndex.get(SettingActivity.dateSettingIndex.size() - 1));
+        product.setProductEXP(scope.getRangeValue());
         product.setProductEXPTimeUnit("天");
 
     }

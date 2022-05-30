@@ -61,6 +61,13 @@ public class PDInfoActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+
+        draggableLinearLayout = findViewById(R.id.parent);
+        super.onStart();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pdinfo);
@@ -86,6 +93,8 @@ public class PDInfoActivity extends AppCompatActivity {
         });
 
     }
+
+
 
     public static void loadProduct(Product product) {
 

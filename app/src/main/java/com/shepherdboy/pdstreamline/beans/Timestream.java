@@ -9,6 +9,12 @@ import java.util.UUID;
 
 public class Timestream {
 
+    public static final int FRESH = 0;
+
+    public static final int CLOSE_TO_EXPIRE = 1;
+
+    public static final int EXPIRED = -1;
+
     private String id = null;
 
     public String getId() {
@@ -60,23 +66,20 @@ public class Timestream {
     // todo bug 正常日期有几率显示颜色为过期灰
     public int getTimeStreamStateCode() {
 
-        if (productExpireDate == null) {
-
-            return 0;
-        }
+        if (productExpireDate == null) return FRESH;
 
         if (productExpireDate.before(DateUtil.getNow()) || productExpireDate.equals(DateUtil.getNow())) {
 
-            return -1;
+            return EXPIRED;
         }
 
         if (productPromotionDate.before(DateUtil.getNow()) || productPromotionDate.equals(DateUtil.getNow())) {
 
-            return 1;
+            return CLOSE_TO_EXPIRE;
 
         }
 
-        return 0;
+        return FRESH;
     }
 
     public String getBoundLayoutId() {

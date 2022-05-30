@@ -125,17 +125,36 @@ public class MyApplication extends Application {
 
         while (!linkedList.isEmpty()) {
 
-            Object view = linkedList.remove();
+            Object bean = linkedList.remove();
 
-            if (view instanceof Product) {
+            if (bean instanceof Product) {
 
-                MyDatabaseHelper.PDInfoWrapper.updateInfo(sqLiteDatabase, (Product) view);
+                MyDatabaseHelper.PDInfoWrapper.updateInfo(sqLiteDatabase, (Product) bean);
 
             }
 
-            if (view instanceof Timestream) {
+            if (bean instanceof Timestream) {
 
-                MyDatabaseHelper.PDInfoWrapper.updateInfo(sqLiteDatabase, (Timestream) view, MyDatabaseHelper.FRESH_TIMESTREAM_TABLE_NAME);
+                int state = ((Timestream) bean).getTimeStreamStateCode();
+
+                switch (state) {
+
+                    case Timestream.FRESH:
+
+                        MyDatabaseHelper.PDInfoWrapper.updateInfo(sqLiteDatabase, (Timestream) bean, MyDatabaseHelper.FRESH_TIMESTREAM_TABLE_NAME);
+                        break;
+
+                    case Timestream.CLOSE_TO_EXPIRE:
+
+                        MyDatabaseHelper.PDInfoWrapper.updateInfo(sqLiteDatabase, (Timestream) bean, MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME);
+                        break;
+
+                    case Timestream.EXPIRED:
+
+                        MyDatabaseHelper.PDInfoWrapper.updateInfo(sqLiteDatabase, (Timestream) bean, MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME);
+                        break;
+                }
+
 
             }
 
@@ -570,7 +589,6 @@ public class MyApplication extends Application {
         setTimeStreamViewOriginalBackgroundColor(timestream);
 
         timestream.setUpdated(false);
-
     }
 
     public static void onViewPositionChanged(View changedView, float horizontalDistance, float verticalDistance) {

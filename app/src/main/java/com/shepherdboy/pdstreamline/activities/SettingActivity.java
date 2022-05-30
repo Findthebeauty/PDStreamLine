@@ -27,6 +27,8 @@ import com.alibaba.fastjson.TypeReference;
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.DateScope;
+import com.shepherdboy.pdstreamline.beans.Product;
+import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
@@ -60,6 +62,9 @@ public class SettingActivity extends AppCompatActivity {
     private final TextView[] textViews = new TextView[5];
     private final EditText[] editTexts = new EditText[3];
     private final LinearLayout[] box = new LinearLayout[3];
+
+    public static final int TIMESTREAM_IN_PROMOTION = 3;
+    public static final int TIMESTREAM_NOT_IN_PROMOTION = 4;
 
 
     private static boolean dateSettingChanged = false;
@@ -562,11 +567,64 @@ public class SettingActivity extends AppCompatActivity {
         super.onPause();
     }
 
+
     private static void saveDateSetting(List<DateScope> dateSetting) {
+
+        applyAllSetting();
 
         String setting = JSON.toJSONString(dateSetting);
         MyDatabaseHelper.saveSetting(DATE_OFFSET_INDEX, setting, MyApplication.sqLiteDatabase);
         setDateSettingChanged(false);
+    }
+
+    /**
+     * 根据新日期设置更新所有商品临期以及下架日期
+     */
+    private static void applyAllSetting() {
+
+        if(!isDateSettingChanged()) return;
+
+        HashMap<String, Product> pdMap = MyDatabaseHelper.PDInfoWrapper.getAllProduct();
+
+        List<Timestream> ts = MyDatabaseHelper.PDInfoWrapper.getAllTimestreams(TIMESTREAM_IN_PROMOTION);
+        applySetting(pdMap, ts, TIMESTREAM_IN_PROMOTION);
+        MyDatabaseHelper.PDInfoWrapper.truncate(MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME);
+
+        List<Timestream> ts1 = MyDatabaseHelper.PDInfoWrapper.getAllTimestreams(TIMESTREAM_NOT_IN_PROMOTION);
+        applySetting(pdMap, ts1, TIMESTREAM_NOT_IN_PROMOTION);
+        MyDatabaseHelper.PDInfoWrapper.truncate(MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME);
+    }
+
+    private static void applySetting(HashMap<String, Product> pdMap, List<Timestream> ts, int timestreamState) {
+
+        for (Timestream t : ts) {
+
+            Product p = pdMap.get(t.getProductCode());
+            t.setProductPromotionDate(DateUtil.calculatePromotionDate(
+                    t.getProductDOP(), Integer.parseInt(p.getProductEXP()),p.getProductEXPTimeUnit()
+            ));
+            t.setProductExpireDate(DateUtil.calculateProductExpireDate(
+                    t.getProductDOP(), Integer.parseInt(p.getProductEXP()),p.getProductEXPTimeUnit()
+            ));
+
+            switch (timestreamState) {
+
+                case TIMESTREAM_IN_PROMOTION:
+
+                    MyDatabaseHelper.PDInfoWrapper.updateInfo(MyApplication.sqLiteDatabase,
+                            t, MyDatabaseHelper.PROMOTION_TIMESTREAM_TABLE_NAME);
+                    break;
+
+                case TIMESTREAM_NOT_IN_PROMOTION:
+
+                    MyDatabaseHelper.PDInfoWrapper.updateInfo(MyApplication.sqLiteDatabase,
+                            t, MyDatabaseHelper.FRESH_TIMESTREAM_TABLE_NAME);
+                    break;
+
+            }
+
+        }
+
     }
 
     public static void initSetting(List<DateScope> dateSetting) {
