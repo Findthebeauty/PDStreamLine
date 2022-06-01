@@ -8,7 +8,6 @@
     android:orientation="vertical"
     app:verticalDraggable="true"
     app:horizontalDraggable="false"
-    app:activityIndex="@integer/promotion_timestream_activity"
     tools:context=".activities.PromotionActivity">
 
     <LinearLayout
@@ -25,7 +24,6 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:orientation="vertical"
-        app:activityIndex="@integer/promotion_timestream_activity"
         app:verticalDraggable="false"
         app:horizontalDraggable="true">
 

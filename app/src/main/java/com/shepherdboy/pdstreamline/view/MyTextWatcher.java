@@ -228,7 +228,6 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
     @Override
     public void afterTextChanged(Editable s) {
 
-
         if (shouldWatch) {
 
             currentInf = s.toString().trim();
@@ -240,6 +239,16 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
                     MyApplication.afterInfoChanged(watchedEditText, scope, filedIndex, currentInf);
 
                 } else {
+
+                    if (filedIndex == MyApplication.TIMESTREAM_DOP && currentInf.length() == 4) {
+
+                        MyApplication.afterInfoChanged(currentInf, watchedEditText, timestream,
+                                filedIndex);
+
+                        stopAutoCommit();
+                        return;
+
+                    }
 
                     currentWatcher = this;
                     info = currentInf;

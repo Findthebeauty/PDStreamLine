@@ -174,7 +174,7 @@ public class MyApplication extends Application {
 
         context = getApplicationContext();
         initDatabase(context);
-        SettingActivity.initSetting(SettingActivity.getDateSetting());
+        SettingActivity.initSetting();
     }
 
     public static Context getContext() {
@@ -329,7 +329,7 @@ public class MyApplication extends Application {
 
         switch (index) {
 
-            case DateScope.RANGE_VALUE:
+            case SettingActivity.DATE_SCOPE_RANGE_VALUE:
 
                 if (!validated) {
 
@@ -339,7 +339,7 @@ public class MyApplication extends Application {
                 scope.setRangeValue(after);
                 break;
 
-            case DateScope.RANGE_UNIT:
+            case SettingActivity.DATE_SCOPE_RANGE_UNIT:
 
                 if (!validated) {
 
@@ -350,7 +350,7 @@ public class MyApplication extends Application {
                 }
                 break;
 
-            case DateScope.PROMOTION_OFFSET_VALUE:
+            case SettingActivity.DATE_SCOPE_PROMOTION_OFFSET_VALUE:
 
                 if (!validated) {
 
@@ -360,7 +360,7 @@ public class MyApplication extends Application {
                 scope.setPromotionOffsetValue(after);
                 break;
 
-            case DateScope.EXPIRE_OFFSET_VALUE:
+            case SettingActivity.DATE_SCOPE_EXPIRE_OFFSET_VALUE:
 
                 if (!validated) {
 
@@ -372,7 +372,7 @@ public class MyApplication extends Application {
 
         }
         synchronizeSetting(scope, index);
-        SettingActivity.setDateSettingChanged(true);
+        SettingActivity.setExpSettingChanged(true);
     }
 
     public static void afterInfoChanged(String after, EditText watchedEditText, Timestream timestream, int filedIndex) {
@@ -535,15 +535,15 @@ public class MyApplication extends Application {
 
         switch (index) {
 
-            case DateScope.RANGE_VALUE:
-            case DateScope.RANGE_UNIT:
+            case SettingActivity.DATE_SCOPE_RANGE_VALUE:
+            case SettingActivity.DATE_SCOPE_RANGE_UNIT:
 
                 SettingActivity.initScopeIndex();
                 SettingActivity.synchronizeUpperBound(scope);
                 break;
 
-            case DateScope.PROMOTION_OFFSET_VALUE:
-            case DateScope.EXPIRE_OFFSET_VALUE:
+            case SettingActivity.DATE_SCOPE_PROMOTION_OFFSET_VALUE:
+            case SettingActivity.DATE_SCOPE_EXPIRE_OFFSET_VALUE:
 
         }
     }

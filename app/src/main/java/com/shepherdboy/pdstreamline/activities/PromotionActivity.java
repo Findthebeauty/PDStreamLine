@@ -17,10 +17,16 @@ public class PromotionActivity extends AppCompatActivity {
         setContentView(R.layout.activity_promotion);
         MyApplication.initActionBar(getSupportActionBar());
 
-        MyApplication.draggableLinearLayout = findViewById(R.id.parent);
         MyApplication.initDatabase(this);
-        DraggableLinearLayout.setLayoutChanged(true);
 
+        initActivity();
+
+    }
+
+    private void initActivity() {
+
+        MyApplication.draggableLinearLayout = findViewById(R.id.parent);
+        DraggableLinearLayout.setLayoutChanged(true);
     }
 
     public static void actionStart() {

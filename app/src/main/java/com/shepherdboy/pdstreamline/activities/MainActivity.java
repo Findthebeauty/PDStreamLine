@@ -93,6 +93,30 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        initActivity();
+
+        //本地数据库应用外部保存位置，退出时
+        tempDataBasePath = Environment.getExternalStorageDirectory() + "/Android/v2";
+
+        //获取本地文件读写权限并获取应用外部数据库
+        verifyStoragePermissions(this);
+        MyDatabaseHelper.copyDataBase(tempDataBasePath, databasePath);
+
+        //获取数据库连接助手
+        MyApplication.databaseHelper = new MyDatabaseHelper(this, dataBaseName,
+                null, 1);
+
+        // 接收扫码枪扫描动作广播的条码号,全局
+        intentFilter = new IntentFilter();
+        intentFilter.addAction("android.intent.ACTION_DECODE_DATA");
+        scanEventReceiver = new ScanEventReceiver();
+        registerReceiver(scanEventReceiver, intentFilter);
+    }
+
+    private void initActivity() {
+
+        MyApplication.init();
+        MyApplication.currentProduct = null;
 
         //开始信息录入模式
         Button startPDInfoActivityButton = findViewById(R.id.pd_info_activity);
@@ -123,22 +147,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //本地数据库应用外部保存位置，退出时
-        tempDataBasePath = Environment.getExternalStorageDirectory() + "/Android/v2";
-
-        //获取本地文件读写权限并获取应用外部数据库
-        verifyStoragePermissions(this);
-        MyDatabaseHelper.copyDataBase(tempDataBasePath, databasePath);
-
-        //获取数据库连接助手
-        MyApplication.databaseHelper = new MyDatabaseHelper(this, dataBaseName,
-                null, 1);
-
-        // 接收扫码枪扫描动作广播的条码号,全局
-        intentFilter = new IntentFilter();
-        intentFilter.addAction("android.intent.ACTION_DECODE_DATA");
-        scanEventReceiver = new ScanEventReceiver();
-        registerReceiver(scanEventReceiver, intentFilter);
     }
 
     /**
@@ -170,6 +178,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
 
         MidnightTimestreamManagerService.actionStart(MainActivity.this);
+
+        initActivity();
         super.onStart();
     }
 

@@ -1,5 +1,6 @@
 package com.shepherdboy.pdstreamline.activities;
 
+import static com.shepherdboy.pdstreamline.MyApplication.PD_INFO_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.currentProduct;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
@@ -63,16 +64,19 @@ public class PDInfoActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
 
-        draggableLinearLayout = findViewById(R.id.parent);
+        initActivity();
+
+        if (currentProduct != null) {
+
+            loadProduct(currentProduct);
+        }
+
         super.onStart();
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_pdinfo);
-        MyApplication.initActionBar(getSupportActionBar());
+    private void initActivity() {
 
+        MyApplication.activityIndex = PD_INFO_ACTIVITY;
         draggableLinearLayout = findViewById(R.id.parent);
         productCodeEditText = findViewById(R.id.product_code);
         productNameEditText = findViewById(R.id.product_name);
@@ -92,6 +96,15 @@ public class PDInfoActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_pdinfo);
+        MyApplication.initActionBar(getSupportActionBar());
+
+        initActivity();
     }
 
 

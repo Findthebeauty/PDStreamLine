@@ -1,5 +1,6 @@
 package com.shepherdboy.pdstreamline.activities;
 
+import static com.shepherdboy.pdstreamline.MyApplication.POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.setTimeStreamViewOriginalBackgroundColor;
@@ -190,6 +191,13 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+
+        initActivity();
+        super.onStart();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_possible_promotion_timestream);
@@ -197,6 +205,14 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
         MyApplication.init();
         MyApplication.initDatabase(this);
+
+        initActivity();
+
+    }
+
+    private void initActivity() {
+
+        MyApplication.activityIndex = POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY;
 
         draggableLinearLayout = findViewById(R.id.parent);
 

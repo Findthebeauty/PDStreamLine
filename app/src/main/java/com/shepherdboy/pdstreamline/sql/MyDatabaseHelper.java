@@ -303,10 +303,10 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         Cursor cursor = query(sqLiteDatabase, SETTING_TABLE_NAME, new String[]{"*"},
                 "setting_index=?", new String[] {index});
 
-
         try {
 
-            cursor.moveToFirst();
+            if (cursor.moveToFirst()) return null;
+
             value = cursor.getString(cursor.getColumnIndex("setting_value"));
 
         } catch (Exception e) {

@@ -1,5 +1,7 @@
 package com.shepherdboy.pdstreamline.activities;
 
+import static com.shepherdboy.pdstreamline.MyApplication.activityIndex;
+import static com.shepherdboy.pdstreamline.MyApplication.currentProduct;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 
 import android.content.Context;
@@ -16,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -28,6 +31,7 @@ import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.DateScope;
 import com.shepherdboy.pdstreamline.beans.Product;
+import com.shepherdboy.pdstreamline.beans.SingletonSettingBean;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
@@ -48,6 +52,20 @@ import java.util.List;
  */
 public class SettingActivity extends AppCompatActivity {
 
+    public static final String AUTO_COMMIT_DELAY_TAG_NAME = "autoCommitDelayMs";
+
+    public static final int DATE_SCOPE_RANGE_VALUE = 0;
+    public static final int DATE_SCOPE_RANGE_UNIT = 1;
+    public static final int DATE_SCOPE_PROMOTION_OFFSET_VALUE = 2;
+    public static final int DATE_SCOPE_PROMOTION_OFFSET_UNIT = 3;
+    public static final int DATE_SCOPE_EXPIRE_OFFSET_VALUE = 4;
+    public static final int DATE_SCOPE_EXPIRE_OFFSET_UNIT = 5;
+    public static final int SINGLETON_SETTING_AUTO_COMMIT_DELAY = 6;
+
+
+    public static SingletonSettingBean settingInstance;
+
+    public static List<DateScope> scopeList;
     public static final HashMap<String, DateScope> dateSettingMap = new HashMap<>();
     public static final HashMap<Long, DateScope> mlScopeMap = new HashMap<>();
     public static final HashMap<Integer, DateScope> onShowScopeMap = new HashMap<>();
@@ -57,7 +75,8 @@ public class SettingActivity extends AppCompatActivity {
     private static final int ADD_SCOPE = 1;
     private static final int DELETE_SCOPE = 2;
 
-    private static final String DATE_OFFSET_INDEX = "date_offset";
+    private static final String DATE_OFFSET_INDEX = "dateOffset";
+    private static final String SETTING_SINGLETON_INDEX_NAME = "settingSingleton";
 
     private final TextView[] textViews = new TextView[5];
     private final EditText[] editTexts = new EditText[3];
@@ -66,8 +85,7 @@ public class SettingActivity extends AppCompatActivity {
     public static final int TIMESTREAM_IN_PROMOTION = 3;
     public static final int TIMESTREAM_NOT_IN_PROMOTION = 4;
 
-
-    private static boolean dateSettingChanged = false;
+    private static boolean expSettingChanged = false;
 
     private static SettingActivity instance;
 
@@ -199,7 +217,7 @@ public class SettingActivity extends AppCompatActivity {
 
         connectScopeView(nextScopeView, upperScopeView);
         MyTextWatcher.setShouldWatch(true);
-        setDateSettingChanged(true);
+        setExpSettingChanged(true);
         DraggableLinearLayout.setLayoutChanged(true);
     }
 
@@ -245,7 +263,7 @@ public class SettingActivity extends AppCompatActivity {
         EditText lEditText = ((EditText)((LinearLayout)(newScopeView.getChildAt(0))).getChildAt(0));
 
         MyTextWatcher.setShouldWatch(true);
-        setDateSettingChanged(true);
+        setExpSettingChanged(true);
         DraggableLinearLayout.setFocus(lEditText);
         DraggableLinearLayout.setLayoutChanged(true);
     }
@@ -301,8 +319,8 @@ public class SettingActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
 
-        if (isDateSettingChanged()) {
-            saveDateSetting(new ArrayList(dateSettingMap.values()));
+        if (isExpSettingChanged()) {
+            saveEXPSetting(new ArrayList(dateSettingMap.values()));
         }
         super.onStop();
     }
@@ -323,10 +341,11 @@ public class SettingActivity extends AppCompatActivity {
         MyApplication.init();
         MyApplication.initDatabase(this);
         draggableLinearLayout = findViewById(R.id.date_offset_setting_table);
+        activityIndex = MyApplication.SETTING_ACTIVITY;
 
-        initDateSettingView(dateSettingMap.size());
-        initSetting(getDateSetting());
-        loadDateSetting();
+        initDateSettingView();
+        initSetting();
+        loadSetting();
 
         TextView textView = getSupportActionBar().getCustomView().findViewById(R.id.setting);
 
@@ -335,8 +354,8 @@ public class SettingActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                if (isDateSettingChanged()) {
-                    saveDateSetting(new ArrayList(dateSettingMap.values()));
+                if (isExpSettingChanged()) {
+                    saveEXPSetting(new ArrayList(dateSettingMap.values()));
                 }
                 SettingActivity.this.finish();
             }
@@ -349,7 +368,7 @@ public class SettingActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                setToDefaultDateSetting();
+                setAllToDefaultDateSetting();
             }
         });
 
@@ -357,21 +376,58 @@ public class SettingActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                saveDateSetting(new ArrayList(dateSettingMap.values()));
+                saveEXPSetting(new ArrayList(dateSettingMap.values()));
             }
         });
     }
 
-    private void setToDefaultDateSetting() {
+    private void loadSetting() {
 
-        List<DateScope> scopes = getDefaultDateSetting();
-        initDateSettingView(scopes.size());
-        initSetting(scopes);
-        loadDateSetting();
-        setDateSettingChanged(true);
+        loadEXPSetting();
+        loadSingletonSetting();
     }
 
-    private void initDateSettingView(int scopesCount) {
+    private void loadSingletonSetting() {
+
+        loadAutoCommitSetting();
+    }
+
+    private void loadAutoCommitSetting() { //todo 监听cbox和etext的变化，信息变更的同步
+
+        CheckBox ckBox = findViewById(R.id.auto_commit_checkbox);
+        EditText eText = findViewById(R.id.auto_commit_delay_edittext);
+
+        ckBox.setChecked(settingInstance.isAutoCommitFlag());
+        eText.setText(settingInstance.getAutoCommitDelay());
+
+        MyTextWatcher.watch(null, eText, SINGLETON_SETTING_AUTO_COMMIT_DELAY);
+
+        if (ckBox.isChecked()) {
+
+            eText.setFocusable(false);
+            eText.setTextColor(Color.parseColor("gray"));
+        }
+
+    }
+
+    private void setAllToDefaultDateSetting() {
+
+        setDefaultEXPSetting();
+
+    }
+
+    private void setDefaultEXPSetting() {
+
+        getDefaultEXPSetting();
+        initDateSettingView();
+        initScopeIndex();
+        loadEXPSetting();
+        setExpSettingChanged(true);
+    }
+
+    private void initDateSettingView() {
+
+        int scopesCount = scopeList.size();
 
         MyApplication.init();
         MyTextWatcher.clearWatchers();
@@ -482,7 +538,7 @@ public class SettingActivity extends AppCompatActivity {
         t.setText(range);
     }
 
-    private void loadDateSetting() {
+    private void loadEXPSetting() {
 
         MyTextWatcher.setShouldWatch(false);
 
@@ -524,10 +580,10 @@ public class SettingActivity extends AppCompatActivity {
         String pOffsetValue = scope.getPromotionOffsetValue();
         String eOffsetValue = scope.getExpireOffsetValue();
         editTexts[0].setText(rangeValue);
-        MyTextWatcher.watch(scope, editTexts[0], DateScope.RANGE_VALUE);
+        MyTextWatcher.watch(scope, editTexts[0], DATE_SCOPE_RANGE_VALUE);
 
         textViews[0].setText(rangeUnit);
-        MyTextWatcher.watch(scope, textViews[0], DateScope.RANGE_UNIT);
+        MyTextWatcher.watch(scope, textViews[0], DATE_SCOPE_RANGE_UNIT);
         if (scope1 != null) {
 
             textViews[1].setText("(含)~");
@@ -542,47 +598,50 @@ public class SettingActivity extends AppCompatActivity {
         }
 
         editTexts[1].setText(pOffsetValue);
-        MyTextWatcher.watch(scope, editTexts[1], DateScope.PROMOTION_OFFSET_VALUE);
+        MyTextWatcher.watch(scope, editTexts[1], DATE_SCOPE_PROMOTION_OFFSET_VALUE);
         textViews[3].setText("天");
 
         editTexts[2].setText(eOffsetValue);
-        MyTextWatcher.watch(scope, editTexts[2], DateScope.EXPIRE_OFFSET_VALUE);
+        MyTextWatcher.watch(scope, editTexts[2], DATE_SCOPE_EXPIRE_OFFSET_VALUE);
         textViews[4].setText("天");
     }
 
-    public static boolean isDateSettingChanged() {
-        return dateSettingChanged;
+    public static boolean isExpSettingChanged() {
+        return expSettingChanged;
     }
 
-    public static void setDateSettingChanged(boolean dateSettingChanged) {
-        SettingActivity.dateSettingChanged = dateSettingChanged;
+    public static void setExpSettingChanged(boolean expSettingChanged) {
+        SettingActivity.expSettingChanged = expSettingChanged;
     }
 
     @Override
     protected void onPause() {
 
-        if (isDateSettingChanged()) {
-            saveDateSetting(new ArrayList(dateSettingMap.values()));
+        if (isExpSettingChanged()) {
+            saveEXPSetting(new ArrayList(dateSettingMap.values()));
         }
         super.onPause();
     }
 
 
-    private static void saveDateSetting(List<DateScope> dateSetting) {
+    private static void saveEXPSetting(List<DateScope> dateSetting) {
 
-        applyAllSetting();
+        applyEXPSetting();
 
         String setting = JSON.toJSONString(dateSetting);
         MyDatabaseHelper.saveSetting(DATE_OFFSET_INDEX, setting, MyApplication.sqLiteDatabase);
-        setDateSettingChanged(false);
+        setExpSettingChanged(false);
     }
 
     /**
      * 根据新日期设置更新所有商品临期以及下架日期
      */
-    private static void applyAllSetting() {
+    private static void applyEXPSetting() {
 
-        if(!isDateSettingChanged()) return;
+        MyApplication.pickupChanges();
+        MyApplication.saveChanges(MyApplication.thingsToSaveList);
+
+        if(!isExpSettingChanged()) return;
 
         HashMap<String, Product> pdMap = MyDatabaseHelper.PDInfoWrapper.getAllProduct();
 
@@ -593,6 +652,12 @@ public class SettingActivity extends AppCompatActivity {
         List<Timestream> ts1 = MyDatabaseHelper.PDInfoWrapper.getAllTimestreams(TIMESTREAM_NOT_IN_PROMOTION);
         applySetting(pdMap, ts1, TIMESTREAM_NOT_IN_PROMOTION);
         MyDatabaseHelper.PDInfoWrapper.truncate(MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME);
+
+        if (currentProduct != null) {
+
+            currentProduct = MyDatabaseHelper.PDInfoWrapper.getProduct(currentProduct.getProductCode(),
+                    MyApplication.sqLiteDatabase,MyDatabaseHelper.ENTIRE_TIMESTREAM);
+        }
     }
 
     private static void applySetting(HashMap<String, Product> pdMap, List<Timestream> ts, int timestreamState) {
@@ -627,14 +692,38 @@ public class SettingActivity extends AppCompatActivity {
 
     }
 
-    public static void initSetting(List<DateScope> dateSetting) {
+    public static void initSetting() {
 
-        for (DateScope s : dateSetting) {
+        initEXPSetting();
 
-            dateSettingMap.put(s.getScopeId(),s);
+        initSingletonSetting(); //todo 单一设置的加载，修改，保存，同步。
+    }
+
+    private static void initEXPSetting() {
+
+        getEXPSetting();
+        initScopeIndex();
+    }
+
+    private static void initSingletonSetting() {
+
+        String settingSingleton = MyDatabaseHelper.getSetting(SETTING_SINGLETON_INDEX_NAME, MyApplication.sqLiteDatabase);
+
+        if (settingSingleton == null) {
+
+            getDefaultSingletonSetting();
+
+            return;
         }
 
-        initScopeIndex();
+        settingInstance = JSON.parseObject(settingSingleton, SingletonSettingBean.class);
+    }
+
+    private static void getDefaultSingletonSetting() {
+
+        settingInstance = SingletonSettingBean.getSingletonSettingBean();
+        settingInstance.setAutoCommitFlag(true);
+        settingInstance.setAutoCommitDelay(getSingleDefaultSetting(AUTO_COMMIT_DELAY_TAG_NAME));
     }
 
     public static void initScopeIndex() {
@@ -655,25 +744,62 @@ public class SettingActivity extends AppCompatActivity {
         Collections.sort(dateSettingIndex,Collections.reverseOrder());
     }
 
-    public static List<DateScope> getDateSetting() {
+    public static void getEXPSetting() {
 
         String setting = MyDatabaseHelper.getSetting(DATE_OFFSET_INDEX, MyApplication.sqLiteDatabase);
-        List<DateScope> dateSetting;
 
         if (setting != null) {
 
-            dateSetting = JSON.parseObject(setting, new TypeReference<List<DateScope>>(){});
+            scopeList = JSON.parseObject(setting, new TypeReference<List<DateScope>>(){});
 
         } else {
 
-            dateSetting = getDefaultDateSetting();
-            saveDateSetting(dateSetting);
+            getDefaultEXPSetting();
+            saveEXPSetting(scopeList);
         }
 
-        return dateSetting;
+        for (DateScope s : scopeList) {
+
+            dateSettingMap.put(s.getScopeId(),s);
+        }
     }
 
-    public static List<DateScope> getDefaultDateSetting() {
+    public static String getSingleDefaultSetting(String tagName) {
+
+        String packageName = MyApplication.getContext().getPackageName();
+        Resources resources = null;
+
+        try {
+
+            resources = MyApplication.getContext().getPackageManager().getResourcesForApplication(packageName);
+
+        } catch (PackageManager.NameNotFoundException e) {
+
+            e.printStackTrace();
+        }
+
+        int resId = resources.getIdentifier("default_setting", "xml", packageName);
+
+        try (XmlResourceParser xmlResourceParser = resources.getXml(resId)){
+
+            int eventType = xmlResourceParser.getEventType();
+            while (eventType != XmlPullParser.END_DOCUMENT) {
+
+                if ((eventType == XmlPullParser.START_TAG) && (xmlResourceParser.getName().equals(tagName))) {
+
+                    return xmlResourceParser.nextText();
+                }
+
+                eventType = xmlResourceParser.next();
+            }
+        } catch (XmlPullParserException | IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static void getDefaultEXPSetting() {
 
         List<DateScope> setting = new ArrayList<>();
         String packageName = MyApplication.getContext().getPackageName();
@@ -686,16 +812,15 @@ public class SettingActivity extends AppCompatActivity {
         }
 
         int resId = resources.getIdentifier("default_date_management_setting", "xml", packageName);
-        XmlResourceParser xmlResourceParser = resources.getXml(resId);
 
-        try {
+        try (XmlResourceParser xmlResourceParser = resources.getXml(resId)) {
 
             int eventType = xmlResourceParser.getEventType();
             while (eventType != XmlPullParser.END_DOCUMENT) {
 
-                if ((eventType == XmlPullParser.START_TAG) && (xmlResourceParser.getName().equals("scope"))){
+                if ((eventType == XmlPullParser.START_TAG) && (xmlResourceParser.getName().equals("scope"))) {
 
-                    DateScope scope = parseTag(xmlResourceParser);
+                    DateScope scope = (DateScope) parseTag(xmlResourceParser, "item");
                     setting.add(scope);
                 }
 
@@ -706,37 +831,40 @@ public class SettingActivity extends AppCompatActivity {
 
             e.printStackTrace();
 
-        } finally {
-            xmlResourceParser.close();
         }
 
-        return setting;
+        scopeList = setting;
     }
 
-    private static DateScope parseTag(XmlResourceParser xmlParser) throws XmlPullParserException, IOException {
+    private static Object parseTag(XmlResourceParser xmlParser, String tagName) throws XmlPullParserException, IOException {
 
         int eventType = xmlParser.getEventType();
-        String[] info = new String[6];
+
+        switch (tagName) {
+
+            case "item":
+
+                String[] info = new String[6];
+
+                int count = 0;
+
+                while ((eventType != XmlPullParser.END_TAG) || (xmlParser.getName().equals("item"))) {
 
 
-        int count = 0;
+                    if ((eventType == XmlPullParser.START_TAG) && (xmlParser.getName().equals("item"))){
 
-        while ((eventType != XmlPullParser.END_TAG) || (xmlParser.getName().equals("item"))) {
+                        xmlParser.next();
+                        info[count]  = xmlParser.getText();
+                        count++;
+                    }
+                    eventType = xmlParser.next();
 
+                }
 
-            if ((eventType == XmlPullParser.START_TAG) && (xmlParser.getName().equals("item"))){
-
-                xmlParser.next();
-                info[count]  = xmlParser.getText();
-                count++;
-            }
-            eventType = xmlParser.next();
-
+                return new DateScope(info);
         }
 
-        DateScope scope = new DateScope(info);
-
-        return scope;
+        return null;
     }
 
     public static long stringToMillionSeconds(String valueStr, String unit) {

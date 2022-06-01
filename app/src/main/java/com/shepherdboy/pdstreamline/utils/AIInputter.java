@@ -228,12 +228,14 @@ public class AIInputter {
                     return false;
                 }
 
-//            case MyApplication.TIMESTREAM_DOP:
-//
-//                String reg = "^[0-9-\\s]*$";
-//
-//                return  information.matches(reg);
+            case MyApplication.TIMESTREAM_DOP:
 
+                switch (information.length()) {
+
+                    case 1: return !information.equals("0");
+
+                    default: return true;
+                }
             case MyApplication.TIMESTREAM_COORDINATE:
 
                 return !information.equals(timestream.getProductCoordinate());
@@ -339,7 +341,7 @@ public class AIInputter {
 
         switch (index) {
 
-            case DateScope.RANGE_VALUE:
+            case SettingActivity.DATE_SCOPE_RANGE_VALUE:
 
                 newScope.setRangeValue(after);
                 newBoundMls = SettingActivity.stringToMillionSeconds(
@@ -347,7 +349,7 @@ public class AIInputter {
                 );
                 return newBoundMls > lowerBoundMls && newBoundMls < upperBoundMls;
 
-            case DateScope.RANGE_UNIT:
+            case SettingActivity.DATE_SCOPE_RANGE_UNIT:
 
                 newScope.setRangeUnit(after);
                 newBoundMls = SettingActivity.stringToMillionSeconds(
@@ -355,7 +357,7 @@ public class AIInputter {
                 );
                 return newBoundMls > lowerBoundMls && newBoundMls < upperBoundMls;
 
-            case DateScope.PROMOTION_OFFSET_VALUE:
+            case SettingActivity.DATE_SCOPE_PROMOTION_OFFSET_VALUE:
 
                 newScope.setPromotionOffsetValue(after);
                 promotionOffsetMls = SettingActivity.stringToMillionSeconds(
@@ -364,7 +366,7 @@ public class AIInputter {
                 );
                return promotionOffsetMls < newBoundMls && promotionOffsetMls > expireOffsetMls;
 
-            case DateScope.EXPIRE_OFFSET_VALUE:
+            case SettingActivity.DATE_SCOPE_EXPIRE_OFFSET_VALUE:
 
                 newScope.setExpireOffsetValue(after);
                 expireOffsetMls = SettingActivity.stringToMillionSeconds(

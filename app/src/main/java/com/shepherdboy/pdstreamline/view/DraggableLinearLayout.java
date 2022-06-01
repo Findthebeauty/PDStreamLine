@@ -53,7 +53,7 @@ public class DraggableLinearLayout extends LinearLayout {
                 if (child instanceof LinearLayout) {
 
                     Set<Integer> timestreamIds = MyApplication.originalPositionHashMap.keySet();
-                    return timestreamIds.contains(child.getId()) || MyApplication.activityIndex == getResources().getInteger(R.integer.promotion_timestream_activity);
+                    return timestreamIds.contains(child.getId()) || MyApplication.activityIndex == MyApplication.PROMOTION_TIMESTREAM_ACTIVITY;
                 }
 
                 return false;
@@ -215,7 +215,7 @@ public class DraggableLinearLayout extends LinearLayout {
         TypedArray typedArray = context.obtainStyledAttributes(attributeSet, R.styleable.DraggableLinearLayout);
         horizontalDraggable = typedArray.getBoolean(R.styleable.DraggableLinearLayout_horizontalDraggable, true);
         verticalDraggable = typedArray.getBoolean(R.styleable.DraggableLinearLayout_verticalDraggable, true);
-        MyApplication.activityIndex = typedArray.getInt(R.styleable.DraggableLinearLayout_activityIndex, 0);
+//        MyApplication.activityIndex = typedArray.getInt(R.styleable.DraggableLinearLayout_activityIndex, 0);
 
     }
 

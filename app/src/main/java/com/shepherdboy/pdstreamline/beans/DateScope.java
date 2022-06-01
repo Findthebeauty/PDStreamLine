@@ -4,13 +4,6 @@ import java.util.UUID;
 
 public class DateScope {
 
-    public static final int RANGE_VALUE = 0;
-    public static final int RANGE_UNIT = 1;
-    public static final int PROMOTION_OFFSET_VALUE = 2;
-    public static final int PROMOTION_OFFSET_UNIT= 3;
-    public static final int EXPIRE_OFFSET_VALUE = 4;
-    public static final int EXPIRE_OFFSET_UNIT= 5;
-
     private String rangeValue;
 
     private String rangeUnit;

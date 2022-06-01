@@ -10,11 +10,11 @@
     <item name="time_stream_7" type="id" />
     <item name="time_stream_8" type="id" />
     <item name="time_stream_9" type="id" />
-    <integer name="main_activity">0</integer>
-    <integer name="product_inf_activity">1</integer>
-    <integer name="possible_promotion_timestream_activity">2</integer>
-    <integer name="promotion_timestream_activity">3</integer>
-    <integer name="possible_expired_timestream_activity">4</integer>
-    <integer name="expired_timestream_activity">5</integer>
-    <integer name="setting_activity">6</integer>
+<!--    <integer name="main_activity">0</integer>-->
+<!--    <integer name="product_inf_activity">1</integer>-->
+<!--    <integer name="possible_promotion_timestream_activity">2</integer>-->
+<!--    <integer name="promotion_timestream_activity">3</integer>-->
+<!--    <integer name="possible_expired_timestream_activity">4</integer>-->
+<!--    <integer name="expired_timestream_activity">5</integer>-->
+<!--    <integer name="setting_activity">6</integer>-->
 </resources>
