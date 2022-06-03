@@ -34,7 +34,7 @@ import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
-import com.shepherdboy.pdstreamline.view.MyTextWatcher;
+import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 
 import java.util.LinkedList;
 import java.util.Timer;
@@ -270,7 +270,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
             MyApplication.setTimeStreamViewOriginalBackgroundColor(timestream);
 
-            MyTextWatcher.watch((EditText) (tsView.getChildAt(2)), timestream, MyApplication.TIMESTREAM_INVENTORY);
+            MyInfoChangeWatcher.watch((EditText) (tsView.getChildAt(2)), timestream, MyApplication.TIMESTREAM_INVENTORY);
             childViewIndex++;
         }
     }
@@ -305,7 +305,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
     private static void initTimestreamsView(int timestreamsCount) {
 
         MyApplication.init();
-        MyTextWatcher.clearWatchers();
+        MyInfoChangeWatcher.clearWatchers();
         DraggableLinearLayout.setLayoutChanged(true);
 
         int tsViewCount = draggableLinearLayout.getChildCount() - 1;

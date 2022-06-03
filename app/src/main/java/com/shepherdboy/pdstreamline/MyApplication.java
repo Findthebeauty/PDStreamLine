@@ -26,7 +26,7 @@ import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
-import com.shepherdboy.pdstreamline.view.MyTextWatcher;
+import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -415,9 +415,9 @@ public class MyApplication extends Application {
 
                             after = AIInputter.translate(currentProduct, timestream.getProductDOP(), after);
 
-                            MyTextWatcher.setShouldWatch(false);
+                            MyInfoChangeWatcher.setShouldWatch(false);
                             watchedEditText.setText(after);
-                            MyTextWatcher.setShouldWatch(true);
+                            MyInfoChangeWatcher.setShouldWatch(true);
 
                             DraggableLinearLayout.setFocus(watchedEditText);
 
@@ -622,7 +622,7 @@ public class MyApplication extends Application {
 
             Object o = releasedChild.getChildAt(i);
 
-            if (o instanceof EditText) MyTextWatcher.removeWatcher((EditText) o);
+            if (o instanceof EditText) MyInfoChangeWatcher.removeWatcher((EditText) o);
         }
 
         draggableLinearLayout.removeView(releasedChild);

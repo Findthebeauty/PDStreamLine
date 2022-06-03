@@ -21,17 +21,16 @@ import com.shepherdboy.pdstreamline.utils.DateUtil;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
+public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListener {
 
-    public static HashMap<EditText, MyTextWatcher> myTextWatchers = new HashMap<>();
+    public static HashMap<EditText, MyInfoChangeWatcher> myTextWatchers = new HashMap<>();
 
     private static boolean scheduled = false;
     private static Handler handler;
     private static Runnable runnable;
     private static long timeMillis = 0;
-    private static MyTextWatcher currentWatcher;
+    private static MyInfoChangeWatcher currentWatcher;
     private static String info;
-
 
     private EditText watchedEditText;
     private Timestream timestream;
@@ -43,26 +42,26 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
 
     public static void watch(EditText editText, @Nullable Timestream timestream, int filedIndex) {
 
-        MyTextWatcher myTextWatcher = new MyTextWatcher();
-        editText.addTextChangedListener(myTextWatcher);
+        MyInfoChangeWatcher myInfoChangeWatcher = new MyInfoChangeWatcher();
+        editText.addTextChangedListener(myInfoChangeWatcher);
 
-        myTextWatcher.timestream = timestream;
-        myTextWatcher.watchedEditText = editText;
-        myTextWatcher.filedIndex = filedIndex;
+        myInfoChangeWatcher.timestream = timestream;
+        myInfoChangeWatcher.watchedEditText = editText;
+        myInfoChangeWatcher.filedIndex = filedIndex;
 
-        myTextWatchers.put(editText, myTextWatcher);
+        myTextWatchers.put(editText, myInfoChangeWatcher);
     }
 
     public static void watch(DateScope scope, EditText editText, int index) {
 
-        MyTextWatcher myTextWatcher = new MyTextWatcher();
-        editText.addTextChangedListener(myTextWatcher);
+        MyInfoChangeWatcher myInfoChangeWatcher = new MyInfoChangeWatcher();
+        editText.addTextChangedListener(myInfoChangeWatcher);
 
-        myTextWatcher.scope = scope;
-        myTextWatcher.watchedEditText = editText;
-        myTextWatcher.filedIndex = index;
+        myInfoChangeWatcher.scope = scope;
+        myInfoChangeWatcher.watchedEditText = editText;
+        myInfoChangeWatcher.filedIndex = index;
 
-        myTextWatchers.put(editText, myTextWatcher);
+        myTextWatchers.put(editText, myInfoChangeWatcher);
     }
 
     public static void watch(DateScope scope, TextView t, int index) {
@@ -155,7 +154,7 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
 
     public static void clearWatchers() {
 
-        for (Map.Entry<EditText, MyTextWatcher> entry : myTextWatchers.entrySet()) {
+        for (Map.Entry<EditText, MyInfoChangeWatcher> entry : myTextWatchers.entrySet()) {
 
             entry.getKey().removeTextChangedListener(entry.getValue());
 
@@ -184,13 +183,13 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
 
     public static void removeWatcher(EditText editText) {
 
-        MyTextWatcher myTextWatcher;
+        MyInfoChangeWatcher myInfoChangeWatcher;
 
         if (myTextWatchers.containsKey(editText)) {
 
-            myTextWatcher = myTextWatchers.remove(editText);
-            myTextWatcher.watchedEditText.removeTextChangedListener(myTextWatcher);
-            myTextWatcher = null;
+            myInfoChangeWatcher = myTextWatchers.remove(editText);
+            myInfoChangeWatcher.watchedEditText.removeTextChangedListener(myInfoChangeWatcher);
+            myInfoChangeWatcher = null;
         }
     }
 
@@ -201,7 +200,7 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
     public static void setShouldWatch(boolean shouldWatch) {
         if (shouldWatch) {
 
-            for(MyTextWatcher w : myTextWatchers.values()) {
+            for(MyInfoChangeWatcher w : myTextWatchers.values()) {
 
                 w.preInf = w.watchedEditText.getText().toString().trim();
 
@@ -212,7 +211,7 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
                 }
             }
         }
-        MyTextWatcher.shouldWatch = shouldWatch;
+        MyInfoChangeWatcher.shouldWatch = shouldWatch;
     }
 
     @Override
@@ -262,7 +261,7 @@ public class MyTextWatcher implements TextWatcher, View.OnFocusChangeListener {
     }
 
     public static void setScheduled(boolean scheduled) {
-        MyTextWatcher.scheduled = scheduled;
+        MyInfoChangeWatcher.scheduled = scheduled;
     }
 
     @Override

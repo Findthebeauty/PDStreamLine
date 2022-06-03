@@ -36,7 +36,7 @@ import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
-import com.shepherdboy.pdstreamline.view.MyTextWatcher;
+import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -191,7 +191,7 @@ public class SettingActivity extends AppCompatActivity {
 
     private static void deleteScope(View releasedChild) {
 
-        MyTextWatcher.setShouldWatch(false);
+        MyInfoChangeWatcher.setShouldWatch(false);
 
         int id = releasedChild.getId();
         DateScope scope = onShowScopeMap.remove(id);
@@ -208,7 +208,7 @@ public class SettingActivity extends AppCompatActivity {
         ViewGroup p = (ViewGroup) releasedChild.getParent();
         p.removeView(releasedChild);
 
-        MyTextWatcher.removeWatcher(releasedChild);
+        MyInfoChangeWatcher.removeWatcher(releasedChild);
 
         LinearLayout nextScopeView = (LinearLayout) draggableLinearLayout.getChildAt(removeIndex);
         LinearLayout upperScopeView = null;
@@ -216,14 +216,14 @@ public class SettingActivity extends AppCompatActivity {
         if (removeIndex > 1) upperScopeView = (LinearLayout) draggableLinearLayout.getChildAt(removeIndex - 1);
 
         connectScopeView(nextScopeView, upperScopeView);
-        MyTextWatcher.setShouldWatch(true);
+        MyInfoChangeWatcher.setShouldWatch(true);
         setExpSettingChanged(true);
         DraggableLinearLayout.setLayoutChanged(true);
     }
 
     private static void addScopeBeyond(View releasedChild) {
 
-        MyTextWatcher.setShouldWatch(false);
+        MyInfoChangeWatcher.setShouldWatch(false);
 
         LinearLayout parent = (LinearLayout) releasedChild.getParent();
         int addIndex = 1;
@@ -262,7 +262,7 @@ public class SettingActivity extends AppCompatActivity {
 
         EditText lEditText = ((EditText)((LinearLayout)(newScopeView.getChildAt(0))).getChildAt(0));
 
-        MyTextWatcher.setShouldWatch(true);
+        MyInfoChangeWatcher.setShouldWatch(true);
         setExpSettingChanged(true);
         DraggableLinearLayout.setFocus(lEditText);
         DraggableLinearLayout.setLayoutChanged(true);
@@ -400,7 +400,7 @@ public class SettingActivity extends AppCompatActivity {
         ckBox.setChecked(settingInstance.isAutoCommitFlag());
         eText.setText(settingInstance.getAutoCommitDelay());
 
-        MyTextWatcher.watch(null, eText, SINGLETON_SETTING_AUTO_COMMIT_DELAY);
+        MyInfoChangeWatcher.watch(null, eText, SINGLETON_SETTING_AUTO_COMMIT_DELAY);
 
         if (ckBox.isChecked()) {
 
@@ -430,7 +430,7 @@ public class SettingActivity extends AppCompatActivity {
         int scopesCount = scopeList.size();
 
         MyApplication.init();
-        MyTextWatcher.clearWatchers();
+        MyInfoChangeWatcher.clearWatchers();
 
         int scopesViewCount = draggableLinearLayout.getChildCount() - 1;
 
@@ -540,7 +540,7 @@ public class SettingActivity extends AppCompatActivity {
 
     private void loadEXPSetting() {
 
-        MyTextWatcher.setShouldWatch(false);
+        MyInfoChangeWatcher.setShouldWatch(false);
 
         long upperBound = 0;
         long lowerBound = 0;
@@ -552,7 +552,7 @@ public class SettingActivity extends AppCompatActivity {
         }
 
         DraggableLinearLayout.setLayoutChanged(true);
-        MyTextWatcher.setShouldWatch(true);
+        MyInfoChangeWatcher.setShouldWatch(true);
 
     }
 
@@ -580,10 +580,10 @@ public class SettingActivity extends AppCompatActivity {
         String pOffsetValue = scope.getPromotionOffsetValue();
         String eOffsetValue = scope.getExpireOffsetValue();
         editTexts[0].setText(rangeValue);
-        MyTextWatcher.watch(scope, editTexts[0], DATE_SCOPE_RANGE_VALUE);
+        MyInfoChangeWatcher.watch(scope, editTexts[0], DATE_SCOPE_RANGE_VALUE);
 
         textViews[0].setText(rangeUnit);
-        MyTextWatcher.watch(scope, textViews[0], DATE_SCOPE_RANGE_UNIT);
+        MyInfoChangeWatcher.watch(scope, textViews[0], DATE_SCOPE_RANGE_UNIT);
         if (scope1 != null) {
 
             textViews[1].setText("(含)~");
@@ -598,11 +598,11 @@ public class SettingActivity extends AppCompatActivity {
         }
 
         editTexts[1].setText(pOffsetValue);
-        MyTextWatcher.watch(scope, editTexts[1], DATE_SCOPE_PROMOTION_OFFSET_VALUE);
+        MyInfoChangeWatcher.watch(scope, editTexts[1], DATE_SCOPE_PROMOTION_OFFSET_VALUE);
         textViews[3].setText("天");
 
         editTexts[2].setText(eOffsetValue);
-        MyTextWatcher.watch(scope, editTexts[2], DATE_SCOPE_EXPIRE_OFFSET_VALUE);
+        MyInfoChangeWatcher.watch(scope, editTexts[2], DATE_SCOPE_EXPIRE_OFFSET_VALUE);
         textViews[4].setText("天");
     }
 

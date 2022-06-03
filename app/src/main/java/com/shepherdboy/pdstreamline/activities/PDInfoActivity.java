@@ -31,7 +31,7 @@ import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.utils.ScanEventReceiver;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
-import com.shepherdboy.pdstreamline.view.MyTextWatcher;
+import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -111,7 +111,7 @@ public class PDInfoActivity extends AppCompatActivity {
 
     public static void loadProduct(Product product) {
 
-        MyTextWatcher.setShouldWatch(false);
+        MyInfoChangeWatcher.setShouldWatch(false);
 
         initTimestreamView(product.getTimeStreams());
 
@@ -120,16 +120,16 @@ public class PDInfoActivity extends AppCompatActivity {
         productEXPEditText.setText(product.getProductEXP());
         productEXPTimeUnitButton.setText(product.getProductEXPTimeUnit());
 
-        MyTextWatcher.watch(productCodeEditText, null, MyApplication.PRODUCT_CODE);
-        MyTextWatcher.watch(productNameEditText, null, MyApplication.PRODUCT_NAME);
-        MyTextWatcher.watch(productEXPEditText, null, MyApplication.PRODUCT_EXP);
-        MyTextWatcher.watch(productEXPTimeUnitButton);
+        MyInfoChangeWatcher.watch(productCodeEditText, null, MyApplication.PRODUCT_CODE);
+        MyInfoChangeWatcher.watch(productNameEditText, null, MyApplication.PRODUCT_NAME);
+        MyInfoChangeWatcher.watch(productEXPEditText, null, MyApplication.PRODUCT_EXP);
+        MyInfoChangeWatcher.watch(productEXPTimeUnitButton);
 
         loadTimestreams(product.getTimeStreams());
 
         DraggableLinearLayout.setFocus(topDOPEditText);
 
-        MyTextWatcher.setShouldWatch(true);
+        MyInfoChangeWatcher.setShouldWatch(true);
     }
 
     private static void loadTimestreams(LinkedHashMap<String, Timestream> timeStreams) {
@@ -175,9 +175,9 @@ public class PDInfoActivity extends AppCompatActivity {
 
         MyApplication.setTimeStreamViewOriginalBackgroundColor(timestream);
 
-        MyTextWatcher.watch(timestreamDOPEditText, timestream, MyApplication.TIMESTREAM_DOP);
-        MyTextWatcher.watch(timestreamCoordinateEditText, timestream, MyApplication.TIMESTREAM_COORDINATE);
-        MyTextWatcher.watch(timestreamInventoryEditText, timestream, MyApplication.TIMESTREAM_INVENTORY);
+        MyInfoChangeWatcher.watch(timestreamDOPEditText, timestream, MyApplication.TIMESTREAM_DOP);
+        MyInfoChangeWatcher.watch(timestreamCoordinateEditText, timestream, MyApplication.TIMESTREAM_COORDINATE);
+        MyInfoChangeWatcher.watch(timestreamInventoryEditText, timestream, MyApplication.TIMESTREAM_INVENTORY);
 
         onShowTimeStreamsHashMap.put(tView.getId(), timestream);
 
@@ -187,7 +187,7 @@ public class PDInfoActivity extends AppCompatActivity {
     private static void initTimestreamView(LinkedHashMap<String, Timestream> timestreams) {
 
         MyApplication.init();
-        MyTextWatcher.clearWatchers();
+        MyInfoChangeWatcher.clearWatchers();
         DraggableLinearLayout.setLayoutChanged(true);
 
         // 根据根view的childCount计算timestreamView的数量
