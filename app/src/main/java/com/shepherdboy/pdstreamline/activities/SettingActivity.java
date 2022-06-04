@@ -435,6 +435,7 @@ public class SettingActivity extends AppCompatActivity {
     private void setAllToDefaultDateSetting() {
 
         setDefaultEXPSetting();
+        getDefaultSingletonSetting();// todo debug默认设置
 
     }
 
