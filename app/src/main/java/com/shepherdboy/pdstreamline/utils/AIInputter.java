@@ -263,7 +263,7 @@ public class AIInputter {
 
                         e.printStackTrace();
 
-                        if (information == "") {
+                        if (information.equals("")) {
                             newInventory = 0;
                         }
                     }

@@ -56,6 +56,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
     public static void watch(DateScope scope, EditText editText, int index) {
 
+        if (myTextWatchers.containsKey(editText)) return;
         MyInfoChangeWatcher myInfoChangeWatcher = new MyInfoChangeWatcher();
         editText.addTextChangedListener(myInfoChangeWatcher);
 

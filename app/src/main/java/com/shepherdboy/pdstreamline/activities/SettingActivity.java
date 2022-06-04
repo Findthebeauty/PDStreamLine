@@ -201,6 +201,7 @@ public class SettingActivity extends AppCompatActivity {
 
         int removeIndex = dateSettingIndex.indexOf(mls) + 1;
         dateSettingIndex.remove(mls);
+        scopeList.remove(scope);
         mlScopeMap.remove(mls);
         dateSettingMap.remove(scope.getScopeId());
         upperBoundTextViewMap.remove(scope.getScopeId());
@@ -252,6 +253,7 @@ public class SettingActivity extends AppCompatActivity {
         long newBound = stringToMillionSeconds(newScope.getRangeValue(), newScope.getRangeUnit());
         dateSettingMap.put(newScope.getScopeId(),newScope);
         mlScopeMap.put(newBound, newScope);
+        scopeList.add(newScope);
         initScopeIndex();
 
         long upperBound = getUpperBoundMls(newScope);
@@ -392,13 +394,15 @@ public class SettingActivity extends AppCompatActivity {
         loadAutoCommitSetting();
     }
 
-    private void loadAutoCommitSetting() { //todo 监听cbox和etext的变化，信息变更的同步
+    private void loadAutoCommitSetting() {
 
         CheckBox ckBox = findViewById(R.id.auto_commit_checkbox);
         EditText eText = findViewById(R.id.auto_commit_delay_edittext);
 
         ckBox.setChecked(settingInstance.isAutoCommitFlag());
         eText.setText(settingInstance.getAutoCommitDelay());
+
+        if (MyInfoChangeWatcher.myTextWatchers.containsKey(eText)) return;
 
         MyInfoChangeWatcher.watch(null, eText, SINGLETON_SETTING_AUTO_COMMIT_DELAY);
 
@@ -443,7 +447,14 @@ public class SettingActivity extends AppCompatActivity {
 
         getDefaultEXPSetting();
         initDateSettingView();
+
+        for (DateScope d : scopeList) {
+
+            dateSettingMap.put(d.getScopeId(), d);
+        }
+
         initScopeIndex();
+
         loadEXPSetting();
         setExpSettingChanged(true);
     }
@@ -576,7 +587,6 @@ public class SettingActivity extends AppCompatActivity {
 
         DraggableLinearLayout.setLayoutChanged(true);
         MyInfoChangeWatcher.setShouldWatch(true);
-
     }
 
     private void loadScope(long lowerBound, long upperBound, LinearLayout t) {
@@ -737,7 +747,7 @@ public class SettingActivity extends AppCompatActivity {
     public static void initSetting() {
 
         initEXPSetting();
-        initSingletonSetting(); //todo 单一设置的加载，修改，保存，同步。
+        initSingletonSetting();
     }
 
     private static void initEXPSetting() {
@@ -766,6 +776,8 @@ public class SettingActivity extends AppCompatActivity {
         settingInstance.setAutoCommitFlag(true);
         settingInstance.setAutoCommitDelay(readSingleDefaultSetting(AUTO_COMMIT_DELAY_TAG_NAME));
         settingInstance.setUpdated(false);
+
+        if (instance != null) instance.loadSingletonSetting();
     }
 
     public static void initScopeIndex() {
@@ -775,7 +787,8 @@ public class SettingActivity extends AppCompatActivity {
             dateSettingIndex = null;
         }
 
-        dateSettingIndex = new ArrayList<Long>();
+        dateSettingIndex = new ArrayList<>();
+
         for (String s : dateSettingMap.keySet()) {
 
             DateScope d = dateSettingMap.get(s);
@@ -783,7 +796,7 @@ public class SettingActivity extends AppCompatActivity {
             dateSettingIndex.add(mls);
             mlScopeMap.put(mls, d);
         }
-        Collections.sort(dateSettingIndex,Collections.reverseOrder());
+        Collections.sort(dateSettingIndex, Collections.reverseOrder());
     }
 
     public static void getEXPSetting() {
@@ -803,7 +816,6 @@ public class SettingActivity extends AppCompatActivity {
 
             dateSettingMap.put(s.getScopeId(),s);
         }
-
         saveEXPSetting();
     }
 
