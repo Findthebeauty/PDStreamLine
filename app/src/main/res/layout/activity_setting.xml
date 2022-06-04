@@ -123,6 +123,7 @@
                 android:id="@+id/auto_commit_delay_edittext"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:inputType="number"
                 android:selectAllOnFocus="true"/>
             <TextView
                 android:layout_width="wrap_content"

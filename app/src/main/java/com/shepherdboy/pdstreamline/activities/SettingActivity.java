@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -320,7 +321,7 @@ public class SettingActivity extends AppCompatActivity {
     protected void onStop() {
 
         if (isExpSettingChanged()) {
-            saveEXPSetting(new ArrayList(dateSettingMap.values()));
+            saveSetting();
         }
         super.onStop();
     }
@@ -354,9 +355,8 @@ public class SettingActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                if (isExpSettingChanged()) {
-                    saveEXPSetting(new ArrayList(dateSettingMap.values()));
-                }
+
+                saveSetting();
                 SettingActivity.this.finish();
             }
         });
@@ -376,7 +376,7 @@ public class SettingActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                saveEXPSetting(new ArrayList(dateSettingMap.values()));
+                saveSetting();
             }
         });
     }
@@ -402,9 +402,31 @@ public class SettingActivity extends AppCompatActivity {
 
         MyInfoChangeWatcher.watch(null, eText, SINGLETON_SETTING_AUTO_COMMIT_DELAY);
 
+        ckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                settingInstance.setAutoCommitFlag(isChecked);
+                settingInstance.setUpdated(false);
+
+                if (isChecked) {
+
+                    eText.setFocusable(false);
+                    eText.setFocusableInTouchMode(false);
+                    eText.setTextColor(Color.parseColor("gray"));
+                    return;
+                }
+                eText.setFocusable(true);
+                eText.setFocusableInTouchMode(true);
+                eText.setTextColor(Color.BLACK);
+
+            }
+        });
+
         if (ckBox.isChecked()) {
 
             eText.setFocusable(false);
+            eText.setFocusableInTouchMode(false);
             eText.setTextColor(Color.parseColor("gray"));
         }
 
@@ -618,17 +640,36 @@ public class SettingActivity extends AppCompatActivity {
     protected void onPause() {
 
         if (isExpSettingChanged()) {
-            saveEXPSetting(new ArrayList(dateSettingMap.values()));
+            saveSetting();
         }
         super.onPause();
     }
 
 
-    private static void saveEXPSetting(List<DateScope> dateSetting) {
+    private static void saveSetting() {
+
+        saveSingletonSetting();
+        saveEXPSetting();
+
+    }
+
+    private static void saveSingletonSetting() {
+
+        if (!settingInstance.isUpdated()) {
+
+            String setting = JSON.toJSONString(settingInstance);
+            MyDatabaseHelper.saveSetting(SETTING_SINGLETON_INDEX_NAME, setting, MyApplication.sqLiteDatabase);
+            settingInstance.setUpdated(true);
+        }
+    }
+
+    private static void saveEXPSetting() {
+
+        if (!expSettingChanged) return;
 
         applyEXPSetting();
 
-        String setting = JSON.toJSONString(dateSetting);
+        String setting = JSON.toJSONString(new ArrayList(dateSettingMap.values()));
         MyDatabaseHelper.saveSetting(DATE_OFFSET_INDEX, setting, MyApplication.sqLiteDatabase);
         setExpSettingChanged(false);
     }
@@ -695,7 +736,6 @@ public class SettingActivity extends AppCompatActivity {
     public static void initSetting() {
 
         initEXPSetting();
-
         initSingletonSetting(); //todo 单一设置的加载，修改，保存，同步。
     }
 
@@ -723,7 +763,8 @@ public class SettingActivity extends AppCompatActivity {
 
         settingInstance = SingletonSettingBean.getSingletonSettingBean();
         settingInstance.setAutoCommitFlag(true);
-        settingInstance.setAutoCommitDelay(getSingleDefaultSetting(AUTO_COMMIT_DELAY_TAG_NAME));
+        settingInstance.setAutoCommitDelay(readSingleDefaultSetting(AUTO_COMMIT_DELAY_TAG_NAME));
+        settingInstance.setUpdated(false);
     }
 
     public static void initScopeIndex() {
@@ -755,16 +796,17 @@ public class SettingActivity extends AppCompatActivity {
         } else {
 
             getDefaultEXPSetting();
-            saveEXPSetting(scopeList);
         }
 
         for (DateScope s : scopeList) {
 
             dateSettingMap.put(s.getScopeId(),s);
         }
+
+        saveEXPSetting();
     }
 
-    public static String getSingleDefaultSetting(String tagName) {
+    public static String readSingleDefaultSetting(String tagName) {
 
         String packageName = MyApplication.getContext().getPackageName();
         Resources resources = null;
@@ -834,6 +876,7 @@ public class SettingActivity extends AppCompatActivity {
         }
 
         scopeList = setting;
+        setExpSettingChanged(true);
     }
 
     private static Object parseTag(XmlResourceParser xmlParser, String tagName) throws XmlPullParserException, IOException {

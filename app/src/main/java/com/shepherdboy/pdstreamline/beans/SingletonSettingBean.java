@@ -1,6 +1,11 @@
 package com.shepherdboy.pdstreamline.beans;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 public class SingletonSettingBean {
+
+    @JSONField(serialize = false)
+    private boolean updated;
 
     private boolean autoCommitFlag;
 
@@ -10,6 +15,15 @@ public class SingletonSettingBean {
 
     private SingletonSettingBean() {
 
+        updated = true;
+    }
+
+    public boolean isUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(boolean updated) {
+        this.updated = updated;
     }
 
     public boolean isAutoCommitFlag() {

@@ -1,5 +1,6 @@
 package com.shepherdboy.pdstreamline.utils;
 
+import android.util.Log;
 import android.widget.EditText;
 
 import androidx.annotation.Nullable;
@@ -12,9 +13,11 @@ import com.shepherdboy.pdstreamline.beans.Timestream;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 /**
@@ -25,6 +28,7 @@ public class AIInputter {
     public static ArrayList<String> essentialProductInfoList = new ArrayList<String>();
     public static ArrayList<String> essentialTimestreamInfoList = new ArrayList<String>();
     public static LinkedHashMap<String, EditText> blanksToFillQueue = new LinkedHashMap<>();
+    public static LinkedList<Long> inputInterval = new LinkedList<>();
 
     static {
 
@@ -194,6 +198,8 @@ public class AIInputter {
 
     }
 
+
+
     public static boolean validate(String information, Timestream timestream, int fieldIndex) {
 
         switch (fieldIndex) {
@@ -320,24 +326,32 @@ public class AIInputter {
 
     public static boolean validate(DateScope scope, int index, String after) {
 
-        long upperBoundMls = SettingActivity.getUpperBoundMls(scope);
-        long lowerBoundMls = SettingActivity.getLowerBoundMls(scope);
-        long newBoundMls;
-        long promotionOffsetMls;
-        long expireOffsetMls;
+        long upperBoundMls = 0;
+        long lowerBoundMls = 0;
+        long newBoundMls = 0;
+        long promotionOffsetMls = 0;
+        long expireOffsetMls = 0;
 
-        DateScope newScope = new DateScope(scope);
-        newBoundMls = SettingActivity.stringToMillionSeconds(
-                newScope.getRangeValue(), newScope.getRangeUnit()
-        );
-        promotionOffsetMls = SettingActivity.stringToMillionSeconds(
-                newScope.getPromotionOffsetValue(),
-                newScope.getPromotionOffsetUnit()
-        );
-        expireOffsetMls = SettingActivity.stringToMillionSeconds(
-                newScope.getExpireOffsetValue(),
-                newScope.getExpireOffsetUnit()
-        );
+        DateScope newScope = null;
+
+        if (scope != null) {
+
+            upperBoundMls = SettingActivity.getUpperBoundMls(scope);
+            lowerBoundMls = SettingActivity.getLowerBoundMls(scope);
+            newScope = new DateScope(scope);
+            newBoundMls = SettingActivity.stringToMillionSeconds(
+                    newScope.getRangeValue(), newScope.getRangeUnit()
+            );
+            promotionOffsetMls = SettingActivity.stringToMillionSeconds(
+                    newScope.getPromotionOffsetValue(),
+                    newScope.getPromotionOffsetUnit()
+            );
+            expireOffsetMls = SettingActivity.stringToMillionSeconds(
+                    newScope.getExpireOffsetValue(),
+                    newScope.getExpireOffsetUnit()
+            );
+
+        }
 
         switch (index) {
 
@@ -375,8 +389,42 @@ public class AIInputter {
                 );
                 return expireOffsetMls > 0 && expireOffsetMls < promotionOffsetMls;
 
+            case SettingActivity.SINGLETON_SETTING_AUTO_COMMIT_DELAY:
+
+                return true;
+
             default:
                 return false;
         }
+    }
+
+    public static void recordInputTimeInterval(long interval) {
+
+        Log.d("I'm in!", interval + "");
+
+        if (inputInterval.size() == 10) inputInterval.removeFirst();
+
+        inputInterval.add(interval);
+
+    }
+
+    public static long getAutoCommitInterval() {
+
+        if ((!SettingActivity.settingInstance.isAutoCommitFlag()) || inputInterval.size() < 1) {
+
+            inputInterval.add(1234L);
+            return 1234;
+        }
+
+        Collections.sort(inputInterval);
+
+        long sum = 0;
+
+        for (Long l : inputInterval) {
+
+            sum += l;
+        }
+
+        return sum / inputInterval.size();
     }
 }

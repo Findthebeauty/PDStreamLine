@@ -370,6 +370,20 @@ public class MyApplication extends Application {
                 scope.setExpireOffsetValue(after);
                 break;
 
+            case SettingActivity.SINGLETON_SETTING_AUTO_COMMIT_DELAY:
+
+                if (validated) {
+
+                    SettingActivity.settingInstance.setUpdated(false);
+                    SettingActivity.settingInstance.setAutoCommitDelay(after);
+
+                } else {
+
+                    makeToast(SettingActivity.getInstance(), "延时值不合法", Toast.LENGTH_SHORT);
+                    v.setText(SettingActivity.settingInstance.getAutoCommitDelay());
+                }
+
+                return;
         }
         synchronizeSetting(scope, index);
         SettingActivity.setExpSettingChanged(true);

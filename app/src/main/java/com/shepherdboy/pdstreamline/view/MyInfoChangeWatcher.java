@@ -16,6 +16,7 @@ import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.activities.PDInfoActivity;
 import com.shepherdboy.pdstreamline.beans.DateScope;
 import com.shepherdboy.pdstreamline.beans.Timestream;
+import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 
 import java.util.HashMap;
@@ -29,6 +30,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
     private static Handler handler;
     private static Runnable runnable;
     private static long timeMillis = 0;
+    private static long lastInputTimeMillis = 0;
     private static MyInfoChangeWatcher currentWatcher;
     private static String info;
 
@@ -227,6 +229,18 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
     @Override
     public void afterTextChanged(Editable s) {
 
+        long currentTimeMillis = System.currentTimeMillis();
+
+        long inputInterval = currentTimeMillis - lastInputTimeMillis;
+        lastInputTimeMillis = currentTimeMillis;
+
+        Log.d("inputInterval", inputInterval + "");
+
+        if (inputInterval > 500 && inputInterval < 2000) {
+
+            AIInputter.recordInputTimeInterval(inputInterval);
+        }
+
         if (shouldWatch) {
 
             currentInf = s.toString().trim();
@@ -239,7 +253,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
                 } else {
 
-                    if (filedIndex == MyApplication.TIMESTREAM_DOP && currentInf.length() == 4) {
+                    if (filedIndex == MyApplication.TIMESTREAM_DOP && currentInf.length() == 8) {
 
                         MyApplication.afterInfoChanged(currentInf, watchedEditText, timestream,
                                 filedIndex);
@@ -280,10 +294,11 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
             public void run() {
 
                 long interval = System.currentTimeMillis() - timeMillis;
+                long averageInterval = AIInputter.getAutoCommitInterval();
+                Log.d("averageInterval", averageInterval + "");
 
-                if (interval >= 1234) {
+                if (interval >= averageInterval) {
 
-                    Log.d("autoCommit", "I'm in!" + interval);
                     MyApplication.afterInfoChanged(info, currentWatcher.watchedEditText, currentWatcher.timestream,
                             currentWatcher.filedIndex);
 
@@ -292,7 +307,6 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
                     return;
                 }
 
-                Log.d("autoCommit", "NormalTick" + interval);
                 handler.postDelayed(this, 10);
             }
         };

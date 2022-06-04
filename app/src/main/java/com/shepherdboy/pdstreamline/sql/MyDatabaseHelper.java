@@ -61,7 +61,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
     public static final String POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME = "possible_expired_timestream";
 
-    public static final String SETTING_TABLE_NAME = "settings";
+    public static final String SETTING_TABLE_NAME = "manage_setting";
 
     public static final String PRODUCT_INFO_COLUMNS = "product_code,product_name," +
             "product_exp,product_exp_time_unit,product_group_number," +
@@ -193,7 +193,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "dop_interval_count text," +
             "unique(product_code,dop_interval))";
 
-    public static final String CREATE_TABLE_SETTING = "create table settings(" +
+    public static final String CREATE_TABLE_SETTING = "create table " + SETTING_TABLE_NAME + "(" +
             "id integer primary key autoincrement," +
             "setting_index text unique," +
             "setting_value text)";
@@ -301,11 +301,11 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         String value = null;
 
         Cursor cursor = query(sqLiteDatabase, SETTING_TABLE_NAME, new String[]{"*"},
-                "setting_index=?", new String[] {index});
+                "setting_index=?", new String[]{index});
 
         try {
 
-            if (cursor.moveToFirst()) return null;
+            if (!cursor.moveToFirst()) return null;
 
             value = cursor.getString(cursor.getColumnIndex("setting_value"));
 
