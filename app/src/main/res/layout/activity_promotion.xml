@@ -1,63 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.shepherdboy.pdstreamline.view.DraggableLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView android:layout_width="match_parent"
+    android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/parent"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    app:verticalDraggable="true"
-    app:horizontalDraggable="false"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     tools:context=".activities.PromotionActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/sibling1">
-        <Button
-            android:layout_width="match_parent"
+        android:orientation="vertical">
+
+        <com.shepherdboy.pdstreamline.view.DraggableLinearLayout
+            android:id="@+id/parent"
             android:layout_height="wrap_content"
-            android:text="I'm in!"/>
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            app:verticalDraggable="false"
+            app:horizontalDraggable="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/child1">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="I'm in!"/>
+            </LinearLayout>
+
+        </com.shepherdboy.pdstreamline.view.DraggableLinearLayout>
+
     </LinearLayout>
-
-    <com.shepherdboy.pdstreamline.view.DraggableLinearLayout
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:orientation="vertical"
-        app:verticalDraggable="false"
-        app:horizontalDraggable="true">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/child1">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="I'm in!"
-                android:textSize="30sp"></TextView>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/child2">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="I'm in!"
-                android:textSize="30sp"></TextView>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/child3">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="I'm in!"
-                android:textSize="30sp"></TextView>
-        </LinearLayout>
-    </com.shepherdboy.pdstreamline.view.DraggableLinearLayout>
-
-
-</com.shepherdboy.pdstreamline.view.DraggableLinearLayout>
+</ScrollView>

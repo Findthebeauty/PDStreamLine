@@ -70,7 +70,7 @@ public class SettingActivity extends AppCompatActivity {
     public static final HashMap<String, DateScope> dateSettingMap = new HashMap<>();
     public static final HashMap<Long, DateScope> mlScopeMap = new HashMap<>();
     public static final HashMap<Integer, DateScope> onShowScopeMap = new HashMap<>();
-    public static ArrayList<Long> dateSettingIndex;
+    public static ArrayList<Long> dateSettingIndex; // todo 获取无记录的datescope
     private static final HashMap<String, TextView> upperBoundTextViewMap = new HashMap<>();
 
     private static final int ADD_SCOPE = 1;

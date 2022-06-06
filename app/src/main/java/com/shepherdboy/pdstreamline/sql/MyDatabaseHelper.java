@@ -118,8 +118,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "product_promotion_date text," +
             "product_expire_date text," +
             "product_coordinate text," +
-            "product_inventory text," +
-            "unique(product_code,product_dop))";
+            "product_inventory text)";
 
     public static final String CREATE_TABLE_POSSIBLE_PROMOTION_TIMESTREAM = "create table possible_promotion_timestream(" +
             "id text primary key," +
@@ -129,8 +128,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "product_expire_date text," +
             "product_coordinate text," +
             "product_inventory text," +
-            "in_basket text default 'false'," +
-            "unique(product_code,product_dop))";
+            "in_basket text default 'false')";
 
     public static final String CREATE_TABLE_PROMOTION_TIMESTREAM = "create table promotion_timestream(" +
             "id text primary key," +

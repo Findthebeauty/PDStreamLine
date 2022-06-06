@@ -112,19 +112,15 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
             case PICK_OUT:
 
-//                todo 移除timestreamView，从possiblePromotionTimestream表中移除timestream，
-//                 将timestream添加到newPromotionTimestreams中
                 rmTs = MyApplication.unloadTimestream((LinearLayout) releasedChild);
+                basket.add(rmTs);
                 rmTs.setInBasket(true);
                 MyDatabaseHelper.PDInfoWrapper.updateInfo(MyApplication.sqLiteDatabase, rmTs,
                         MyDatabaseHelper.UPDATE_BASKET);
 
-                basket.add(rmTs);
                 break;
 
             case DELETE:
-
-//              todo 移除timestreamView，从possiblePromotionTimestream表中移除timestream
 
                 rmTs = MyApplication.unloadTimestream((LinearLayout) releasedChild);
                 MyDatabaseHelper.PDInfoWrapper.deleteTimestream(MyApplication.sqLiteDatabase, rmTs.getId());

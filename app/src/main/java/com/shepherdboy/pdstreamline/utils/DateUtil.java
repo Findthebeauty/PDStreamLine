@@ -273,19 +273,17 @@ public class DateUtil {
 
     private static DateScope getDateScope(long mlsEXP) {
 
-        DateScope scope = null;
         for (int i = 0; i < SettingActivity.dateSettingIndex.size(); i++){
 
             long lowerBoundIndex = SettingActivity.dateSettingIndex.get(i);
 
             if (mlsEXP >= lowerBoundIndex) {
 
-                scope = SettingActivity.mlScopeMap.get(lowerBoundIndex);
-                break;
+                return SettingActivity.mlScopeMap.get(lowerBoundIndex);
             }
         }
 
-        return scope;
+        return null;
     }
 
     // 根据生产日期与保质期计算到期时间

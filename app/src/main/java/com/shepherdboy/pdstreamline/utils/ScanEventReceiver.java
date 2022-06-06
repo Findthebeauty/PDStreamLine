@@ -25,12 +25,9 @@ public class ScanEventReceiver extends BroadcastReceiver {
 
         if (newerProductCode != null && !newerProductCode.equals(productCode)) {
 
-
             show(newerProductCode);
             productCode = newerProductCode;
-
         }
-
     }
 
     public static void show(String productCode) {
