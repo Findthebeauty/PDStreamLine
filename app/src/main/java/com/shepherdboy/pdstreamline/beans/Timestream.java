@@ -199,6 +199,19 @@ public class Timestream {
         setId(UUID.randomUUID().toString());
     }
 
+    public Timestream(Timestream t) {
+
+        this();
+        setPromoting(false);
+        setProductDOP(t.getProductDOP());
+        setInBasket(t.isInBasket());
+        setProductCoordinate(t.getProductCoordinate());
+        setProductDOP(t.getProductDOP());
+        setProductExpireDate(t.getProductExpireDate());
+        setProductPromotionDate(t.getProductPromotionDate());
+        setProductInventory("1");
+    }
+
     public Timestream(String productCode) {
         this();
         setProductCode(productCode);

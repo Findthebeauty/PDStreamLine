@@ -286,7 +286,6 @@ public class AIInputter {
         if (productDOP == null) {
 
             productDOP = getPossibleDOP(product.getProductEXP(), product.getProductEXPTimeUnit());
-
         }
 
         after = after.trim();

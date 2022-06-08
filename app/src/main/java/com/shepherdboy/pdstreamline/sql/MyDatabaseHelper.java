@@ -29,6 +29,8 @@ import java.util.Objects;
 
 public class MyDatabaseHelper extends SQLiteOpenHelper {
 
+    public static final int PLAIN_PRODUCT_WITH_NO_TIMESTREAM = -1;
+
     public static final int ENTIRE_TIMESTREAM = 0;
 
     public static final int POSSIBLE_PROMOTION_TIMESTREAM = 1;
@@ -379,6 +381,9 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                 case ENTIRE_TIMESTREAM:
 
                     getEntireTimestream(product, sqLiteDatabase, timeStreamHashMap);
+                    break;
+
+                case PLAIN_PRODUCT_WITH_NO_TIMESTREAM:
                     break;
                     
 //                case POSSIBLE_EXPIRED_TIMESTREAM:

@@ -7,6 +7,8 @@ public class SingletonSettingBean {
     @JSONField(serialize = false)
     private boolean updated;
 
+    private boolean autoCombine = true;
+
     private boolean autoCommitFlag;
 
     private String  autoCommitDelay;
@@ -24,6 +26,14 @@ public class SingletonSettingBean {
 
     public void setUpdated(boolean updated) {
         this.updated = updated;
+    }
+
+    public boolean isAutoCombine() {
+        return autoCombine;
+    }
+
+    public void setAutoCombine(boolean autoCombine) {
+        this.autoCombine = autoCombine;
     }
 
     public boolean isAutoCommitFlag() {

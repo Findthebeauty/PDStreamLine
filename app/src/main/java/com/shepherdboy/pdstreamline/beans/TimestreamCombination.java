@@ -1,0 +1,89 @@
+package com.shepherdboy.pdstreamline.beans;
+
+import com.shepherdboy.pdstreamline.MyApplication;
+import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
+
+public class TimestreamCombination {
+
+    private String buyProductName;
+
+    private String giveawayProductName;
+
+    private Timestream buyTimestream;
+
+    private Timestream giveawayTimestream;
+
+    private boolean selfPromotion;
+
+    private int packageCount;
+
+    public TimestreamCombination(Timestream t) {
+
+        buyProductName = MyDatabaseHelper.PDInfoWrapper.getProductName(t.getProductCode(),
+                MyApplication.sqLiteDatabase);
+        giveawayProductName = buyProductName;
+        buyTimestream = t;
+        giveawayTimestream = t;
+        selfPromotion = true;
+        packageCount = Integer.parseInt(t.getProductInventory()) / 2;
+    }
+    public TimestreamCombination(Timestream buyTimestream, Timestream giveawayTimestream) {
+
+        buyProductName = MyDatabaseHelper.PDInfoWrapper.getProductName(buyTimestream.getProductCode(),
+                MyApplication.sqLiteDatabase);
+        giveawayProductName = MyDatabaseHelper.PDInfoWrapper.getProductName(giveawayTimestream.getProductCode(),
+                MyApplication.sqLiteDatabase);
+        this.buyTimestream = buyTimestream;
+        this.giveawayTimestream = giveawayTimestream;
+        selfPromotion = false;
+        packageCount = Integer.parseInt(buyTimestream.getProductInventory());
+    }
+
+    public int getPackageCount() {
+        return packageCount;
+    }
+
+    public void setPackageCount(int packageCount) {
+        this.packageCount = packageCount;
+    }
+
+    public boolean isSelfPromotion() {
+        return selfPromotion;
+    }
+
+    public void setSelfPromotion(boolean selfPromotion) {
+        this.selfPromotion = selfPromotion;
+    }
+
+    public String getBuyProductName() {
+        return buyProductName;
+    }
+
+    public void setBuyProductName(String buyProductName) {
+        this.buyProductName = buyProductName;
+    }
+
+    public String getGiveawayProductName() {
+        return giveawayProductName;
+    }
+
+    public void setGiveawayProductName(String giveawayProductName) {
+        this.giveawayProductName = giveawayProductName;
+    }
+
+    public Timestream getBuyTimestream() {
+        return buyTimestream;
+    }
+
+    public void setBuyTimestream(Timestream buyTimestream) {
+        this.buyTimestream = buyTimestream;
+    }
+
+    public Timestream getGiveawayTimestream() {
+        return giveawayTimestream;
+    }
+
+    public void setGiveawayTimestream(Timestream giveawayTimestream) {
+        this.giveawayTimestream = giveawayTimestream;
+    }
+}
