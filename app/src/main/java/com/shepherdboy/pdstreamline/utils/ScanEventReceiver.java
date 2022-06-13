@@ -16,12 +16,16 @@ public class ScanEventReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
+        newerProductCode = intent.getStringExtra("barcode_string");
+
+        if (!AIInputter.isNumeric(newerProductCode)) return;
+
         //todo 判断pdInfoactivity的状态决定是resume还是start
         PDInfoActivity.actionStart();
         MyApplication.pickupChanges();
         MyApplication.saveChanges(MyApplication.thingsToSaveList);
 
-        newerProductCode = intent.getStringExtra("barcode_string");
+
 
         if (newerProductCode != null && !newerProductCode.equals(productCode)) {
 

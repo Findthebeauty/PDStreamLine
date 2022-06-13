@@ -72,6 +72,10 @@ public class MainActivity extends AppCompatActivity {
 
                 MyApplication.pickupChanges();
                 MyApplication.saveChanges(MyApplication.thingsToSaveList);
+                //将应用内部数据库拷贝到应用外部文件夹
+                verifyStoragePermissions(MainActivity.this);
+                MyDatabaseHelper.copyDataBase(databasePath,
+                        tempDataBasePath);
 
                 long timeMillis = System.currentTimeMillis();
 
