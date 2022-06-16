@@ -217,7 +217,7 @@ public class MyApplication extends Application {
 
                 case PD_INFO_ACTIVITY:
 
-                    for (int i = 0; i < draggableLinearLayout.getChildCount() - 3; i++) {
+                    for (int i = 0; i < draggableLinearLayout.getChildCount() - 4; i++) {
 
                         recordViewStateByChildIndex(draggableLinearLayout, i + 3);
                     }
