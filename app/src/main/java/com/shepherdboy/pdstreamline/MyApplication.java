@@ -217,7 +217,7 @@ public class MyApplication extends Application {
 
                 case PD_INFO_ACTIVITY:
 
-                    for (int i = 0; i < draggableLinearLayout.getChildCount() - 4; i++) {
+                    for (int i = 0; i < draggableLinearLayout.getChildCount() - 3; i++) {
 
                         recordViewStateByChildIndex(draggableLinearLayout, i + 3);
                     }
@@ -433,7 +433,10 @@ public class MyApplication extends Application {
                             watchedEditText.setText(after);
                             MyInfoChangeWatcher.setShouldWatch(true);
 
-                            DraggableLinearLayout.setFocus(watchedEditText);
+                            if (watchedEditText.equals(draggableLinearLayout.getFocusedChild()))
+                            {
+                                DraggableLinearLayout.setFocus(watchedEditText);
+                            }
 
                         } catch (Exception e) {
 

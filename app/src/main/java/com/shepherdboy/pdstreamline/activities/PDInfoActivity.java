@@ -13,6 +13,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -47,11 +48,7 @@ public class PDInfoActivity extends AppCompatActivity {
     private static String[] textArray = new String[]{"生产日期:", "坐标:", "库存:"};
 
     private static LinearLayout topTimestreamView;
-    private static EditText topDOPEditText;
-
-    public static EditText productCodeEditText;
-    public static EditText productNameEditText;
-    public static EditText productEXPEditText;
+    private static EditText topDOPEditText,productCodeEditText,productNameEditText,productEXPEditText;
     public static Button productEXPTimeUnitButton;
 
     public static void actionStart() {
@@ -83,19 +80,26 @@ public class PDInfoActivity extends AppCompatActivity {
         productEXPEditText = findViewById(R.id.product_exp);
         productEXPTimeUnitButton = findViewById(R.id.time_unit);
 
-        //点击按钮，测试用
-        Button addProduct = (Button) findViewById(R.id.add_product);
-        addProduct.setOnClickListener(new View.OnClickListener() {
+        productCodeEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
-            public void onClick(View view) {
-                serialize();
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 
-                String code = ((EditText)findViewById(R.id.product_code)).getText().toString();
-                ScanEventReceiver.show(code);
+                if (actionId == 5 ) {
 
+                    searchNext();
+                    return true;
+                }
+
+                return false;
             }
         });
+    }
 
+    private void searchNext() {
+        serialize();
+
+        String code = ((EditText)findViewById(R.id.product_code)).getText().toString();
+        ScanEventReceiver.show(code);
     }
 
     @Override
@@ -191,7 +195,8 @@ public class PDInfoActivity extends AppCompatActivity {
         DraggableLinearLayout.setLayoutChanged(true);
 
         // 根据根view的childCount计算timestreamView的数量
-        int timestreamViewCount = draggableLinearLayout.getChildCount() - 4;
+        int timestreamViewCount = draggableLinearLayout.getChildCount() - 3;
+
 
         while (timestreamViewCount > timestreams.size()) {
 
@@ -276,15 +281,7 @@ public class PDInfoActivity extends AppCompatActivity {
 
             case ADD_TIMESTREAM_LAYOUT:
 //todo bug 空timestreamView复制时时间不为0点
-                Timestream nT = new Timestream();
-                AIInputter.fillTheBlanks(currentProduct, nT);
-                currentProduct.getTimeStreams().put(nT.getId(), nT);
-
-                viewId = addTimestreamView(draggableLinearLayout);
-                loadTimestream(nT, viewId);
-                setTimeStreamViewOriginalBackgroundColor((LinearLayout) releasedChild);
-
-
+                addTimestream((LinearLayout) releasedChild);
                 break;
 
             case REMOVE_TIMESTREAM_LAYOUT:
@@ -312,6 +309,19 @@ public class PDInfoActivity extends AppCompatActivity {
 
                 break;
         }
+    }
+
+    private static void addTimestream(LinearLayout releasedChild) {
+        int viewId;
+        Timestream nT = new Timestream();
+        AIInputter.fillTheBlanks(currentProduct, nT);
+        currentProduct.getTimeStreams().put(nT.getId(), nT);
+
+        viewId = addTimestreamView(draggableLinearLayout);
+        loadTimestream(nT, viewId);
+
+        if (releasedChild == null) return;
+        setTimeStreamViewOriginalBackgroundColor(releasedChild);
     }
 
     public static int addTimestreamView(LinearLayout rootView) {

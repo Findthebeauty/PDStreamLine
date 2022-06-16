@@ -6,6 +6,7 @@ import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -133,7 +134,6 @@ public class DraggableLinearLayout extends LinearLayout {
 
 
         });
-
     }
 
     public void putBack(View view){
@@ -187,11 +187,11 @@ public class DraggableLinearLayout extends LinearLayout {
 
         View toCapture = viewDragHelper.findTopChildUnder((int)event.getX(), (int)event.getY());
 
-        if (null != toCapture && toCapture instanceof LinearLayout) {
+        if (toCapture instanceof LinearLayout &&
+                MyApplication.originalPositionHashMap.containsKey(toCapture.getId())) {
 
-            LinearLayout currentTimeStreamView = (LinearLayout) toCapture;
-
-            return currentTimeStreamView;
+            Log.d("currentView", toCapture.getId() + "");
+            return (LinearLayout) toCapture;
 
         }
         return null;
@@ -229,7 +229,7 @@ public class DraggableLinearLayout extends LinearLayout {
         }
 
 
-        if (currentTimestreamView != null ) {
+        if (currentTimestreamView != null) {
 
             return viewDragHelper.shouldInterceptTouchEvent(event);
         }
@@ -263,7 +263,7 @@ public class DraggableLinearLayout extends LinearLayout {
             currentTimestreamView = getCurrentView(event);
         }
 
-        if (currentTimestreamView != null ) {
+        if (currentTimestreamView != null) {
 
             viewDragHelper.processTouchEvent(event);
             return true;

@@ -9,4 +9,5 @@
     <string name="exp_range">保质期范围</string>
     <string name="promotion_offset">临期提前量</string>
     <string name="off_shelves_offset">下架提前量</string>
+    <string name="add_timestream">添加</string>
 </resources>

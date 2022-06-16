@@ -12,7 +12,7 @@
         <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/layout/actionbar_layout.xml" value="0.67" />
         <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/layout/activity_error_info_display.xml" value="0.375" />
         <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/layout/activity_main.xml" value="0.5" />
-        <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/layout/activity_pdinfo.xml" value="0.75" />
+        <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/layout/activity_pdinfo.xml" value="0.6944444444444444" />
         <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/layout/activity_pdinfo_acitivity.xml" value="0.5" />
         <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/layout/activity_possible_promotion_timestream.xml" value="1.0" />
         <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/layout/activity_promotion.xml" value="0.7115384615384616" />
@@ -20,7 +20,7 @@
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_15" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_X" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">
