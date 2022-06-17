@@ -15,6 +15,7 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -83,15 +84,31 @@ public class PDInfoActivity extends AppCompatActivity {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 
-                if (actionId == 5 ) {
+                if (actionId == EditorInfo.IME_ACTION_NEXT
+                || (event != null) && KeyEvent.KEYCODE_ENTER == event.getKeyCode()
+                && KeyEvent.ACTION_UP == event.getAction()) {
 
                     searchNext();
-                    return true;
                 }
-
-                return false;
+                return true;
             }
         });
+
+//        productCodeEditText.setOnKeyListener(new View.OnKeyListener() {
+//            @Override
+//            public boolean onKey(View v, int keyCode, KeyEvent event) {
+//
+//                Toast.makeText(MyApplication.getContext(), keyCode + ":" + event.getAction(),
+//                        Toast.LENGTH_SHORT).show();
+//
+//                if(keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
+//
+//                    searchNext();
+//                    return true;
+//                }
+//                return keyCode == KeyEvent.KEYCODE_ENTER;
+//            }
+//        });
     }
 
     private void searchNext() {
