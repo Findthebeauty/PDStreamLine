@@ -1,97 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.shepherdboy.pdstreamline.view.DraggableLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/parent"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    app:verticalDraggable="false">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
-    <LinearLayout
+    <com.shepherdboy.pdstreamline.view.DraggableLinearLayout
+        android:id="@+id/parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        >
+        android:orientation="vertical"
+        app:verticalDraggable="false">
 
-        <Button
-            android:id="@+id/redo"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="重做"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
 
-        <Button
-            android:id="@+id/back"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="撤回"/>
-    </LinearLayout>
-<!--    <LinearLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:gravity="center_vertical"-->
-<!--        android:background="@drawable/underline"-->
-<!--        android:orientation="horizontal"-->
-<!--        android:alpha="0.8"-->
-<!--        android:weightSum="1">-->
+            <Button
+                android:id="@+id/redo"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="重做"/>
 
-<!--        <TextView-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:layout_weight="0.23"-->
-<!--            android:gravity="center"-->
-<!--            android:paddingLeft="5dp"-->
-<!--            android:paddingRight="5dp"-->
-<!--            android:text="12-07"-->
-<!--            android:textSize="23dp" />-->
+            <Button
+                android:id="@+id/back"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="撤回"/>
+        </LinearLayout>
+    <!--    <LinearLayout-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:gravity="center_vertical"-->
+    <!--        android:background="@drawable/underline"-->
+    <!--        android:orientation="horizontal"-->
+    <!--        android:alpha="0.8"-->
+    <!--        android:weightSum="1">-->
 
-<!--        <TextView-->
-<!--            android:id="@+id/product_name"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:layout_weight="0.47"-->
-<!--            android:gravity="center_vertical"-->
-<!--            android:text="光明牌7天鲜牛奶500ml"-->
+    <!--        <TextView-->
+    <!--            android:layout_width="0dp"-->
+    <!--            android:layout_height="match_parent"-->
+    <!--            android:layout_weight="0.23"-->
+    <!--            android:gravity="center"-->
+    <!--            android:paddingLeft="5dp"-->
+    <!--            android:paddingRight="5dp"-->
+    <!--            android:text="12-07"-->
+    <!--            android:textSize="23dp" />-->
 
-<!--            />-->
+    <!--        <TextView-->
+    <!--            android:id="@+id/product_name"-->
+    <!--            android:layout_width="0dp"-->
+    <!--            android:layout_height="match_parent"-->
+    <!--            android:layout_weight="0.47"-->
+    <!--            android:gravity="center_vertical"-->
+    <!--            android:text="光明牌7天鲜牛奶500ml"-->
 
-<!--        <EditText-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_weight="0.15"-->
-<!--            android:gravity="center_horizontal"-->
-<!--            android:paddingLeft="5dp"-->
-<!--            android:paddingRight="5dp"-->
-<!--            android:text="10"-->
-<!--            android:textSize="23dp" />-->
+    <!--            />-->
 
-<!--        <LinearLayout-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:layout_weight="0.15"-->
-<!--            android:orientation="vertical">-->
+    <!--        <EditText-->
+    <!--            android:layout_width="0dp"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:layout_weight="0.15"-->
+    <!--            android:gravity="center_horizontal"-->
+    <!--            android:paddingLeft="5dp"-->
+    <!--            android:paddingRight="5dp"-->
+    <!--            android:text="10"-->
+    <!--            android:textSize="23dp" />-->
 
-<!--            <TextView-->
-<!--                android:id="@+id/product_code"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="0dp"-->
-<!--                android:layout_weight="1"-->
-<!--                android:gravity="center"-->
-<!--                android:text="302503"-->
-<!--                android:textSize="10dp"/>-->
+    <!--        <LinearLayout-->
+    <!--            android:layout_width="0dp"-->
+    <!--            android:layout_height="match_parent"-->
+    <!--            android:layout_weight="0.15"-->
+    <!--            android:orientation="vertical">-->
 
-<!--            <TextView-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="0dp"-->
-<!--                android:layout_weight="1"-->
-<!--                android:gravity="center"-->
-<!--                android:text="1010"-->
-<!--                android:textSize="10dp" />-->
+    <!--            <TextView-->
+    <!--                android:id="@+id/product_code"-->
+    <!--                android:layout_width="match_parent"-->
+    <!--                android:layout_height="0dp"-->
+    <!--                android:layout_weight="1"-->
+    <!--                android:gravity="center"-->
+    <!--                android:text="302503"-->
+    <!--                android:textSize="10dp"/>-->
 
-<!--        </LinearLayout>-->
+    <!--            <TextView-->
+    <!--                android:layout_width="match_parent"-->
+    <!--                android:layout_height="0dp"-->
+    <!--                android:layout_weight="1"-->
+    <!--                android:gravity="center"-->
+    <!--                android:text="1010"-->
+    <!--                android:textSize="10dp" />-->
 
-<!--    </LinearLayout>-->
+    <!--        </LinearLayout>-->
 
+    <!--    </LinearLayout>-->
 
-</com.shepherdboy.pdstreamline.view.DraggableLinearLayout>
+    </com.shepherdboy.pdstreamline.view.DraggableLinearLayout>
+</ScrollView>

@@ -139,7 +139,7 @@ public class PDInfoActivity extends AppCompatActivity {
     private static void loadTimestreams(LinkedHashMap<String, Timestream> timeStreams) {
 
         LinearLayout timestreamView;
-        int timestreamViewIndex = 3;
+        int timestreamViewIndex = 0;
 
         for (Timestream timestream : timeStreams.values()) {
 
@@ -221,13 +221,13 @@ public class PDInfoActivity extends AppCompatActivity {
         DraggableLinearLayout.setLayoutChanged(true);
 
         // 根据根view的childCount计算timestreamView的数量
-        int timestreamViewCount = draggableLinearLayout.getChildCount() - 4;
+        int timestreamViewCount = draggableLinearLayout.getChildCount() - 1;
 
 
         while (timestreamViewCount > timestreams.size()) {
 
             // 删除从上往下第一个timestream
-            draggableLinearLayout.removeView(draggableLinearLayout.getChildAt(3));
+            draggableLinearLayout.removeView(draggableLinearLayout.getChildAt(0));
 
             timestreamViewCount--;
         }
@@ -239,7 +239,7 @@ public class PDInfoActivity extends AppCompatActivity {
             timestreamViewCount++;
         }
 
-        topTimestreamView = (LinearLayout) draggableLinearLayout.getChildAt(3);
+        topTimestreamView = (LinearLayout) draggableLinearLayout.getChildAt(0);
         topDOPEditText = (EditText) topTimestreamView.getChildAt(1);
 
 //        MyApplication.init();
