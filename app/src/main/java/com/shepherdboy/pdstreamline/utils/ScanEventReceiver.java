@@ -36,9 +36,7 @@ public class ScanEventReceiver extends BroadcastReceiver {
 
     public static void show(String productCode) {
 
-        MyApplication.pickupChanges();
-
-        MyApplication.saveChanges(MyApplication.thingsToSaveList);
+        MyApplication.serialize();
 
         if (MyApplication.sqLiteDatabase == null) {
 

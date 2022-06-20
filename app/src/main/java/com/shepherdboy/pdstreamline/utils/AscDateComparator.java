@@ -1,5 +1,7 @@
 package com.shepherdboy.pdstreamline.utils;
 
+import android.util.Log;
+
 import com.shepherdboy.pdstreamline.beans.Timestream;
 
 import java.util.Comparator;
@@ -35,6 +37,9 @@ public class AscDateComparator implements Comparator<Map.Entry<String, Timestrea
             date2 = new Date();
         }
 
-        return (int) (date1.getTime() - date2.getTime());
+        Log.d("compare", "date1:" + DateUtil.typeMach(date1) + ", date2:" + DateUtil.typeMach(date2)
+                + " " + (int) ((date1.getTime()  - date2.getTime()) / (1000 * 60 * 60 * 24)));
+
+        return (int) ((date1.getTime()  - date2.getTime()) / (1000 * 60 * 60 * 24));
     }
 }

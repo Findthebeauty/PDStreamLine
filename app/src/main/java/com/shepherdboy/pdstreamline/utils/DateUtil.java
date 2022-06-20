@@ -98,14 +98,24 @@ public class DateUtil {
 
     }
 
-    public static Date getLastYear(Date date) {
+    public static Date getLast(Date date, int index) {
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
 
-        calendar.add(Calendar.YEAR, -1);
+        calendar.add(index, -1);
 
         return calendar.getTime();
+    }
+
+    public static Date getLastYear(Date date) {
+
+        return getLast(date, Calendar.YEAR);
+    }
+
+    public static Date getLastMonth(Date date) {
+
+        return getLast(date, Calendar.MONTH);
     }
 
     //获取当前日期时间
@@ -351,6 +361,16 @@ public class DateUtil {
         }
 
         return !nD.equals(oldDate);
+    }
+
+    public static void setCalender(Date productDOP, int index, String after) {
+
+        Calendar calendar = Calendar.getInstance();
+
+        calendar.setTime(productDOP);
+
+        calendar.set(index, Integer.parseInt(after));
+
     }
 
 }

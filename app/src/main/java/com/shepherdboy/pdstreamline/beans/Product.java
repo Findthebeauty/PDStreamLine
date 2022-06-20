@@ -129,6 +129,13 @@ public class Product {
 
             Collections.sort(list, AscDateComparator.getInstance());
 
+            timeStreams = new LinkedHashMap<>();
+
+            for (Map.Entry<String, Timestream> entry : list) {
+
+                timeStreams.put(entry.getKey(), entry.getValue());
+            }
+
         }
 
         return timeStreams;

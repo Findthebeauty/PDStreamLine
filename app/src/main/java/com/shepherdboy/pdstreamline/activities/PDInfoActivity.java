@@ -94,25 +94,9 @@ public class PDInfoActivity extends AppCompatActivity {
             }
         });
 
-//        productCodeEditText.setOnKeyListener(new View.OnKeyListener() {
-//            @Override
-//            public boolean onKey(View v, int keyCode, KeyEvent event) {
-//
-//                Toast.makeText(MyApplication.getContext(), keyCode + ":" + event.getAction(),
-//                        Toast.LENGTH_SHORT).show();
-//
-//                if(keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
-//
-//                    searchNext();
-//                    return true;
-//                }
-//                return keyCode == KeyEvent.KEYCODE_ENTER;
-//            }
-//        });
     }
 
     private void searchNext() {
-        serialize();
 
         String code = ((EditText)findViewById(R.id.product_code)).getText().toString();
         ScanEventReceiver.show(code);
@@ -127,13 +111,13 @@ public class PDInfoActivity extends AppCompatActivity {
         initActivity();
     }
 
-
-
     public static void loadProduct(Product product) {
 
         MyInfoChangeWatcher.setShouldWatch(false);
 
-        initTimestreamView(product.getTimeStreams());
+        LinkedHashMap<String, Timestream> timeStreams = product.getTimeStreams();
+
+        initTimestreamView(timeStreams);
 
         productCodeEditText.setText(product.getProductCode());
         productNameEditText.setText(product.getProductName());
@@ -145,7 +129,7 @@ public class PDInfoActivity extends AppCompatActivity {
         MyInfoChangeWatcher.watch(productEXPEditText, null, MyApplication.PRODUCT_EXP);
         MyInfoChangeWatcher.watch(productEXPTimeUnitButton);
 
-        loadTimestreams(product.getTimeStreams());
+        loadTimestreams(timeStreams);
 
         DraggableLinearLayout.setFocus(topDOPEditText);
 
@@ -176,19 +160,17 @@ public class PDInfoActivity extends AppCompatActivity {
 
         EditText e = (EditText) ((LinearLayout) draggableLinearLayout.findViewById(tsViewId)).getChildAt(1);
 
-        View.OnFocusChangeListener pre = e.getOnFocusChangeListener();
-
         e.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
 
                 if (hasFocus && MyInfoChangeWatcher.isShouldWatch()) {
 
+                    e.setOnFocusChangeListener(null);
                     Timestream t = new Timestream();
                     currentProduct.getTimeStreams().put(t.getId(), t);
                     AIInputter.fillTheBlanks(currentProduct, t);
                     loadTimestream(t, tsViewId);
-                    e.setOnFocusChangeListener(pre);
                     addTimestreamView(draggableLinearLayout, 0);
                     prepareNext();
                 }
@@ -436,13 +418,8 @@ public class PDInfoActivity extends AppCompatActivity {
     protected void onPause() {
 
         //暂停时将改动的商品信息保存到数据库,全局
-        serialize();
+        MyApplication.serialize();
         super.onPause();
     }
 
-    public static void serialize() {
-
-        MyApplication.pickupChanges();
-        MyApplication.saveChanges(MyApplication.thingsToSaveList);
-    }
 }

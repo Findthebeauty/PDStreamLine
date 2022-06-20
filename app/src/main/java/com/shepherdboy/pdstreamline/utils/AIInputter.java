@@ -239,7 +239,13 @@ public class AIInputter {
                 switch (information.length()) {
 
                     case 1: return !information.equals("0");
-
+                    case 3: return !information.startsWith("0");
+                    case 4:
+                            String reg = "(0[1-9])|(1[0-2])(" +
+                                    "(0[1-9])|" +
+                                    "([1-2][0-9])|" +
+                                    "(3[0-1]))";
+                            return information.matches(reg);
                     default: return true;
                 }
             case MyApplication.TIMESTREAM_COORDINATE:
@@ -310,6 +316,18 @@ public class AIInputter {
                 result = DateUtil.typeMach(DOP).substring(0,10);
 
             }
+
+//            ArrayList<Date> possibleDOPs = new ArrayList<>();
+//
+//            if (after.length() == 1) {
+//
+//                DateUtil.setCalender(productDOP, Calendar.DATE, after);
+//
+//                possibleDOPs.add(productDOP);
+//                possibleDOPs.add(DateUtil.getLastMonth(productDOP));
+//                possibleDOPs.add(DateUtil.getLastYear(productDOP));
+//
+//            }
 
         }
 

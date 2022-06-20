@@ -161,6 +161,12 @@ public class MyApplication extends Application {
         }
 
     }
+
+    public static void serialize() {
+
+        pickupChanges();
+        saveChanges(thingsToSaveList);
+    }
 //
 //    static {
 //
@@ -430,13 +436,15 @@ public class MyApplication extends Application {
                             after = AIInputter.translate(currentProduct, timestream.getProductDOP(), after);
 
                             MyInfoChangeWatcher.setShouldWatch(false);
-                            watchedEditText.setText(after);
-                            MyInfoChangeWatcher.setShouldWatch(true);
 
-                            if (watchedEditText.equals(draggableLinearLayout.getFocusedChild()))
-                            {
+                            watchedEditText.setText(after);
+
+                            if (watchedEditText.hasFocus()) {
                                 DraggableLinearLayout.setFocus(watchedEditText);
                             }
+
+                            MyInfoChangeWatcher.setShouldWatch(true);
+
 
                         } catch (Exception e) {
 
