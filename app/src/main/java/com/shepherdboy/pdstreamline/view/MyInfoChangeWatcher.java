@@ -3,7 +3,6 @@ package com.shepherdboy.pdstreamline.view;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -14,11 +13,14 @@ import androidx.annotation.Nullable;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.activities.PDInfoActivity;
+import com.shepherdboy.pdstreamline.activities.SettingActivity;
 import com.shepherdboy.pdstreamline.beans.DateScope;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -112,45 +114,79 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
     }
     public static void watch(Button button) {
 
-        button.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
+        switch (MyApplication.activityIndex) {
 
-                if (!shouldWatch) {
-                    return true;
-                }
+            case MyApplication.PD_INFO_ACTIVITY:
 
-                String oldTimeUnit;
-                String newTimeUnit = null;
+                button.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
 
-                oldTimeUnit = PDInfoActivity.productEXPTimeUnitButton.getText().toString();
+                        if (!shouldWatch) {
+                            return true;
+                        }
 
-                switch (oldTimeUnit) {
+                        String oldTimeUnit;
+                        String newTimeUnit = null;
 
-                    case "天":
+                        oldTimeUnit = PDInfoActivity.productEXPTimeUnitButton.getText().toString();
 
-                        newTimeUnit = "年";
-                        break;
+                        switch (oldTimeUnit) {
 
-                    case "年":
+                            case "天":
 
-                        newTimeUnit = "月";
-                        break;
+                                newTimeUnit = "年";
+                                break;
 
-                    case "月":
+                            case "年":
 
-                        newTimeUnit = "天";
-                        break;
+                                newTimeUnit = "月";
+                                break;
 
-                }
+                            case "月":
 
-                PDInfoActivity.productEXPTimeUnitButton.setText(newTimeUnit);
+                                newTimeUnit = "天";
+                                break;
 
-                MyApplication.afterInfoChanged(newTimeUnit, null, null, MyApplication.PRODUCT_EXP_TIME_UNIT);
+                        }
 
-                return true;
-            }
-        });
+                        PDInfoActivity.productEXPTimeUnitButton.setText(newTimeUnit);
+
+                        MyApplication.afterInfoChanged(newTimeUnit, null, null, MyApplication.PRODUCT_EXP_TIME_UNIT);
+
+                        return true;
+                    }
+                });
+
+                break;
+
+            case MyApplication.SETTING_ACTIVITY:
+
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        Date date = SettingActivity.settingInstance.getNextSalesmanCheckDay();
+
+                        if (date.after(DateUtil.getStartPointToday())) {
+
+                            date = DateUtil.switchDate(date, Calendar.DATE, -1);
+                            button.setText("今天");
+
+                        } else {
+
+                            date = DateUtil.switchDate(date, Calendar.DATE, 1);
+                            button.setText("明天");
+                        }
+
+                        SettingActivity.settingInstance.setNextSalesmanCheckDay(date);
+                        SettingActivity.settingInstance.setUpdated(false);
+                        SettingActivity.getInstance().loadLastSalesmanCheckDate();
+                    }
+                });
+                break;
+
+        }
 
 
     }
@@ -207,7 +243,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
                 w.preInf = w.watchedEditText.getText().toString().trim();
 
-                if (w.preInf != "") {
+                if (!w.preInf.equals("") && w.filedIndex == MyApplication.TIMESTREAM_DOP) {
 
                     w.preInf = DateUtil.getShortKey(w.preInf);
 
@@ -233,9 +269,8 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
         long currentTimeMillis = System.currentTimeMillis();
 
         long inputInterval = currentTimeMillis - lastInputTimeMillis;
-        lastInputTimeMillis = currentTimeMillis;
 
-        Log.d("inputInterval", inputInterval + "");
+        lastInputTimeMillis = currentTimeMillis;
 
         if (inputInterval > 500 && inputInterval < 2000) {
 
@@ -248,27 +283,10 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
             if (!preInf.equals(currentInf)) {
 
-                if (MyApplication.activityIndex == MyApplication.SETTING_ACTIVITY) {
-
-                    MyApplication.afterInfoChanged(watchedEditText, scope, filedIndex, currentInf);
-
-                } else {
-
-                    if (filedIndex == MyApplication.TIMESTREAM_DOP && currentInf.length() == 8) {
-
-                        MyApplication.afterInfoChanged(currentInf, watchedEditText, timestream,
-                                filedIndex);
-
-                        stopAutoCommit();
-                        return;
-
-                    }
-
-                    currentWatcher = this;
-                    info = currentInf;
-                    timeMillis = System.currentTimeMillis();
-                    startAutoCommit();
-                }
+                currentWatcher = this;
+                info = currentInf;
+                timeMillis = System.currentTimeMillis();
+                startAutoCommit();
 
             }
         }
@@ -285,7 +303,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
     }
 
-    public static void startAutoCommit() {
+    public void startAutoCommit() {
 
         if (scheduled) return;
 
@@ -296,14 +314,35 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
                 long interval = System.currentTimeMillis() - timeMillis;
                 long averageInterval = AIInputter.getAutoCommitInterval();
-                Log.d("averageInterval", averageInterval + "");
+
+
+                if (filedIndex == MyApplication.TIMESTREAM_DOP && currentInf.length() == 8) {
+
+                    MyApplication.afterInfoChanged(currentInf, watchedEditText, timestream,
+                            filedIndex);
+
+                    stopAutoCommit();
+                    return;
+
+                }
 
                 if (interval >= averageInterval) {
 
-                    MyApplication.afterInfoChanged(info, currentWatcher.watchedEditText, currentWatcher.timestream,
-                            currentWatcher.filedIndex);
+                    switch (MyApplication.activityIndex) {
 
-                    handler.postDelayed(this, 1000000);
+                        case MyApplication.SETTING_ACTIVITY:
+
+                            MyApplication.afterInfoChanged(watchedEditText,scope,filedIndex,currentInf);
+                            break;
+
+                        default:
+
+                            MyApplication.afterInfoChanged(info, currentWatcher.watchedEditText, currentWatcher.timestream,
+                                    currentWatcher.filedIndex);
+
+                    }
+
+                    handler.postDelayed(this, 10000);
                     stopAutoCommit();
                     return;
                 }
@@ -316,7 +355,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
         setScheduled(true);
     }
 
-    public static void stopAutoCommit() {
+    public void stopAutoCommit() {
 
         if (handler != null) {
 

@@ -2,8 +2,10 @@ package com.shepherdboy.pdstreamline.beans;
 
 import androidx.annotation.Nullable;
 
+import com.shepherdboy.pdstreamline.activities.SettingActivity;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
@@ -68,12 +70,24 @@ public class Timestream {
 
         if (productExpireDate == null) return FRESH;
 
-        if (productExpireDate.before(DateUtil.getNow()) || productExpireDate.equals(DateUtil.getNow())) {
+        Date target = DateUtil.getStartPointToday();
+
+
+        //如果业务员今天不来，则提前将明天到期的选出
+        if (SettingActivity.settingInstance.getNextSalesmanCheckDay().after(DateUtil.getStartPointToday())) {
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(target);
+            calendar.add(Calendar.DATE, 1);
+            target = calendar.getTime();
+        }
+
+        if (productExpireDate.before(target) || productExpireDate.equals(target)) {
 
             return EXPIRED;
         }
 
-        if (productPromotionDate.before(DateUtil.getNow()) || productPromotionDate.equals(DateUtil.getNow())) {
+        if (productPromotionDate.before(target) || productPromotionDate.equals(target)) {
 
             return CLOSE_TO_EXPIRE;
 

@@ -50,7 +50,7 @@ public class DateUtil {
 
             case 4:
 
-                tempDate = getNow();
+                tempDate = getStartPointToday();
                 tempDateString = shortFormat.format(tempDate);
                 stringBuilder.append(tempDateString);
                 stringBuilder.replace(4, 8, newDate);
@@ -98,32 +98,36 @@ public class DateUtil {
 
     }
 
-    public static Date getLast(Date date, int index) {
+    /**
+     * @param date 原始日期
+     * @param index Calender.DATE(=Calender.DAY),Calender.MONTH,Calender.YEAR
+     * @param amount 往回为负数，往后为正数在原始日期基础上切换日期
+     * @return 修改后的日期Date
+     */
+    public static Date switchDate(Date date, int index, int amount) {
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
 
-        calendar.add(index, -1);
+        calendar.add(index, amount);
 
         return calendar.getTime();
     }
 
     public static Date getLastYear(Date date) {
 
-        return getLast(date, Calendar.YEAR);
+        return switchDate(date, Calendar.YEAR, -1);
     }
 
     public static Date getLastMonth(Date date) {
 
-        return getLast(date, Calendar.MONTH);
+        return switchDate(date, Calendar.MONTH, -1);
     }
 
     //获取当前日期时间
-    public static Date getNow() {
+    public static Date getStartPointToday() {
 
-        Date now = new Date(System.currentTimeMillis());
-
-        return getMidnightDate(now);
+        return getMidnightDate(new Date());
 
     }
 
@@ -278,6 +282,7 @@ public class DateUtil {
         }
 
         calendar.add(Calendar.DATE, -promotionOffset);
+
         return calendar.getTime();
     }
 
@@ -332,6 +337,7 @@ public class DateUtil {
         }
 
         calendar.add(Calendar.DATE, -expireOffset);
+
         return calendar.getTime();
     }
 

@@ -90,7 +90,7 @@ public class AIInputter {
         if (productEXP == null || "7" == productEXP) {
 
 
-            return DateUtil.getNow();
+            return DateUtil.getStartPointToday();
 
         }
 
@@ -309,7 +309,7 @@ public class AIInputter {
 
             Date DOP = DateUtil.typeMach(result + " 00:00:00");
 
-            if (DOP.after(DateUtil.getNow())) {
+            if (DOP.after(DateUtil.getStartPointToday())) {
 
                 DOP = DateUtil.getLastYear(DOP);
 
@@ -407,6 +407,7 @@ public class AIInputter {
                 return expireOffsetMls > 0 && expireOffsetMls < promotionOffsetMls;
 
             case SettingActivity.SINGLETON_SETTING_AUTO_COMMIT_DELAY:
+            case SettingActivity.SINGLETON_SETTING_SALESMAN_LAST_CHECK_DATE:
 
                 return true;
 

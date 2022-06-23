@@ -131,7 +131,7 @@ public class PDInfoActivity extends AppCompatActivity {
 
         loadTimestreams(timeStreams);
 
-        DraggableLinearLayout.setFocus(topDOPEditText);
+        if(timeStreams.size() > 0) DraggableLinearLayout.setFocus(topDOPEditText);
 
         MyInfoChangeWatcher.setShouldWatch(true);
     }
@@ -220,6 +220,9 @@ public class PDInfoActivity extends AppCompatActivity {
         MyInfoChangeWatcher.clearWatchers();
         DraggableLinearLayout.setLayoutChanged(true);
 
+        topTimestreamView = null;
+        topDOPEditText = null;
+
         // 根据根view的childCount计算timestreamView的数量
         int timestreamViewCount = draggableLinearLayout.getChildCount() - 1;
 
@@ -239,8 +242,12 @@ public class PDInfoActivity extends AppCompatActivity {
             timestreamViewCount++;
         }
 
-        topTimestreamView = (LinearLayout) draggableLinearLayout.getChildAt(0);
-        topDOPEditText = (EditText) topTimestreamView.getChildAt(1);
+        if (timestreams.size() > 0) {
+
+            topTimestreamView = (LinearLayout) draggableLinearLayout.getChildAt(0);
+            topDOPEditText = (EditText) topTimestreamView.getChildAt(1);
+
+        }
 
 //        MyApplication.init();
     }

@@ -80,7 +80,7 @@ public class MyApplication extends Application {
 
     public static LinkedList thingsToSaveList = new LinkedList();
 
-    public static Date today = DateUtil.getNow();
+    public static Date today = DateUtil.getStartPointToday();
 
     public static void setContext(Context context) {
         MyApplication.context = context;
@@ -569,6 +569,8 @@ public class MyApplication extends Application {
 
             case SettingActivity.DATE_SCOPE_PROMOTION_OFFSET_VALUE:
             case SettingActivity.DATE_SCOPE_EXPIRE_OFFSET_VALUE:
+
+                //todo 临期和下架偏移量改变后所有timestream的同步
 
         }
     }

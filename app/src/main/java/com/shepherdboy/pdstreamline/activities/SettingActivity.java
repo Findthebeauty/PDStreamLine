@@ -62,6 +62,7 @@ public class SettingActivity extends AppCompatActivity {
     public static final int DATE_SCOPE_EXPIRE_OFFSET_VALUE = 4;
     public static final int DATE_SCOPE_EXPIRE_OFFSET_UNIT = 5;
     public static final int SINGLETON_SETTING_AUTO_COMMIT_DELAY = 6;
+    public static final int SINGLETON_SETTING_SALESMAN_LAST_CHECK_DATE = 7;
 
 
     public static SingletonSettingBean settingInstance;
@@ -392,6 +393,26 @@ public class SettingActivity extends AppCompatActivity {
     private void loadSingletonSetting() {
 
         loadAutoCommitSetting();
+        loadLastSalesmanCheckDate();
+    }
+
+    public void loadLastSalesmanCheckDate() {
+
+        TextView t = findViewById(R.id.next_salesman_check_date_tv);
+        Button b = findViewById(R.id.next_salesman_check_date_bt);
+
+        t.setText(DateUtil.typeMach(settingInstance.getNextSalesmanCheckDay()).substring(0,10));
+
+        if (settingInstance.getNextSalesmanCheckDay().after(DateUtil.getStartPointToday())) {
+
+            b.setText("明天");
+
+        } else {
+
+            b.setText("今天");
+        }
+
+        MyInfoChangeWatcher.watch(b);
     }
 
     private void loadAutoCommitSetting() {
@@ -775,6 +796,7 @@ public class SettingActivity extends AppCompatActivity {
         settingInstance = SingletonSettingBean.getSingletonSettingBean();
         settingInstance.setAutoCommitFlag(true);
         settingInstance.setAutoCommitDelay(readSingleDefaultSetting(AUTO_COMMIT_DELAY_TAG_NAME));
+        settingInstance.setNextSalesmanCheckDay(DateUtil.getStartPointToday());
         settingInstance.setUpdated(false);
 
         if (instance != null) instance.loadSingletonSetting();
