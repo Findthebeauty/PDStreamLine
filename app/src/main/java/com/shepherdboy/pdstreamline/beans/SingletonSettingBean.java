@@ -3,6 +3,7 @@ package com.shepherdboy.pdstreamline.beans;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -15,7 +16,7 @@ public class SingletonSettingBean {
 
     private boolean autoCommitFlag;
 
-    private Date nextSalesmanCheckDay;
+    private String nextSalesmanCheckDay;
 
     private String  autoCommitDelay;
 
@@ -23,28 +24,34 @@ public class SingletonSettingBean {
 
     private SingletonSettingBean() {
 
-        nextSalesmanCheckDay = DateUtil.switchDate(DateUtil.getStartPointToday(), Calendar.DATE, 1);
         updated = true;
     }
 
-    public Date getNextSalesmanCheckDay() {
+    public String getNextSalesmanCheckDay() {
 
         Date today = DateUtil.getStartPointToday();
 
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(nextSalesmanCheckDay);
 
-        while (nextSalesmanCheckDay.before(today)) {
-
-            calendar.add(2, Calendar.DATE); //业务员隔天来一次
+        Date next = null;
+        try {
+            next = DateUtil.typeMach(nextSalesmanCheckDay);
+            calendar.setTime(next);
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
 
-        nextSalesmanCheckDay = calendar.getTime();
+        while (next.before(today)) {
+
+            calendar.add(2, Calendar.DATE);
+        }
+
+        nextSalesmanCheckDay = DateUtil.typeMach(calendar.getTime());
 
         return nextSalesmanCheckDay;
     }
 
-    public void setNextSalesmanCheckDay(Date nextSalesmanCheckDay) {
+    public void setNextSalesmanCheckDay(String nextSalesmanCheckDay) {
         this.nextSalesmanCheckDay = nextSalesmanCheckDay;
     }
 

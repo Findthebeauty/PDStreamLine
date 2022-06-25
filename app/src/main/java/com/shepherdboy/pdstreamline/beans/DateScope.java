@@ -2,6 +2,9 @@ package com.shepherdboy.pdstreamline.beans;
 
 import java.util.UUID;
 
+/**
+ * 保质期范围，不同范围的保质期，临期时间，下架时间不一样
+ */
 public class DateScope {
 
     private String rangeValue;
@@ -18,7 +21,7 @@ public class DateScope {
 
     private int scopeViewId;
 
-    private String scopeId;
+    private final String scopeId;
 
     public DateScope(){
 

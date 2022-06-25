@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.View;
 import android.widget.Button;
 
@@ -16,7 +15,6 @@ import androidx.core.app.ActivityCompat;
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService;
-import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.utils.ErrorInfoDisplayActivity;
 import com.shepherdboy.pdstreamline.utils.ScanEventReceiver;
 
@@ -34,12 +32,6 @@ public class MainActivity extends AppCompatActivity {
 
     //扫描广播接收器，全局
     static ScanEventReceiver scanEventReceiver;
-
-    //sqlite本地数据库地址，全局
-    static String databasePath;
-
-    //临时数据库缓存地址，用于本地数据库与服务器数据库的替换，全局
-    static String tempDataBasePath;
 
     //数据库名，全局
     private static String dataBaseName = "ProductDateStreamline.db";
@@ -62,7 +54,8 @@ public class MainActivity extends AppCompatActivity {
 
         MyApplication.setContext(this);
 
-        databasePath = this.getFilesDir().getPath().replaceAll("files", "databases/ProductDateStreamline.db");
+
+//        databasePath = this.getFilesDir().getPath().replaceAll("files", "databases/ProductDateStreamline.db");
 
         //未处异常，全局
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
@@ -72,10 +65,10 @@ public class MainActivity extends AppCompatActivity {
 
                 MyApplication.pickupChanges();
                 MyApplication.saveChanges(MyApplication.thingsToSaveList);
-                //将应用内部数据库拷贝到应用外部文件夹
-                verifyStoragePermissions(MainActivity.this);
-                MyDatabaseHelper.copyDataBase(databasePath,
-                        tempDataBasePath);
+//                //将应用内部数据库拷贝到应用外部文件夹
+//                verifyPermissions(MainActivity.this);
+//                MyDatabaseHelper.copyDataBase(databasePath,
+//                        tempDataBasePath);
 
                 long timeMillis = System.currentTimeMillis();
 
@@ -101,17 +94,17 @@ public class MainActivity extends AppCompatActivity {
         });
 
         initActivity();
+//
+//        //本地数据库应用外部保存位置，退出时
+//        tempDataBasePath = Environment.getExternalStorageDirectory() + "/Android/v2";
 
-        //本地数据库应用外部保存位置，退出时
-        tempDataBasePath = Environment.getExternalStorageDirectory() + "/Android/v2";
+//        //获取本地文件读写权限并获取应用外部数据库
+//        verifyPermissions(this);
+//        MyDatabaseHelper.copyDataBase(databasePath);
 
-        //获取本地文件读写权限并获取应用外部数据库
-        verifyStoragePermissions(this);
-        MyDatabaseHelper.copyDataBase(tempDataBasePath, databasePath);
-
-        //获取数据库连接助手
-        MyApplication.databaseHelper = new MyDatabaseHelper(this, dataBaseName,
-                null, 1);
+//        //获取数据库连接助手
+//        MyApplication.databaseHelper = new MyDatabaseHelper(this, databasePath,
+//                null, 1);
 
         // 接收扫码枪扫描动作广播的条码号,全局
         intentFilter = new IntentFilter();
@@ -159,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      *   获取运行时本地文件读写权限
      */
-    public static void verifyStoragePermissions(Activity activity) {
+    public static void verifyPermissions(Activity activity) {
 
         try {
 
@@ -173,6 +166,7 @@ public class MainActivity extends AppCompatActivity {
                         REQUEST_EXTERNAL_STORAGE);
 
             }
+
         } catch (Exception e) {
 
             e.printStackTrace();
@@ -196,10 +190,10 @@ public class MainActivity extends AppCompatActivity {
         //注销广播接收器，退出时
         unregisterReceiver(scanEventReceiver);
 
-        //将应用内部数据库拷贝到应用外部文件夹
-        verifyStoragePermissions(this);
-        MyDatabaseHelper.copyDataBase(databasePath,
-                tempDataBasePath);
+//        //将应用内部数据库拷贝到应用外部文件夹
+//        verifyPermissions(this);
+//        MyDatabaseHelper.copyDataBase(databasePath,
+//                tempDataBasePath);
         super.onDestroy();
     }
 

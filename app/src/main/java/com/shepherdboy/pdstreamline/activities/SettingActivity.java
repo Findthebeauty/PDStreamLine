@@ -43,8 +43,10 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -67,11 +69,17 @@ public class SettingActivity extends AppCompatActivity {
 
     public static SingletonSettingBean settingInstance;
 
+    //保存初始获取的所有scope用于后续的排序与加载
     public static List<DateScope> scopeList;
+    //scopeId与scope映射
     public static final HashMap<String, DateScope> dateSettingMap = new HashMap<>();
+    //scope下界毫秒值与scope映射
     public static final HashMap<Long, DateScope> mlScopeMap = new HashMap<>();
+    //scopeViewId与scope映射
     public static final HashMap<Integer, DateScope> onShowScopeMap = new HashMap<>();
-    public static ArrayList<Long> dateSettingIndex; // todo 获取无记录的datescope
+    //降序的scope下界毫秒值列表
+    public static ArrayList<Long> dateSettingIndex;
+    //相邻两个scope共享一个边界，上面的下界是下面的上界，上面的下界scopeId对应下界的上界TextView，用于共享边界的同步与插入scope
     private static final HashMap<String, TextView> upperBoundTextViewMap = new HashMap<>();
 
     private static final int ADD_SCOPE = 1;
@@ -348,7 +356,10 @@ public class SettingActivity extends AppCompatActivity {
         activityIndex = MyApplication.SETTING_ACTIVITY;
 
         initDateSettingView();
+
+        if (dateSettingMap.isEmpty() || dateSettingIndex == null || settingInstance == null)
         initSetting();
+
         loadSetting();
 
         TextView textView = getSupportActionBar().getCustomView().findViewById(R.id.setting);
@@ -401,9 +412,20 @@ public class SettingActivity extends AppCompatActivity {
         TextView t = findViewById(R.id.next_salesman_check_date_tv);
         Button b = findViewById(R.id.next_salesman_check_date_bt);
 
-        t.setText(DateUtil.typeMach(settingInstance.getNextSalesmanCheckDay()).substring(0,10));
+        t.setText(settingInstance.getNextSalesmanCheckDay().substring(0,10));
 
-        if (settingInstance.getNextSalesmanCheckDay().after(DateUtil.getStartPointToday())) {
+        Date date = null;
+
+        try {
+            date = DateUtil.typeMach(settingInstance.getNextSalesmanCheckDay());
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+
+        assert date != null;
+        if (date.after(DateUtil.getStartPointToday())) {
 
             b.setText("明天");
 
@@ -413,6 +435,7 @@ public class SettingActivity extends AppCompatActivity {
         }
 
         MyInfoChangeWatcher.watch(b);
+        saveSingletonSetting();
     }
 
     private void loadAutoCommitSetting() {
@@ -460,7 +483,7 @@ public class SettingActivity extends AppCompatActivity {
     private void setAllToDefaultDateSetting() {
 
         setDefaultEXPSetting();
-        getDefaultSingletonSetting();// todo debug默认设置
+        getDefaultSingletonSetting();
 
     }
 
@@ -468,6 +491,10 @@ public class SettingActivity extends AppCompatActivity {
 
         getDefaultEXPSetting();
         initDateSettingView();
+
+        if (mlScopeMap != null) mlScopeMap.clear();
+        if (dateSettingMap != null) dateSettingMap.clear();
+        if (dateSettingIndex != null) dateSettingIndex.clear();
 
         for (DateScope d : scopeList) {
 
@@ -503,11 +530,8 @@ public class SettingActivity extends AppCompatActivity {
 
         DraggableLinearLayout.setLayoutChanged(true);
 
-        if (mlScopeMap != null) mlScopeMap.clear();
         if (upperBoundTextViewMap != null) upperBoundTextViewMap.clear();
-        if (dateSettingMap != null) dateSettingMap.clear();
         if (onShowScopeMap != null) onShowScopeMap.clear();
-        if (dateSettingIndex != null) dateSettingIndex.clear();
     }
 
     private LinearLayout addScopeView(LinearLayout rootView, Integer index) {
@@ -775,6 +799,7 @@ public class SettingActivity extends AppCompatActivity {
 
         getEXPSetting();
         initScopeIndex();
+        saveEXPSetting();
     }
 
     private static void initSingletonSetting() {
@@ -796,7 +821,7 @@ public class SettingActivity extends AppCompatActivity {
         settingInstance = SingletonSettingBean.getSingletonSettingBean();
         settingInstance.setAutoCommitFlag(true);
         settingInstance.setAutoCommitDelay(readSingleDefaultSetting(AUTO_COMMIT_DELAY_TAG_NAME));
-        settingInstance.setNextSalesmanCheckDay(DateUtil.getStartPointToday());
+        settingInstance.setNextSalesmanCheckDay(DateUtil.typeMach(DateUtil.getStartPointToday()));
         settingInstance.setUpdated(false);
 
         if (instance != null) instance.loadSingletonSetting();
@@ -814,6 +839,7 @@ public class SettingActivity extends AppCompatActivity {
         for (String s : dateSettingMap.keySet()) {
 
             DateScope d = dateSettingMap.get(s);
+            assert d != null;
             long mls = stringToMillionSeconds(d.getRangeValue(), d.getRangeUnit());
             dateSettingIndex.add(mls);
             mlScopeMap.put(mls, d);
@@ -822,6 +848,8 @@ public class SettingActivity extends AppCompatActivity {
     }
 
     public static void getEXPSetting() {
+
+        if (scopeList != null) scopeList.clear();
 
         String setting = MyDatabaseHelper.getSetting(DATE_OFFSET_INDEX, MyApplication.sqLiteDatabase);
 
@@ -838,7 +866,6 @@ public class SettingActivity extends AppCompatActivity {
 
             dateSettingMap.put(s.getScopeId(),s);
         }
-        saveEXPSetting();
     }
 
     public static String readSingleDefaultSetting(String tagName) {

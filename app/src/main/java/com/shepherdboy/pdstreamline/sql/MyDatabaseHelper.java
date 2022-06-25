@@ -4,9 +4,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.Environment;
 
 import com.shepherdboy.pdstreamline.MyApplication;
+import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.activities.SettingActivity;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Timestream;
@@ -15,9 +15,9 @@ import com.shepherdboy.pdstreamline.utils.AscCoordinateComparator;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.nio.channels.FileChannel;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -209,7 +209,6 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         return sqLiteDatabase.query(tableName, columns,
                 selection, selectionArgs, null,
                 null, null);
-
     }
 
     @Override
@@ -237,56 +236,36 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
     /**
      * 拷贝数据库到sd卡
      */
-    public static void copyDataBase(String copyFrom, String copyTo) {
+    public static void copyDataBase(String dbPath) {
 
-        if (!Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-            return;
-        }
+        InputStream i = MyApplication.getContext().getResources().openRawResource(R.raw.v2);
+        File file = new File(dbPath);
 
-        File dataBaseFile = new File(copyFrom);
-        File tempDataBaseFile = new File(copyTo);
-
-        FileChannel inChannel = null;
-        FileChannel outChannel = null;
+        if (file.exists()) return;
 
         try {
-            tempDataBaseFile.createNewFile();
-            FileInputStream fileInputStream = new FileInputStream(dataBaseFile);
-            FileOutputStream fileOutputStream = new FileOutputStream(tempDataBaseFile);
-            inChannel = fileInputStream.getChannel();
-            outChannel = fileOutputStream.getChannel();
-            inChannel.transferTo(0, inChannel.size(), outChannel);
 
-        } catch (Exception e) {
+            FileOutputStream o = new FileOutputStream(file);
 
-            e.printStackTrace();
+            byte[] buffer = new byte[i.available()];
 
-        } finally {
+            int length = 0;
 
-            try {
+            while ((length = i.read(buffer)) != -1) {
 
-                if (inChannel != null) {
-
-                    inChannel.close();
-                    inChannel = null;
-
-                }
-
-                if (outChannel != null) {
-
-                    outChannel.close();
-                    outChannel = null;
-
-                }
-
-            } catch (Exception e) {
-
-                e.printStackTrace();
-
+                o.write(buffer, 0, length);
             }
 
+            o.flush();
+            o.close();
+            i.close();
+
+        } catch (IOException e) {
+
+            e.printStackTrace();
         }
     }
+
     public static void saveSetting(String index, String value, SQLiteDatabase sqLiteDatabase) {
 
         String sql = "insert or replace into " + SETTING_TABLE_NAME + "(" +

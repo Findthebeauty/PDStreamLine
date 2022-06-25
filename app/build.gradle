@@ -29,6 +29,8 @@ android {
 
 dependencies {
 
+    implementation 'com.google.zxing:core:3.5.0'
+    implementation 'com.journeyapps:zxing-android-embedded:3.5.0'
     implementation 'com.alibaba:fastjson:1.1.70.android'
     implementation 'com.alibaba:fastjson:1.2.55'
     implementation 'androidx.appcompat:appcompat:1.2.0'

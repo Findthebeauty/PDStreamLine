@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import com.shepherdboy.pdstreamline.activities.SettingActivity;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
@@ -73,8 +74,16 @@ public class Timestream {
         Date target = DateUtil.getStartPointToday();
 
 
-        //如果业务员今天不来，则提前将明天到期的选出
-        if (SettingActivity.settingInstance.getNextSalesmanCheckDay().after(DateUtil.getStartPointToday())) {
+        Date next = null;
+        try {
+            next = DateUtil.typeMach(SettingActivity.settingInstance.getNextSalesmanCheckDay());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        //如果业务员明天不来，则提前将明天到期的选出
+        assert next != null;
+        if (!next.after(DateUtil.getStartPointToday())) {
 
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(target);

@@ -21,8 +21,11 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Product;
@@ -49,7 +52,7 @@ public class PDInfoActivity extends AppCompatActivity {
 
     private static LinearLayout topTimestreamView;
     private static EditText topDOPEditText,productCodeEditText,productNameEditText,productEXPEditText;
-    public static Button productEXPTimeUnitButton;
+    public static Button scanner,productEXPTimeUnitButton;
 
     public static void actionStart() {
 
@@ -79,6 +82,15 @@ public class PDInfoActivity extends AppCompatActivity {
         productNameEditText = findViewById(R.id.product_name);
         productEXPEditText = findViewById(R.id.product_exp);
         productEXPTimeUnitButton = findViewById(R.id.time_unit);
+
+        scanner = findViewById(R.id.zxing_barcode_scanner);
+
+        scanner.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ScanActivity.actionStart(PDInfoActivity.this);
+            }
+        });
 
         productCodeEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -111,6 +123,19 @@ public class PDInfoActivity extends AppCompatActivity {
         initActivity();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent intent) {
+
+        super.onActivityResult(requestCode, resultCode, intent);
+
+        if (resultCode != IntentIntegrator.REQUEST_CODE) return;
+
+        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+        String scanResult = result.getContents();
+
+        ScanEventReceiver.show(scanResult.trim());
+
+    }
     public static void loadProduct(Product product) {
 
         MyInfoChangeWatcher.setShouldWatch(false);

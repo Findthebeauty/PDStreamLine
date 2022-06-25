@@ -19,6 +19,7 @@ import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -162,12 +163,20 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
             case MyApplication.SETTING_ACTIVITY:
 
+                if (button.hasOnClickListeners()) return;
+
                 button.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
 
-                        Date date = SettingActivity.settingInstance.getNextSalesmanCheckDay();
+                        Date date = null;
+                        try {
+                            date = DateUtil.typeMach(SettingActivity.settingInstance.getNextSalesmanCheckDay());
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
 
+                        assert date != null;
                         if (date.after(DateUtil.getStartPointToday())) {
 
                             date = DateUtil.switchDate(date, Calendar.DATE, -1);
@@ -179,7 +188,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
                             button.setText("明天");
                         }
 
-                        SettingActivity.settingInstance.setNextSalesmanCheckDay(date);
+                        SettingActivity.settingInstance.setNextSalesmanCheckDay(DateUtil.typeMach(date));
                         SettingActivity.settingInstance.setUpdated(false);
                         SettingActivity.getInstance().loadLastSalesmanCheckDate();
                     }

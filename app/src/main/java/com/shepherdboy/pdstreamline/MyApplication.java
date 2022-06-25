@@ -67,6 +67,8 @@ public class MyApplication extends Application {
     //数据库助手，全局
     public static MyDatabaseHelper databaseHelper;
     public static SQLiteDatabase sqLiteDatabase;
+    //sqlite本地数据库地址，全局
+    public static String databasePath;
 
     static Point originalPosition;
 
@@ -283,9 +285,12 @@ public class MyApplication extends Application {
 
     public static void initDatabase(Context context) {
 
+        databasePath = context.getFilesDir().getPath().replaceAll("files", "/streamline.db");
+        MyDatabaseHelper.copyDataBase(databasePath);
+
         if (MyApplication.databaseHelper == null) {
 
-            MyApplication.databaseHelper = new MyDatabaseHelper(context,"ProductDateStreamline.db",
+            MyApplication.databaseHelper = new MyDatabaseHelper(context, databasePath,
                     null, 1);
         }
 
