@@ -32,6 +32,7 @@ import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
+import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
@@ -98,7 +99,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
     public static void pickOutPossiblePromotionTimestream() {
         MyApplication.pickupChanges();
         MyApplication.saveChanges(MyApplication.thingsToSaveList);
-        MyDatabaseHelper.PDInfoWrapper.getAndMoveTimestreamByDate(sqLiteDatabase,
+        PDInfoWrapper.getAndMoveTimestreamByDate(sqLiteDatabase,
                 DateUtil.typeMach(MyApplication.today));
     }
 
@@ -115,7 +116,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
                 rmTs = MyApplication.unloadTimestream((LinearLayout) releasedChild);
                 basket.add(rmTs);
                 rmTs.setInBasket(true);
-                MyDatabaseHelper.PDInfoWrapper.updateInfo(MyApplication.sqLiteDatabase, rmTs,
+                PDInfoWrapper.updateInfo(MyApplication.sqLiteDatabase, rmTs,
                         MyDatabaseHelper.UPDATE_BASKET);
 
                 break;
@@ -123,7 +124,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
             case DELETE:
 
                 rmTs = MyApplication.unloadTimestream((LinearLayout) releasedChild);
-                MyDatabaseHelper.PDInfoWrapper.deleteTimestream(MyApplication.sqLiteDatabase, rmTs.getId());
+                PDInfoWrapper.deleteTimestream(MyApplication.sqLiteDatabase, rmTs.getId());
                 break;
 
             case 0:
@@ -209,10 +210,9 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
     private void initActivity() {
 
         MyApplication.activityIndex = POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY;
-
         draggableLinearLayout = findViewById(R.id.parent);
 
-        possiblePromotionTimestreams = MyDatabaseHelper.PDInfoWrapper.getStaleTimestreams(sqLiteDatabase,
+        possiblePromotionTimestreams = PDInfoWrapper.getStaleTimestreams(sqLiteDatabase,
                 MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM);
 
         int notInBasket = sortTimestream(possiblePromotionTimestreams);
@@ -248,6 +248,8 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
         return possiblePromotionTimestreams.size() - basket.size();
     }
+
+
 
     /**将timestreams链表中的所有timestream加载到预先生成的timestreamView中*/
     private void loadTimestreams(LinkedList<Timestream> timestreams) {
@@ -357,6 +359,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
         childView.setOrientation(LinearLayout.HORIZONTAL);
         childView.setGravity(Gravity.CENTER_VERTICAL);
         childView.setWeightSum(1f);
+
 
         tv = textViews[0];
         lParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 0.23f);

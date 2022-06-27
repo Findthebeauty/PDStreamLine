@@ -7,6 +7,7 @@ import android.content.Intent;
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.activities.PDInfoActivity;
+import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
 
 public class ScanEventReceiver extends BroadcastReceiver {
 
@@ -44,7 +45,7 @@ public class ScanEventReceiver extends BroadcastReceiver {
         }
 
         // 查询信息
-        MyApplication.currentProduct = MyDatabaseHelper.PDInfoWrapper.getProduct(productCode, MyApplication.sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
+        MyApplication.currentProduct = PDInfoWrapper.getProduct(productCode, MyApplication.sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
         PDInfoActivity.loadProduct(MyApplication.currentProduct);
 
     }

@@ -35,6 +35,7 @@ import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.SingletonSettingBean;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
+import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
@@ -740,19 +741,19 @@ public class SettingActivity extends AppCompatActivity {
 
         if(!isExpSettingChanged()) return;
 
-        HashMap<String, Product> pdMap = MyDatabaseHelper.PDInfoWrapper.getAllProduct();
+        HashMap<String, Product> pdMap = PDInfoWrapper.getAllProduct();
 
-        List<Timestream> ts = MyDatabaseHelper.PDInfoWrapper.getAllTimestreams(TIMESTREAM_IN_PROMOTION);
+        List<Timestream> ts = PDInfoWrapper.getAllTimestreams(TIMESTREAM_IN_PROMOTION);
         applySetting(pdMap, ts, TIMESTREAM_IN_PROMOTION);
-        MyDatabaseHelper.PDInfoWrapper.truncate(MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME);
+        PDInfoWrapper.truncate(MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME);
 
-        List<Timestream> ts1 = MyDatabaseHelper.PDInfoWrapper.getAllTimestreams(TIMESTREAM_NOT_IN_PROMOTION);
+        List<Timestream> ts1 = PDInfoWrapper.getAllTimestreams(TIMESTREAM_NOT_IN_PROMOTION);
         applySetting(pdMap, ts1, TIMESTREAM_NOT_IN_PROMOTION);
-        MyDatabaseHelper.PDInfoWrapper.truncate(MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME);
+        PDInfoWrapper.truncate(MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME);
 
         if (currentProduct != null) {
 
-            currentProduct = MyDatabaseHelper.PDInfoWrapper.getProduct(currentProduct.getProductCode(),
+            currentProduct = PDInfoWrapper.getProduct(currentProduct.getProductCode(),
                     MyApplication.sqLiteDatabase,MyDatabaseHelper.ENTIRE_TIMESTREAM);
         }
     }
@@ -773,13 +774,13 @@ public class SettingActivity extends AppCompatActivity {
 
                 case TIMESTREAM_IN_PROMOTION:
 
-                    MyDatabaseHelper.PDInfoWrapper.updateInfo(MyApplication.sqLiteDatabase,
+                    PDInfoWrapper.updateInfo(MyApplication.sqLiteDatabase,
                             t, MyDatabaseHelper.PROMOTION_TIMESTREAM_TABLE_NAME);
                     break;
 
                 case TIMESTREAM_NOT_IN_PROMOTION:
 
-                    MyDatabaseHelper.PDInfoWrapper.updateInfo(MyApplication.sqLiteDatabase,
+                    PDInfoWrapper.updateInfo(MyApplication.sqLiteDatabase,
                             t, MyDatabaseHelper.FRESH_TIMESTREAM_TABLE_NAME);
                     break;
 

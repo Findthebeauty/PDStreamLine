@@ -1,7 +1,7 @@
 package com.shepherdboy.pdstreamline.beans;
 
 import com.shepherdboy.pdstreamline.MyApplication;
-import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
+import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
 
 public class TimestreamCombination {
 
@@ -19,7 +19,7 @@ public class TimestreamCombination {
 
     public TimestreamCombination(Timestream t) {
 
-        buyProductName = MyDatabaseHelper.PDInfoWrapper.getProductName(t.getProductCode(),
+        buyProductName = PDInfoWrapper.getProductName(t.getProductCode(),
                 MyApplication.sqLiteDatabase);
         giveawayProductName = buyProductName;
         buyTimestream = t;
@@ -29,9 +29,9 @@ public class TimestreamCombination {
     }
     public TimestreamCombination(Timestream buyTimestream, Timestream giveawayTimestream) {
 
-        buyProductName = MyDatabaseHelper.PDInfoWrapper.getProductName(buyTimestream.getProductCode(),
+        buyProductName = PDInfoWrapper.getProductName(buyTimestream.getProductCode(),
                 MyApplication.sqLiteDatabase);
-        giveawayProductName = MyDatabaseHelper.PDInfoWrapper.getProductName(giveawayTimestream.getProductCode(),
+        giveawayProductName = PDInfoWrapper.getProductName(giveawayTimestream.getProductCode(),
                 MyApplication.sqLiteDatabase);
         this.buyTimestream = buyTimestream;
         this.giveawayTimestream = giveawayTimestream;

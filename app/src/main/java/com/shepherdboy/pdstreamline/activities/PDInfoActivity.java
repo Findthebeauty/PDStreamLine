@@ -30,7 +30,7 @@ import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Timestream;
-import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
+import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.utils.ScanEventReceiver;
@@ -105,7 +105,12 @@ public class PDInfoActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        return MyApplication.tryCatchVolumeDown(this, keyCode) || super.onKeyDown(keyCode, event);
     }
 
     private void searchNext() {
@@ -128,7 +133,7 @@ public class PDInfoActivity extends AppCompatActivity {
 
         super.onActivityResult(requestCode, resultCode, intent);
 
-        if (resultCode != IntentIntegrator.REQUEST_CODE) return;
+        if (resultCode == 0 || requestCode != IntentIntegrator.REQUEST_CODE) return;
 
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
         String scanResult = result.getContents();
@@ -345,7 +350,7 @@ public class PDInfoActivity extends AppCompatActivity {
 
                 Timestream rmTs = MyApplication.unloadTimestream((LinearLayout) releasedChild);
 
-                MyDatabaseHelper.PDInfoWrapper.deleteTimestream(MyApplication.sqLiteDatabase, rmTs.getId());
+                PDInfoWrapper.deleteTimestream(MyApplication.sqLiteDatabase, rmTs.getId());
 
                 currentProduct.getTimeStreams().remove(rmTs.getId());
 

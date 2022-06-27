@@ -11,6 +11,7 @@ import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -25,6 +26,8 @@ import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class DraggableLinearLayout extends LinearLayout {
 
@@ -181,6 +184,15 @@ public class DraggableLinearLayout extends LinearLayout {
         editText.requestFocusFromTouch();
         editText.selectAll();
 
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+
+            InputMethodManager m = (InputMethodManager) editText.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            m.showSoftInput(editText, 0);
+            }
+        },200);
+
     }
 
     public LinearLayout getCurrentView(MotionEvent event) {
@@ -285,6 +297,39 @@ public class DraggableLinearLayout extends LinearLayout {
         super.onLayout(changed, l, t, r, b);
 
         MyApplication.recordDraggableView();
+
+        Log.d("onLayout", "I'm in!");
+//
+//        LinearLayout l0,l1;
+//        TextView t0,t1,t2,t3;
+//        EditText e0;
+//
+//        l0 = (LinearLayout) (MyApplication.draggableLinearLayout.getChildAt(1));
+//        t0 = (TextView) l0.getChildAt(0);
+//        t1 = (TextView) l0.getChildAt(1);
+//        e0 = (EditText) l0.getChildAt(2);
+//        l1 = (LinearLayout) l0.getChildAt(3);
+//        t2 = (TextView) l1.getChildAt(0);
+//        t3 = (TextView) l1.getChildAt(1);
+//
+//        LinkedList<View> vs = new LinkedList<>();
+//        vs.add(l0);
+//        vs.add(t0);
+//        vs.add(t1);
+//        vs.add(e0);
+//        vs.add(l1);
+//        vs.add(t2);
+//        vs.add(t3);
+//
+//        StringBuilder s = new StringBuilder();
+//
+//        for (View v : vs) {
+//
+//            s.append(v.getHeight());
+//            s.append(",");
+//        }
+//
+//        Log.d("onLayout", s.toString());
 
     }
 

@@ -1,10 +1,12 @@
 package com.shepherdboy.pdstreamline;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -18,11 +20,13 @@ import androidx.appcompat.app.ActionBar;
 import com.shepherdboy.pdstreamline.activities.MainActivity;
 import com.shepherdboy.pdstreamline.activities.PDInfoActivity;
 import com.shepherdboy.pdstreamline.activities.PossiblePromotionTimestreamActivity;
+import com.shepherdboy.pdstreamline.activities.ScanActivity;
 import com.shepherdboy.pdstreamline.activities.SettingActivity;
 import com.shepherdboy.pdstreamline.beans.DateScope;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
+import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
@@ -119,9 +123,10 @@ public class MyApplication extends Application {
 
             Timestream t = (Timestream) linkedList.remove();
             t.setInBasket(false);
-            MyDatabaseHelper.PDInfoWrapper.updateInfo(sqLiteDatabase, t, MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME);
+            PDInfoWrapper.updateInfo(sqLiteDatabase, t, MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME);
         }
     }
+
 
     public static void saveChanges(LinkedList linkedList) {
 
@@ -131,7 +136,7 @@ public class MyApplication extends Application {
 
             if (bean instanceof Product) {
 
-                MyDatabaseHelper.PDInfoWrapper.updateInfo(sqLiteDatabase, (Product) bean);
+                PDInfoWrapper.updateInfo(sqLiteDatabase, (Product) bean);
 
             }
 
@@ -143,17 +148,17 @@ public class MyApplication extends Application {
 
                     case Timestream.FRESH:
 
-                        MyDatabaseHelper.PDInfoWrapper.updateInfo(sqLiteDatabase, (Timestream) bean, MyDatabaseHelper.FRESH_TIMESTREAM_TABLE_NAME);
+                        PDInfoWrapper.updateInfo(sqLiteDatabase, (Timestream) bean, MyDatabaseHelper.FRESH_TIMESTREAM_TABLE_NAME);
                         break;
 
                     case Timestream.CLOSE_TO_EXPIRE:
 
-                        MyDatabaseHelper.PDInfoWrapper.updateInfo(sqLiteDatabase, (Timestream) bean, MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME);
+                        PDInfoWrapper.updateInfo(sqLiteDatabase, (Timestream) bean, MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME);
                         break;
 
                     case Timestream.EXPIRED:
 
-                        MyDatabaseHelper.PDInfoWrapper.updateInfo(sqLiteDatabase, (Timestream) bean, MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME);
+                        PDInfoWrapper.updateInfo(sqLiteDatabase, (Timestream) bean, MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME);
                         break;
                 }
 
@@ -168,6 +173,19 @@ public class MyApplication extends Application {
 
         pickupChanges();
         saveChanges(thingsToSaveList);
+    }
+
+    public static boolean tryCatchVolumeDown(Activity activity, int keyCode) {
+
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+
+            ScanActivity.actionStart(activity);
+
+            return true;
+        }
+
+
+        return false;
     }
 //
 //    static {
@@ -661,5 +679,6 @@ public class MyApplication extends Application {
 
         return mT;
     }
+
 
 }
