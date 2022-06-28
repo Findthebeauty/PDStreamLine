@@ -178,6 +178,15 @@ public class Timestream {
         return productCode;
     }
 
+    public String getShortCode() {
+
+        int length = productCode.length();
+
+        if (length < 6) return productCode;
+
+        return productCode.substring(length - 6);
+    }
+
     public Date getProductDOP() {
         return productDOP;
     }

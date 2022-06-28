@@ -49,6 +49,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
         MyInfoChangeWatcher myInfoChangeWatcher = new MyInfoChangeWatcher();
         editText.addTextChangedListener(myInfoChangeWatcher);
+        editText.setOnFocusChangeListener(myInfoChangeWatcher);
 
         myInfoChangeWatcher.timestream = timestream;
         myInfoChangeWatcher.watchedEditText = editText;
@@ -190,6 +191,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
                         SettingActivity.settingInstance.setNextSalesmanCheckDay(DateUtil.typeMach(date));
                         SettingActivity.settingInstance.setUpdated(false);
+                        SettingActivity.setExpSettingChanged(true);
                         SettingActivity.getInstance().loadLastSalesmanCheckDate();
                     }
                 });
@@ -238,6 +240,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
             myInfoChangeWatcher = myTextWatchers.remove(editText);
             myInfoChangeWatcher.watchedEditText.removeTextChangedListener(myInfoChangeWatcher);
             myInfoChangeWatcher = null;
+            editText.setOnFocusChangeListener(null);
         }
     }
 
@@ -269,7 +272,6 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
-
     }
 
     @Override
@@ -309,6 +311,11 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
 
+        if (v instanceof EditText && (!hasFocus) && (!preInf.equals(currentInf))) {
+
+            stopAutoCommit();
+            commit();
+        }
 
     }
 
@@ -337,19 +344,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
                 if (interval >= averageInterval) {
 
-                    switch (MyApplication.activityIndex) {
-
-                        case MyApplication.SETTING_ACTIVITY:
-
-                            MyApplication.afterInfoChanged(watchedEditText,scope,filedIndex,currentInf);
-                            break;
-
-                        default:
-
-                            MyApplication.afterInfoChanged(info, currentWatcher.watchedEditText, currentWatcher.timestream,
-                                    currentWatcher.filedIndex);
-
-                    }
+                    commit();
 
                     handler.postDelayed(this, 10000);
                     stopAutoCommit();
@@ -362,6 +357,23 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
         handler.postDelayed(runnable, 10);
         setScheduled(true);
+    }
+
+    private void commit() {
+
+        switch (MyApplication.activityIndex) {
+
+            case MyApplication.SETTING_ACTIVITY:
+
+                MyApplication.afterInfoChanged(watchedEditText,scope,filedIndex,currentInf);
+                break;
+
+            default:
+
+                MyApplication.afterInfoChanged(info, currentWatcher.watchedEditText, currentWatcher.timestream,
+                        currentWatcher.filedIndex);
+
+        }
     }
 
     public void stopAutoCommit() {

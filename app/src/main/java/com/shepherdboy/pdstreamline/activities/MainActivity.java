@@ -64,8 +64,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void uncaughtException(@NonNull Thread thread, @NonNull Throwable exception) {
 
-                MyApplication.pickupChanges();
-                MyApplication.saveChanges(MyApplication.thingsToSaveList);
+                MyApplication.saveChanges();
 //                //将应用内部数据库拷贝到应用外部文件夹
 //                verifyPermissions(MainActivity.this);
 //                MyDatabaseHelper.copyDataBase(databasePath,
@@ -127,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
         findPossiblePromotionTimestream.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PossiblePromotionTimestreamActivity.pickOutPossiblePromotionTimestream();
+                PossiblePromotionTimestreamActivity.pickOutPossibleStaleTimestream();
                 PossiblePromotionTimestreamActivity.actionStart();
             }
         });

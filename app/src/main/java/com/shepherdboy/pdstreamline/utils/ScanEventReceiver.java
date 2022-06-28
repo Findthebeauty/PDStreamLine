@@ -23,8 +23,7 @@ public class ScanEventReceiver extends BroadcastReceiver {
 
         //todo 判断pdInfoactivity的状态决定是resume还是start
         PDInfoActivity.actionStart();
-        MyApplication.pickupChanges();
-        MyApplication.saveChanges(MyApplication.thingsToSaveList);
+        MyApplication.saveChanges();
 
 
 

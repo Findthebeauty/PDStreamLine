@@ -436,7 +436,7 @@ public class SettingActivity extends AppCompatActivity {
         }
 
         MyInfoChangeWatcher.watch(b);
-        saveSingletonSetting();
+//        saveSingletonSetting();
     }
 
     private void loadAutoCommitSetting() {
@@ -714,9 +714,18 @@ public class SettingActivity extends AppCompatActivity {
 
         if (!settingInstance.isUpdated()) {
 
-            String setting = JSON.toJSONString(settingInstance);
-            MyDatabaseHelper.saveSetting(SETTING_SINGLETON_INDEX_NAME, setting, MyApplication.sqLiteDatabase);
-            settingInstance.setUpdated(true);
+            new Thread() {
+
+                @Override
+                public void run() {
+
+                    SettingActivity.applyEXPSetting();
+                    PossiblePromotionTimestreamActivity.pickOutPossibleStaleTimestream();
+                    String setting = JSON.toJSONString(settingInstance);
+                    MyDatabaseHelper.saveSetting(SETTING_SINGLETON_INDEX_NAME, setting, MyApplication.sqLiteDatabase);
+                    settingInstance.setUpdated(true);
+                }
+            }.start();
         }
     }
 
@@ -734,10 +743,9 @@ public class SettingActivity extends AppCompatActivity {
     /**
      * 根据新日期设置更新所有商品临期以及下架日期
      */
-    private static void applyEXPSetting() {
+    public synchronized static void applyEXPSetting() {
 
-        MyApplication.pickupChanges();
-        MyApplication.saveChanges(MyApplication.thingsToSaveList);
+        MyApplication.saveChanges();
 
         if(!isExpSettingChanged()) return;
 

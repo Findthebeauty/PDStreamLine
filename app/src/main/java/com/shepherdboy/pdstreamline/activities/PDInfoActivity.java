@@ -218,6 +218,8 @@ public class PDInfoActivity extends AppCompatActivity {
         EditText timestreamCoordinateEditText = (EditText) tView.getChildAt(3);
         EditText timestreamInventoryEditText = (EditText) tView.getChildAt(5);
 
+        timestreamDOPEditText.setOnFocusChangeListener(null);
+
         if (productDOP.equals("")) {
 
             timestreamDOPEditText.setText(productDOP);

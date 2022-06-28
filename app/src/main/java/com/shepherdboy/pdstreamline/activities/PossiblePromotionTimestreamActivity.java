@@ -84,7 +84,6 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
 
-
         startTimerTask();
         super.onStop();
     }
@@ -96,11 +95,10 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
         super.onPostResume();
     }
 
-    public static void pickOutPossiblePromotionTimestream() {
-        MyApplication.pickupChanges();
-        MyApplication.saveChanges(MyApplication.thingsToSaveList);
+    public static void pickOutPossibleStaleTimestream() {
+        MyApplication.saveChanges();
         PDInfoWrapper.getAndMoveTimestreamByDate(sqLiteDatabase,
-                DateUtil.typeMach(MyApplication.today));
+                SettingActivity.settingInstance.getNextSalesmanCheckDay());
     }
 
     public static void onTimestreamViewReleased(View releasedChild, float horizontalDistance) {
@@ -147,8 +145,8 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
     /** 根据左右拖动的距离返回int值*/
     public static int getViewState(View draggedView, double horizontalDraggedDistance) {
 
-        boolean isDragToPickOut = horizontalDraggedDistance > 0 && horizontalDraggedDistance >= draggedView.getHeight() * 1.6;
-        boolean isDragToDelete = horizontalDraggedDistance < 0 && -horizontalDraggedDistance >= draggedView.getHeight() * 1.6;
+        boolean isDragToPickOut = horizontalDraggedDistance > 0 && horizontalDraggedDistance >= 160;
+        boolean isDragToDelete = horizontalDraggedDistance < 0 && -horizontalDraggedDistance >= 160;
 
         if (isDragToPickOut) {
 
@@ -289,7 +287,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
         dopTV.setText(DateUtil.typeMach(timestream.getProductDOP()).substring(5,10));
         nameTV.setText(timestream.getProductName());
         inventoryET.setText(timestream.getProductInventory());
-        codeTV.setText(timestream.getProductCode());
+        codeTV.setText(timestream.getShortCode());
         crdTV.setText(timestream.getProductCoordinate());
 
         timestream.setBoundLayoutId(tsView.getId() + "");
@@ -351,8 +349,8 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
         EditText et;
         LinearLayout box;
 
-        lParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
+        lParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
         childView.setLayoutParams(lParams);
         childView.setBackground(childView.getResources().getDrawable(R.drawable.underline));
         childView.setAlpha(0.8f);
@@ -370,17 +368,18 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
         tv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 23);
 
         tv = textViews[1];
-        lParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 0.47f);
+        lParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 0.47f);
         tv.setLayoutParams(lParams);
         tv.setGravity(Gravity.CENTER_VERTICAL);
 
         et = (EditText) childView.getChildAt(2);
-        lParams = new LinearLayout.LayoutParams(0, 78, 0.15f);
+        lParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 0.15f);
         et.setLayoutParams(lParams);
         et.setGravity(Gravity.CENTER);
         et.setPadding(pd, 0, pd, 0);
         et.setInputType(InputType.TYPE_CLASS_NUMBER);
         et.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 23);
+        et.setBackground(null);
         et.setSelectAllOnFocus(true);
 
         box = (LinearLayout) childView.getChildAt(3);
@@ -389,14 +388,14 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
         box.setOrientation(LinearLayout.VERTICAL);
 
         tv = textViews[2];
-        lParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+        lParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 0, 1f);
         tv.setLayoutParams(lParams);
         tv.setGravity(Gravity.CENTER);
         tv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
 
         tv = textViews[3];
-        lParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+        lParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 0, 1f);
         tv.setLayoutParams(lParams);
         tv.setGravity(Gravity.CENTER);

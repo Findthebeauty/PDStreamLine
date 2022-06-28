@@ -128,11 +128,13 @@ public class MyApplication extends Application {
     }
 
 
-    public static void saveChanges(LinkedList linkedList) {
+    public static void saveChanges() {
 
-        while (!linkedList.isEmpty()) {
+        pickupChanges();
 
-            Object bean = linkedList.remove();
+        while (!thingsToSaveList.isEmpty()) {
+
+            Object bean = thingsToSaveList.remove();
 
             if (bean instanceof Product) {
 
@@ -166,13 +168,11 @@ public class MyApplication extends Application {
             }
 
         }
-
     }
 
     public static void serialize() {
 
-        pickupChanges();
-        saveChanges(thingsToSaveList);
+        saveChanges();
     }
 
     public static boolean tryCatchVolumeDown(Activity activity, int keyCode) {

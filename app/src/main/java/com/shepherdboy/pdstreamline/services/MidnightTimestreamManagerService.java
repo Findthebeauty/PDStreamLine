@@ -87,7 +87,7 @@ public class MidnightTimestreamManagerService extends Service {
         public void run() {
 
             MyApplication.initDatabase(getApplicationContext());
-            PossiblePromotionTimestreamActivity.pickOutPossiblePromotionTimestream();
+            PossiblePromotionTimestreamActivity.pickOutPossibleStaleTimestream();
         }
     }
 }
