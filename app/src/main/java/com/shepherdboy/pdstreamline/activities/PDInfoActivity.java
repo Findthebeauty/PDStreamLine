@@ -85,6 +85,8 @@ public class PDInfoActivity extends AppCompatActivity {
 
         scanner = findViewById(R.id.zxing_barcode_scanner);
 
+        MyApplication.registerCameraScanner(this, (View) findViewById(R.id.parent).getParent());
+
         scanner.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -154,9 +156,9 @@ public class PDInfoActivity extends AppCompatActivity {
         productEXPEditText.setText(product.getProductEXP());
         productEXPTimeUnitButton.setText(product.getProductEXPTimeUnit());
 
-        MyInfoChangeWatcher.watch(productCodeEditText, null, MyApplication.PRODUCT_CODE);
-        MyInfoChangeWatcher.watch(productNameEditText, null, MyApplication.PRODUCT_NAME);
-        MyInfoChangeWatcher.watch(productEXPEditText, null, MyApplication.PRODUCT_EXP);
+        MyInfoChangeWatcher.watch(productCodeEditText, null, MyApplication.PRODUCT_CODE, false);
+        MyInfoChangeWatcher.watch(productNameEditText, null, MyApplication.PRODUCT_NAME, true);
+        MyInfoChangeWatcher.watch(productEXPEditText, null, MyApplication.PRODUCT_EXP, true);
         MyInfoChangeWatcher.watch(productEXPTimeUnitButton);
 
         loadTimestreams(timeStreams);
@@ -237,9 +239,9 @@ public class PDInfoActivity extends AppCompatActivity {
 
         MyApplication.setTimeStreamViewOriginalBackgroundColor(timestream);
 
-        MyInfoChangeWatcher.watch(timestreamDOPEditText, timestream, MyApplication.TIMESTREAM_DOP);
-        MyInfoChangeWatcher.watch(timestreamCoordinateEditText, timestream, MyApplication.TIMESTREAM_COORDINATE);
-        MyInfoChangeWatcher.watch(timestreamInventoryEditText, timestream, MyApplication.TIMESTREAM_INVENTORY);
+        MyInfoChangeWatcher.watch(timestreamDOPEditText, timestream, MyApplication.TIMESTREAM_DOP, true);
+        MyInfoChangeWatcher.watch(timestreamCoordinateEditText, timestream, MyApplication.TIMESTREAM_COORDINATE, true);
+        MyInfoChangeWatcher.watch(timestreamInventoryEditText, timestream, MyApplication.TIMESTREAM_INVENTORY, true);
 
         onShowTimeStreamsHashMap.put(tView.getId(), timestream);
 

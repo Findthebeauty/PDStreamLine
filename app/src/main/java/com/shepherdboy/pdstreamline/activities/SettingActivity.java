@@ -743,7 +743,8 @@ public class SettingActivity extends AppCompatActivity {
     /**
      * 根据新日期设置更新所有商品临期以及下架日期
      */
-    public synchronized static void applyEXPSetting() {
+//    public synchronized static void applyEXPSetting() {
+    public static void applyEXPSetting() {
 
         MyApplication.saveChanges();
 

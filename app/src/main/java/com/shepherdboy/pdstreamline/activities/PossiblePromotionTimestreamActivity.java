@@ -266,7 +266,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
             MyApplication.setTimeStreamViewOriginalBackgroundColor(timestream);
 
-            MyInfoChangeWatcher.watch((EditText) (tsView.getChildAt(2)), timestream, MyApplication.TIMESTREAM_INVENTORY);
+            MyInfoChangeWatcher.watch((EditText) (tsView.getChildAt(2)), timestream, MyApplication.TIMESTREAM_INVENTORY, true);
             childViewIndex++;
         }
     }

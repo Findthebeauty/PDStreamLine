@@ -41,9 +41,11 @@ public class SingletonSettingBean {
             e.printStackTrace();
         }
 
+        assert next != null;
         while (next.before(today)) {
 
-            calendar.add(2, Calendar.DATE);
+            calendar.add(Calendar.DATE, 2);
+            next = calendar.getTime();
         }
 
         nextSalesmanCheckDay = DateUtil.typeMach(calendar.getTime());

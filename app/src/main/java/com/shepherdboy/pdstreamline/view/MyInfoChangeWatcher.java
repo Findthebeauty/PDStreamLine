@@ -3,6 +3,7 @@ package com.shepherdboy.pdstreamline.view;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -29,6 +30,8 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
     public static HashMap<EditText, MyInfoChangeWatcher> myTextWatchers = new HashMap<>();
 
+    private boolean autoCommitOnLastFocus = false;
+
     private static boolean scheduled = false;
     private static Handler handler;
     private static Runnable runnable;
@@ -45,11 +48,13 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
     private String preInf = "";
     private String currentInf = "";
 
-    public static void watch(EditText editText, @Nullable Timestream timestream, int filedIndex) {
+    public static void watch(EditText editText, @Nullable Timestream timestream, int filedIndex, boolean autoCommitOnLastFocus) {
 
         MyInfoChangeWatcher myInfoChangeWatcher = new MyInfoChangeWatcher();
         editText.addTextChangedListener(myInfoChangeWatcher);
-        editText.setOnFocusChangeListener(myInfoChangeWatcher);
+        myInfoChangeWatcher.autoCommitOnLastFocus = autoCommitOnLastFocus;
+
+        if (autoCommitOnLastFocus) editText.setOnFocusChangeListener(myInfoChangeWatcher);
 
         myInfoChangeWatcher.timestream = timestream;
         myInfoChangeWatcher.watchedEditText = editText;
@@ -258,6 +263,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
                 if (!w.preInf.equals("") && w.filedIndex == MyApplication.TIMESTREAM_DOP) {
 
                     w.preInf = DateUtil.getShortKey(w.preInf);
+                    w.currentInf = w.preInf;
 
                 }
             }
@@ -311,8 +317,9 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
 
-        if (v instanceof EditText && (!hasFocus) && (!preInf.equals(currentInf))) {
+        if (v instanceof EditText && (!hasFocus) && (!preInf.equals(currentInf)) && this.autoCommitOnLastFocus) {
 
+            Log.e("onFocusChange,In", preInf + ":" + currentInf);
             stopAutoCommit();
             commit();
         }

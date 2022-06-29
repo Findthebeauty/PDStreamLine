@@ -37,6 +37,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
+/**
+ *
+ */
 public class MyApplication extends Application {
 
     //设置时区
@@ -186,6 +189,19 @@ public class MyApplication extends Application {
 
 
         return false;
+    }
+
+    /**
+     * @param activity 注册扫描功能的activity
+     */
+    public static void registerCameraScanner(Activity activity, View view) {
+
+//        view.setOnClickListener(new View.OnClickListener() { todo 活的按钮
+//            @Override
+//            public void onClick(View v) {
+//                Log.d("registerCameraScanner", "I'm in!");
+//            }
+//        });
     }
 //
 //    static {
