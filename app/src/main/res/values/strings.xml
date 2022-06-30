@@ -10,4 +10,6 @@
     <string name="promotion_offset">临期提前量</string>
     <string name="off_shelves_offset">下架提前量</string>
     <string name="add_timestream">添加</string>
+    <string name="empty_date">0000-00-00</string>
+    <string name="default_inventory">001</string>
 </resources>
