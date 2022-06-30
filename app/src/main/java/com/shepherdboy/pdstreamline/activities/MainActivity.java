@@ -119,11 +119,19 @@ public class MainActivity extends AppCompatActivity {
         MyApplication.currentProduct = null;
 
         //开始信息录入模式
-        Button startPDInfoActivityButton = findViewById(R.id.pd_info_activity);
+        Button startTraversalTimestreamBT = findViewById(R.id.traversal_timestream_activity);
+        Button startPDInfoActivityBT = findViewById(R.id.pd_info_activity);
         Button stopMNSBT = findViewById(R.id.stop_midnight_manager_service);
-        Button findPossiblePromotionTimestream = findViewById(R.id.find_possible_promotion_timestream);
+        Button startPossiblePromotionActivityBT = findViewById(R.id.find_possible_promotion_timestream);
 
-        findPossiblePromotionTimestream.setOnClickListener(new View.OnClickListener() {
+        startTraversalTimestreamBT.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TraversalTimestreamActivity.actionStart();
+            }
+        });
+
+        startPossiblePromotionActivityBT.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 PossiblePromotionTimestreamActivity.pickOutPossibleStaleTimestream();
@@ -131,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        startPDInfoActivityButton.setOnClickListener(new View.OnClickListener() {
+        startPDInfoActivityBT.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 

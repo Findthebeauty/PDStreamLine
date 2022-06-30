@@ -7,11 +7,16 @@
     android:orientation="vertical">
 
     <Button
-        android:id="@+id/pd_info_activity"
-        android:text="生产日期增删改查"
+        android:id="@+id/traversal_timestream_activity"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        />
+        android:text="货架遍历模式" />
+
+    <Button
+        android:id="@+id/pd_info_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="生产日期增删改查" />
 
     <Button
         android:id="@+id/find_possible_promotion_timestream"
