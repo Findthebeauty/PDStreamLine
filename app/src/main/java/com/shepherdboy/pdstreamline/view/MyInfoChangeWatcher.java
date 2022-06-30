@@ -38,7 +38,6 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
     private static long timeMillis = 0;
     private static long lastInputTimeMillis = 0;
     private static MyInfoChangeWatcher currentWatcher;
-    private static String info;
 
     private EditText watchedEditText;
     private Timestream timestream;
@@ -301,10 +300,8 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
             if (!preInf.equals(currentInf)) {
 
                 currentWatcher = this;
-                info = currentInf;
                 timeMillis = System.currentTimeMillis();
                 startAutoCommit();
-
             }
         }
 
@@ -377,7 +374,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
             default:
 
-                MyApplication.afterInfoChanged(info, currentWatcher.watchedEditText, currentWatcher.timestream,
+                MyApplication.afterInfoChanged(currentInf, currentWatcher.watchedEditText, currentWatcher.timestream,
                         currentWatcher.filedIndex);
 
         }
