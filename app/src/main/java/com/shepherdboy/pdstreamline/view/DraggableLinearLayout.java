@@ -191,7 +191,7 @@ public class DraggableLinearLayout extends LinearLayout {
             InputMethodManager m = (InputMethodManager) editText.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             m.showSoftInput(editText, 0);
             }
-        },200);
+        },200); //todo 关于软键盘弹出edittext内容消失的问题
 
     }
 

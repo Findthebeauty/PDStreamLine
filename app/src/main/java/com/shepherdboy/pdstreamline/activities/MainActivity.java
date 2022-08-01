@@ -157,6 +157,14 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onStop() {
+
+        MyApplication.uploadData();
+
+        super.onStop();
+    }
+
     /**
      *   获取运行时本地文件读写权限
      */

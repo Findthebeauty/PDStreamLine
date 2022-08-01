@@ -479,6 +479,7 @@ public class PDInfoWrapper {
         MyApplication.sqLiteDatabase.execSQL("delete from " + tableName);
     }
 
+
     /**
      * @param timestreamState SettingActivity.TIMESTREAM_IN_PROMOTING,
      *                        SettingActivity.TIMESTREAM_NOT_IN_PROMOTING
@@ -551,4 +552,5 @@ public class PDInfoWrapper {
         } while (cursor.moveToNext());
 
     }
+
 }

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 
+import com.alibaba.fastjson.JSON;
 import com.shepherdboy.pdstreamline.activities.MainActivity;
 import com.shepherdboy.pdstreamline.activities.PDInfoActivity;
 import com.shepherdboy.pdstreamline.activities.PossiblePromotionTimestreamActivity;
@@ -32,10 +34,19 @@ import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  *
@@ -202,6 +213,73 @@ public class MyApplication extends Application {
 //                Log.d("registerCameraScanner", "I'm in!");
 //            }
 //        });
+    }
+
+    /**
+     * 将日期记录上传到服务器
+     */
+    public static void uploadData() {
+
+        List<Timestream> notPromotionTimestreams = PDInfoWrapper.getAllTimestreams(SettingActivity.TIMESTREAM_NOT_IN_PROMOTION);
+        List<Timestream> promotionTimestreams = PDInfoWrapper.getAllTimestreams(SettingActivity.TIMESTREAM_IN_PROMOTION);
+
+        String scopeSetting = MyDatabaseHelper.getSetting(SettingActivity.DATE_OFFSET_INDEX, MyApplication.sqLiteDatabase);
+        String singletonSetting = MyDatabaseHelper.getSetting(SettingActivity.SETTING_SINGLETON_INDEX_NAME, MyApplication.sqLiteDatabase);
+
+        String notPromotionTS = JSON.toJSONString(notPromotionTimestreams);
+        String promotionTS = JSON.toJSONString(promotionTimestreams);
+
+        String url = "https://h41548z146.goho.co";
+
+        OkHttpClient okHttpClient = new OkHttpClient();
+
+        FormBody formBody = new FormBody.Builder()
+                .add("data", notPromotionTS).build();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .post(formBody)
+                .build();
+
+        Call call = okHttpClient.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.d("uploadData", "失败:" + e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+
+                Log.d("uploadData", "成功:" + response.body().toString());
+                Log.d("uploadData", "成功:" + response.message());
+            }
+        });
+
+
+    }
+
+    public static void downloadData() {
+
+        String url = "https://h41548z146.goho.co";
+        OkHttpClient client = new OkHttpClient();
+
+        final Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .build();
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.d("downloadData", "失败:" + e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                Log.d("downloadData", "成功：" + response.message());
+            }
+        });
     }
 //
 //    static {

@@ -86,8 +86,8 @@ public class SettingActivity extends AppCompatActivity {
     private static final int ADD_SCOPE = 1;
     private static final int DELETE_SCOPE = 2;
 
-    private static final String DATE_OFFSET_INDEX = "dateOffset";
-    private static final String SETTING_SINGLETON_INDEX_NAME = "settingSingleton";
+    public static final String DATE_OFFSET_INDEX = "dateOffset";
+    public static final String SETTING_SINGLETON_INDEX_NAME = "settingSingleton";
 
     private final TextView[] textViews = new TextView[5];
     private final EditText[] editTexts = new EditText[3];
@@ -743,8 +743,7 @@ public class SettingActivity extends AppCompatActivity {
     /**
      * 根据新日期设置更新所有商品临期以及下架日期
      */
-//    public synchronized static void applyEXPSetting() {
-    public static void applyEXPSetting() {
+    public synchronized static void applyEXPSetting() {
 
         MyApplication.saveChanges();
 
