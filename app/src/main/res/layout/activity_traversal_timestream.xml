@@ -84,7 +84,7 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toLeftOf="@id/buy_dop_measure"
                     app:layout_constraintTop_toBottomOf="@id/buy_pd_name"
-                    android:visibility="g"
+                    android:visibility="visible"
                     />
 
                 <EditText
