@@ -179,7 +179,7 @@ public class MyApplication extends Application {
 
         if (clickInterval > Long.parseLong(settingInstance.getDoubleClickDelay())) {
 
-            clickCount = 0;
+            clickCount = 1;
             return false;
         }
 

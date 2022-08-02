@@ -250,7 +250,7 @@ public class DraggableLinearLayout extends LinearLayout {
 
         if (event.getActionMasked() == MotionEvent.ACTION_UP) init();
 
-        if (MyApplication.tryCaptureClickEvent(event)) return true;
+//        if (MyApplication.tryCaptureClickEvent(event)) return true;
 
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
