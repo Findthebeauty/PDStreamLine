@@ -33,6 +33,10 @@ public class DraggableLinearLayout extends LinearLayout {
 
     private LinearLayout currentTimestreamView;
 
+    final boolean initHorizontalDraggable;
+
+    final boolean initVerticalDraggable;
+
     boolean horizontalDraggable;
 
     boolean verticalDraggable;
@@ -48,7 +52,11 @@ public class DraggableLinearLayout extends LinearLayout {
     public DraggableLinearLayout(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        init(context, attrs);
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.DraggableLinearLayout);
+        initHorizontalDraggable = typedArray.getBoolean(R.styleable.DraggableLinearLayout_horizontalDraggable, true);
+        initVerticalDraggable = typedArray.getBoolean(R.styleable.DraggableLinearLayout_verticalDraggable, true);
+
+        init();
 
         viewDragHelper = ViewDragHelper.create(this, 1.0f, new ViewDragHelper.Callback() {
             @Override
@@ -139,6 +147,14 @@ public class DraggableLinearLayout extends LinearLayout {
         });
     }
 
+    public void setVerticalDraggable(boolean verticalDraggable) {
+        this.verticalDraggable = verticalDraggable;
+    }
+
+    public void setHorizontalDraggable(boolean horizontalDraggable) {
+        this.horizontalDraggable = horizontalDraggable;
+    }
+
     public void putBack(View view){
 
         Point originalPoint = MyApplication.originalPositionHashMap.get(view.getId());
@@ -222,17 +238,19 @@ public class DraggableLinearLayout extends LinearLayout {
         return 0;
     }
 
-    private void init(Context context, AttributeSet attributeSet) {
+    private void init() {
 
-        TypedArray typedArray = context.obtainStyledAttributes(attributeSet, R.styleable.DraggableLinearLayout);
-        horizontalDraggable = typedArray.getBoolean(R.styleable.DraggableLinearLayout_horizontalDraggable, true);
-        verticalDraggable = typedArray.getBoolean(R.styleable.DraggableLinearLayout_verticalDraggable, true);
-//        MyApplication.activityIndex = typedArray.getInt(R.styleable.DraggableLinearLayout_activityIndex, 0);
+        this.horizontalDraggable = initHorizontalDraggable;
+        this.verticalDraggable = initVerticalDraggable;
 
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
+
+        if (event.getActionMasked() == MotionEvent.ACTION_UP) init();
+
+        if (MyApplication.tryCaptureClickEvent(event)) return true;
 
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
@@ -269,6 +287,10 @@ public class DraggableLinearLayout extends LinearLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+
+        if (event.getActionMasked() == MotionEvent.ACTION_UP) init();
+
+        if (MyApplication.tryCaptureClickEvent(event)) return true;
 
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
 

@@ -15,10 +15,14 @@ public class SingletonSettingBean {
     private boolean autoCombine = true;
 
     private boolean autoCommitFlag;
+    private boolean doubleClickFlag;
+    private boolean longClickFlag;
 
     private String nextSalesmanCheckDay;
 
-    private String  autoCommitDelay;
+    private String autoCommitDelay;
+    private String doubleClickDelay;
+    private String longClickDelay;
 
     private static SingletonSettingBean singletonSettingBean;
 
@@ -87,6 +91,38 @@ public class SingletonSettingBean {
 
     public void setAutoCommitDelay(String autoCommitDelay) {
         this.autoCommitDelay = autoCommitDelay;
+    }
+
+    public String getLongClickDelay() {
+        return longClickDelay;
+    }
+
+    public void setLongClickDelay(String longClickDelay) {
+        this.longClickDelay = longClickDelay;
+    }
+
+    public boolean isDoubleClickFlag() {
+        return doubleClickFlag;
+    }
+
+    public void setDoubleClickFlag(boolean doubleClickFlag) {
+        this.doubleClickFlag = doubleClickFlag;
+    }
+
+    public boolean isLongClickFlag() {
+        return longClickFlag;
+    }
+
+    public void setLongClickFlag(boolean longClickFlag) {
+        this.longClickFlag = longClickFlag;
+    }
+
+    public String getDoubleClickDelay() {
+        return doubleClickDelay;
+    }
+
+    public void setDoubleClickDelay(String doubleClickDelay) {
+        this.doubleClickDelay = doubleClickDelay;
     }
 
     public static void setSingletonSettingBean(SingletonSettingBean singletonSettingBean) {

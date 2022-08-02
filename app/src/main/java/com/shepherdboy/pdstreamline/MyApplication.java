@@ -1,13 +1,17 @@
 package com.shepherdboy.pdstreamline;
 
+import static com.shepherdboy.pdstreamline.activities.SettingActivity.settingInstance;
+
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.os.Handler;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -75,12 +79,19 @@ public class MyApplication extends Application {
     public static final int POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY = 4;
     public static final int EXPIRED_TIMESTREAM_ACTIVITY = 5;
     public static final int SETTING_ACTIVITY = 6;
+    public static final int TRAVERSAL_TIMESTREAM_ACTIVITY = 7;
 
     public static DraggableLinearLayout draggableLinearLayout;
 
     public static Product currentProduct;
 
     public static int activityIndex;
+
+    private static long lastClickTime = 0L;
+    private static int clickCount;
+    private static Handler handler;
+    private static Runnable runnable;
+    private static boolean scheduled;
 
     //数据库助手，全局
     public static MyDatabaseHelper databaseHelper;
@@ -129,6 +140,115 @@ public class MyApplication extends Application {
                 SettingActivity.actionStart();
             }
         });
+    }
+
+    public static void setScheduled(boolean scheduled) {
+        MyApplication.scheduled = scheduled;
+    }
+
+
+
+    public static boolean tryCaptureClickEvent(MotionEvent event) {
+
+        long clickInterval = 0L;
+
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+
+            clickCount++;
+
+            if (lastClickTime != 0L) clickInterval = System.currentTimeMillis() - lastClickTime;
+
+            lastClickTime = System.currentTimeMillis();
+
+            startCountPressTime();
+        }
+
+        if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
+
+            lastClickTime = System.currentTimeMillis();
+            clickCount = 0;
+            clickInterval = 0L;
+            stopCountPressTime();
+            return false;
+        }
+
+        if (event.getActionMasked() ==  MotionEvent.ACTION_UP) {
+
+            stopCountPressTime();
+        }
+
+        if (clickInterval > Long.parseLong(settingInstance.getDoubleClickDelay())) {
+
+            clickCount = 0;
+            return false;
+        }
+
+        if (clickCount > 1) {
+
+            clickCount = 0;
+            lastClickTime = 0L;
+            return onDBClick();
+        }
+
+        return false;
+    }
+
+    private static boolean onDBClick() {
+
+        Toast.makeText(getContext(), "onDoubleClick", Toast.LENGTH_SHORT).show();
+
+        return true;
+    }
+
+    private static void stopCountPressTime() {
+
+        if (handler != null) {
+
+            handler.removeCallbacks(runnable);
+            handler = null;
+            runnable = null;
+            setScheduled(false);
+        }
+    }
+
+    private static void startCountPressTime() {
+
+        if (scheduled) return;
+
+        handler = new Handler();
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+
+                long pressInterval = System.currentTimeMillis() - lastClickTime;
+
+
+                if (pressInterval >= Long.parseLong(settingInstance.getLongClickDelay())) {
+
+                    clickCount = 0;
+                    onLongClick();
+                }
+
+            }
+        };
+
+        handler.postDelayed(runnable, Long.parseLong(settingInstance.getLongClickDelay()));
+        setScheduled(true);
+    }
+
+    private static boolean onLongClick() {
+
+        switch (activityIndex) {
+
+            case TRAVERSAL_TIMESTREAM_ACTIVITY:
+
+                Log.d("tryCaptureClickEvent", "onLongClick");
+
+                draggableLinearLayout.setVerticalDraggable(true);
+
+        }
+
+        return false;
     }
 
     public static void restoreTimestreams(LinkedList linkedList) {
@@ -358,7 +478,6 @@ public class MyApplication extends Application {
 
                     for (int i = 0; i < draggableLinearLayout.getChildCount(); i++) {
 
-
                         recordViewStateByChildIndex(draggableLinearLayout, i);
 
                         temp = (LinearLayout) draggableLinearLayout.getChildAt(i);
@@ -373,6 +492,15 @@ public class MyApplication extends Application {
                     }
                     break;
 
+                case TRAVERSAL_TIMESTREAM_ACTIVITY:
+
+                    for (int i = 0; i < draggableLinearLayout.getChildCount(); i++) {
+
+                        recordViewStateByChildIndex(draggableLinearLayout, i);
+
+                    }
+
+                    break;
             }
 
 
@@ -497,13 +625,13 @@ public class MyApplication extends Application {
 
                 if (validated) {
 
-                    SettingActivity.settingInstance.setUpdated(false);
-                    SettingActivity.settingInstance.setAutoCommitDelay(after);
+                    settingInstance.setUpdated(false);
+                    settingInstance.setAutoCommitDelay(after);
 
                 } else {
 
                     makeToast(SettingActivity.getInstance(), "延时值不合法", Toast.LENGTH_SHORT);
-                    v.setText(SettingActivity.settingInstance.getAutoCommitDelay());
+                    v.setText(settingInstance.getAutoCommitDelay());
                 }
 
                 return;

@@ -350,7 +350,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
                     commit();
 
-                    handler.postDelayed(this, 10000);
+//                    handler.postDelayed(this, 10000);
                     stopAutoCommit();
                     return;
                 }

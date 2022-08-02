@@ -241,7 +241,7 @@ public class AIInputter {
                     case 1: return !information.equals("0");
                     case 3: return !information.startsWith("0");
                     case 4:
-                            String reg = "(0[1-9])|(1[0-2])(" +
+                            String reg = "((0[1-9])|(1[0-2]))(" +
                                     "(0[1-9])|" +
                                     "([1-2][0-9])|" +
                                     "(3[0-1]))";

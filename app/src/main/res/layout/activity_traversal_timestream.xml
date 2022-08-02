@@ -6,180 +6,184 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".activities.TraversalTimestreamActivity">
 
-    <LinearLayout
-        android:id="@+id/container"
+    <com.shepherdboy.pdstreamline.view.DraggableLinearLayout
+        android:id="@+id/parent"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@drawable/cell_border"
+        android:layout_margin="2dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:verticalDraggable="false">
+
         <LinearLayout
+            android:id="@+id/cell_head"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/cell_border"
-            android:layout_margin="2dp"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:id="@+id/head"
+            android:gravity="center_vertical">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:padding="1dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:layout_marginTop="3dp"
+                android:layout_marginBottom="3dp"
+                android:textSize="17sp"
+                android:text="天有纯鲜牛奶780ml天有纯鲜牛奶780ml天有纯鲜牛奶780ml天有纯鲜牛奶780ml天有纯鲜牛奶780ml"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="1dp"
+                android:layout_margin="1dp"
+                android:text="302503"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/combination"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical">
+                android:background="@drawable/timestream_border"
+                android:layout_margin="2dp"
+                android:id="@+id/timestream">
+
                 <TextView
+                    android:id="@+id/buy_pd_name"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:padding="1dp"
+                    android:layout_height="match_parent"
                     android:layout_marginStart="5dp"
                     android:layout_marginEnd="5dp"
                     android:layout_marginTop="3dp"
                     android:layout_marginBottom="3dp"
-                    android:textSize="17sp"
-                    android:text="天有纯鲜牛奶780ml天有纯鲜牛奶780ml天有纯鲜牛奶780ml天有纯鲜牛奶780ml天有纯鲜牛奶780ml"/>
+                    android:minLines="2"
+                    android:padding="1dp"
+                    android:text="光明杯酸原味320g光明杯酸原味320g"
+                    android:textSize="15sp"
+                    android:gravity="center_vertical"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toLeftOf="@id/buy_dop_measure"
+                    app:layout_constraintTop_toTopOf="parent" />
+
                 <TextView
+                    android:id="@+id/give_away_pd_name"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginEnd="5dp"
+                    android:layout_marginTop="3dp"
+                    android:layout_marginBottom="3dp"
+                    android:minLines="2"
+                    android:padding="1dp"
+                    android:text="光明杯酸原味320g光明杯酸原味320g光明杯酸原味320g光明杯酸原味320g"
+                    android:textSize="15sp"
+                    android:gravity="center_vertical"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toLeftOf="@id/buy_dop_measure"
+                    app:layout_constraintTop_toBottomOf="@id/buy_pd_name"
+                    android:visibility="g"
+                    />
+
+                <EditText
+                    android:id="@+id/buy_dop_measure"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="@null"
+                    android:inputType="number"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginEnd="5dp"
+                    android:layout_marginTop="3dp"
+                    android:layout_marginBottom="3dp"
+                    android:padding="1dp"
+                    android:selectAllOnFocus="true"
+                    android:text="@string/empty_date"
+                    android:visibility="invisible"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:textSize="15sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/buy_pd_name"
+                    app:layout_constraintRight_toLeftOf="@id/specs_measure"
+                    app:layout_constraintTop_toTopOf="@+id/buy_pd_name" />
+                <EditText
+                    android:id="@+id/buy_dop"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:background="@null"
+                    android:inputType="number"
+                    android:padding="1dp"
+                    android:selectAllOnFocus="true"
+                    android:text="2022-06-22"
+                    android:textSize="15sp"
+                    app:layout_constraintBottom_toBottomOf="@id/buy_dop_measure"
+                    app:layout_constraintTop_toTopOf="@id/buy_dop_measure"
+                    app:layout_constraintLeft_toLeftOf="@id/buy_dop_measure"
+                    app:layout_constraintRight_toRightOf="@id/buy_dop_measure"/>
+
+                <EditText
+                    android:id="@+id/specs_measure"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:text="@string/default_inventory"
+                    android:textSize="20sp"
+                    android:visibility="invisible"
+                    android:focusable="false"/>
+
+                <EditText
+                    android:id="@+id/specs"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:inputType="number"
+                    android:selectAllOnFocus="true"
+                    android:text="10"
+                    android:gravity="center"
+                    android:textSize="20sp"
+                    app:layout_constraintBottom_toBottomOf="@id/specs_measure"
+                    app:layout_constraintLeft_toLeftOf="@id/specs_measure"
+                    app:layout_constraintRight_toRightOf="@id/specs_measure"
+                    app:layout_constraintTop_toTopOf="@id/specs_measure" />
+
+                <TextView
+                    android:id="@+id/give_away_dop"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    app:layout_constraintTop_toBottomOf="@id/buy_pd_name"
+                    app:layout_constraintLeft_toLeftOf="@id/buy_dop_measure"
+                    app:layout_constraintRight_toRightOf="@id/buy_dop_measure"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginEnd="5dp"
+                    android:layout_marginTop="3dp"
+                    android:layout_marginBottom="3dp"
                     android:padding="1dp"
-                    android:layout_margin="1dp"
-                    android:text="302503"/>
-            </LinearLayout>
+                    android:background="@color/yellow"
+                    android:gravity="center"
+                    android:textSize="15sp"
+                    android:text="2022-06-22"
+                    android:visibility="visible"/>
 
-            <com.shepherdboy.pdstreamline.view.DraggableLinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/combination">
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/give_away_flag"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/timestream_border"
-                    android:layout_margin="2dp"
-                    android:id="@+id/timestream">
-
-                    <TextView
-                        android:id="@+id/buy_pd_name"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginStart="5dp"
-                        android:layout_marginEnd="5dp"
-                        android:layout_marginTop="3dp"
-                        android:layout_marginBottom="3dp"
-                        android:padding="1dp"
-                        android:text="光明杯酸原味320g"
-                        android:textSize="15sp"
-                        app:layout_constraintLeft_toLeftOf="parent"
-                        app:layout_constraintRight_toLeftOf="@id/buy_dop_measure"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/give_away_pd_name"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        app:layout_constraintTop_toBottomOf="@id/buy_pd_name"
-                        app:layout_constraintLeft_toLeftOf="parent"
-                        app:layout_constraintRight_toLeftOf="@id/buy_dop_measure"
-                        android:layout_marginStart="5dp"
-                        android:layout_marginEnd="5dp"
-                        android:layout_marginTop="3dp"
-                        android:layout_marginBottom="3dp"
-                        android:padding="1dp"
-                        android:text="光明杯酸原味320g光明杯酸原味320g光明杯酸原味320g光明杯酸原味320g"
-                        android:textSize="15sp" />
-
-                    <EditText
-                        android:id="@+id/buy_dop_measure"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:inputType="number"
-                        android:layout_marginStart="5dp"
-                        android:layout_marginEnd="5dp"
-                        android:layout_marginTop="3dp"
-                        android:layout_marginBottom="3dp"
-                        android:padding="1dp"
-                        android:selectAllOnFocus="true"
-                        android:text="@string/empty_date"
-                        android:visibility="invisible"
-                        android:focusable="false"
-                        android:focusableInTouchMode="false"
-                        android:textSize="15sp"
-                        app:layout_constraintBottom_toBottomOf="@+id/buy_pd_name"
-                        app:layout_constraintRight_toLeftOf="@id/specs_measure"
-                        app:layout_constraintTop_toTopOf="@+id/buy_pd_name" />
-                    <EditText
-                        android:id="@+id/buy_dop"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:inputType="number"
-                        android:padding="1dp"
-                        android:selectAllOnFocus="true"
-                        android:text="2022-06-22"
-                        android:textSize="15sp"
-                        app:layout_constraintBottom_toBottomOf="@id/buy_dop_measure"
-                        app:layout_constraintTop_toTopOf="@id/buy_dop_measure"
-                        app:layout_constraintLeft_toLeftOf="@id/buy_dop_measure"
-                        app:layout_constraintRight_toRightOf="@id/buy_dop_measure"/>
-
-                    <EditText
-                        android:id="@+id/specs_measure"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:layout_constraintRight_toRightOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        android:text="@string/default_inventory"
-                        android:textSize="20sp"
-                        android:visibility="invisible"
-                        android:focusable="false"/>
-
-                    <EditText
-                        android:id="@+id/specs"
-                        android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        android:inputType="number"
-                        android:selectAllOnFocus="true"
-                        android:text="10"
-                        android:gravity="center"
-                        android:textSize="20sp"
-                        app:layout_constraintBottom_toBottomOf="@id/specs_measure"
-                        app:layout_constraintLeft_toLeftOf="@id/specs_measure"
-                        app:layout_constraintRight_toRightOf="@id/specs_measure"
-                        app:layout_constraintTop_toTopOf="@id/specs_measure" />
-
-                    <TextView
-                        android:id="@+id/give_away_dop"
-                        android:layout_width="wrap_content"
-                        android:layout_height="0dp"
-                        app:layout_constraintTop_toBottomOf="@id/buy_pd_name"
-                        app:layout_constraintLeft_toLeftOf="@id/buy_dop_measure"
-                        app:layout_constraintRight_toRightOf="@id/buy_dop_measure"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        android:layout_marginStart="5dp"
-                        android:layout_marginEnd="5dp"
-                        android:layout_marginTop="3dp"
-                        android:layout_marginBottom="3dp"
-                        android:padding="1dp"
-                        android:background="@color/yellow"
-                        android:gravity="center"
-                        android:textSize="15sp"
-                        android:text="2022-06-22"/>
-
-                    <TextView
-                        android:id="@+id/give_away_flag"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.45"
-                        android:rotation="-38"
-                        android:text="赠"
-                        android:textAlignment="center"
-                        android:textColor="@color/orange"
-                        android:textSize="30sp"
-                        app:layout_constraintLeft_toLeftOf="@id/give_away_dop"
-                        app:layout_constraintRight_toRightOf="@id/give_away_dop"
-                        app:layout_constraintBottom_toBottomOf="@id/give_away_dop"
-                        app:layout_constraintTop_toTopOf="@id/give_away_dop"/>
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </com.shepherdboy.pdstreamline.view.DraggableLinearLayout>
+                    android:alpha="0.45"
+                    android:rotation="-38"
+                    android:text="赠"
+                    android:textAlignment="center"
+                    android:textColor="@color/orange"
+                    android:textSize="30sp"
+                    app:layout_constraintLeft_toLeftOf="@id/give_away_dop"
+                    app:layout_constraintRight_toRightOf="@id/give_away_dop"
+                    app:layout_constraintBottom_toBottomOf="@id/give_away_dop"
+                    app:layout_constraintTop_toTopOf="@id/give_away_dop"
+                    android:visibility="visible"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </LinearLayout>
-    </LinearLayout>
+    </com.shepherdboy.pdstreamline.view.DraggableLinearLayout>
 </ScrollView>

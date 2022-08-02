@@ -66,6 +66,8 @@ public class SettingActivity extends AppCompatActivity {
     public static final int DATE_SCOPE_EXPIRE_OFFSET_UNIT = 5;
     public static final int SINGLETON_SETTING_AUTO_COMMIT_DELAY = 6;
     public static final int SINGLETON_SETTING_SALESMAN_LAST_CHECK_DATE = 7;
+    public static final int SINGLETON_SETTING_DOUBLE_CLICK_DELAY = 8;
+    public static final int SINGLETON_SETTING_LONG_CLICK_DELAY = 9;
 
 
     public static SingletonSettingBean settingInstance;
@@ -404,7 +406,7 @@ public class SettingActivity extends AppCompatActivity {
 
     private void loadSingletonSetting() {
 
-        loadAutoCommitSetting();
+        loadTimeIntervalSetting();
         loadLastSalesmanCheckDate();
     }
 
@@ -439,45 +441,124 @@ public class SettingActivity extends AppCompatActivity {
 //        saveSingletonSetting();
     }
 
-    private void loadAutoCommitSetting() {
+    private void  loadTimeIntervalSetting() {
 
-        CheckBox ckBox = findViewById(R.id.auto_commit_checkbox);
-        EditText eText = findViewById(R.id.auto_commit_delay_edittext);
+        CheckBox autoCommitCKBox = findViewById(R.id.auto_commit_checkbox);
+        EditText autoCommitEText = findViewById(R.id.auto_commit_delay_edittext);
+        CheckBox doubleClickCKBox = findViewById(R.id.double_click_checkbox);
+        EditText doubleClickEText = findViewById(R.id.double_click_delay_edittext);
+        CheckBox longClickCKBox = findViewById(R.id.long_click_checkbox);
+        EditText longClickEText = findViewById(R.id.long_click_delay_edittext);
 
-        ckBox.setChecked(settingInstance.isAutoCommitFlag());
-        eText.setText(settingInstance.getAutoCommitDelay());
+        autoCommitCKBox.setChecked(settingInstance.isAutoCommitFlag());
+        autoCommitEText.setText(settingInstance.getAutoCommitDelay());
+        doubleClickCKBox.setChecked(settingInstance.isDoubleClickFlag());
+        doubleClickEText.setText(settingInstance.getDoubleClickDelay());
+        longClickCKBox.setChecked(settingInstance.isLongClickFlag());
+        longClickEText.setText(settingInstance.getLongClickDelay());
 
-        if (MyInfoChangeWatcher.myTextWatchers.containsKey(eText)) return;
+        if (!MyInfoChangeWatcher.myTextWatchers.containsKey(autoCommitEText)) {
 
-        MyInfoChangeWatcher.watch(null, eText, SINGLETON_SETTING_AUTO_COMMIT_DELAY);
+            MyInfoChangeWatcher.watch(null, autoCommitEText, SINGLETON_SETTING_AUTO_COMMIT_DELAY);
 
-        ckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            autoCommitCKBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                settingInstance.setAutoCommitFlag(isChecked);
-                settingInstance.setUpdated(false);
+                    settingInstance.setAutoCommitFlag(isChecked);
+                    settingInstance.setUpdated(false);
 
-                if (isChecked) {
+                    if (isChecked) {
 
-                    eText.setFocusable(false);
-                    eText.setFocusableInTouchMode(false);
-                    eText.setTextColor(Color.parseColor("gray"));
-                    return;
+                        autoCommitEText.setFocusable(false);
+                        autoCommitEText.setFocusableInTouchMode(false);
+                        autoCommitEText.setTextColor(Color.parseColor("gray"));
+                        return;
+                    }
+                    autoCommitEText.setFocusable(true);
+                    autoCommitEText.setFocusableInTouchMode(true);
+                    autoCommitEText.setTextColor(Color.BLACK);
+
                 }
-                eText.setFocusable(true);
-                eText.setFocusableInTouchMode(true);
-                eText.setTextColor(Color.BLACK);
+            });
 
+            if (autoCommitCKBox.isChecked()) {
+
+                autoCommitEText.setFocusable(false);
+                autoCommitEText.setFocusableInTouchMode(false);
+                autoCommitEText.setTextColor(Color.parseColor("gray"));
             }
-        });
 
-        if (ckBox.isChecked()) {
-
-            eText.setFocusable(false);
-            eText.setFocusableInTouchMode(false);
-            eText.setTextColor(Color.parseColor("gray"));
         }
+
+        if (!MyInfoChangeWatcher.myTextWatchers.containsKey(doubleClickEText)) {
+
+            MyInfoChangeWatcher.watch(null, doubleClickEText, SINGLETON_SETTING_DOUBLE_CLICK_DELAY);
+
+            doubleClickCKBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                    settingInstance.setDoubleClickFlag(isChecked);
+                    settingInstance.setUpdated(false);
+
+                    if (isChecked) {
+
+                        doubleClickEText.setFocusable(false);
+                        doubleClickEText.setFocusableInTouchMode(false);
+                        doubleClickEText.setTextColor(Color.parseColor("gray"));
+                        return;
+                    }
+                    doubleClickEText.setFocusable(true);
+                    doubleClickEText.setFocusableInTouchMode(true);
+                    doubleClickEText.setTextColor(Color.BLACK);
+
+                }
+            });
+
+            if (doubleClickCKBox.isChecked()) {
+
+                doubleClickEText.setFocusable(false);
+                doubleClickEText.setFocusableInTouchMode(false);
+                doubleClickEText.setTextColor(Color.parseColor("gray"));
+            }
+
+        }
+
+        if (!MyInfoChangeWatcher.myTextWatchers.containsKey(longClickEText)) {
+
+            MyInfoChangeWatcher.watch(null, longClickEText, SINGLETON_SETTING_LONG_CLICK_DELAY);
+
+            longClickCKBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                    settingInstance.setLongClickFlag(isChecked);
+                    settingInstance.setUpdated(false);
+
+                    if (isChecked) {
+
+                        longClickEText.setFocusable(false);
+                        longClickEText.setFocusableInTouchMode(false);
+                        longClickEText.setTextColor(Color.parseColor("gray"));
+                        return;
+                    }
+                    longClickEText.setFocusable(true);
+                    longClickEText.setFocusableInTouchMode(true);
+                    longClickEText.setTextColor(Color.BLACK);
+
+                }
+            });
+
+            if (longClickCKBox.isChecked()) {
+
+                longClickEText.setFocusable(false);
+                longClickEText.setFocusableInTouchMode(false);
+                longClickEText.setTextColor(Color.parseColor("gray"));
+            }
+
+        }
+
 
     }
 
@@ -830,6 +911,10 @@ public class SettingActivity extends AppCompatActivity {
         settingInstance = SingletonSettingBean.getSingletonSettingBean();
         settingInstance.setAutoCommitFlag(true);
         settingInstance.setAutoCommitDelay(readSingleDefaultSetting(AUTO_COMMIT_DELAY_TAG_NAME));
+        settingInstance.setDoubleClickFlag(false);
+        settingInstance.setDoubleClickDelay("300");
+        settingInstance.setLongClickFlag(false);
+        settingInstance.setLongClickDelay("600");
         settingInstance.setNextSalesmanCheckDay(DateUtil.typeMach(DateUtil.getStartPointToday()));
         settingInstance.setUpdated(false);
 
