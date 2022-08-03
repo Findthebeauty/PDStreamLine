@@ -31,12 +31,16 @@ import com.shepherdboy.pdstreamline.activities.SettingActivity;
 import com.shepherdboy.pdstreamline.beans.DateScope;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Timestream;
+import com.shepherdboy.pdstreamline.sql.MyBatisUtil;
 import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
+import com.shepherdboy.pdstreamline.sql.TimestreamDAO;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
+
+import org.apache.ibatis.session.SqlSession;
 
 import java.io.IOException;
 import java.util.Date;
@@ -196,6 +200,21 @@ public class MyApplication extends Application {
     private static boolean onDBClick() {
 
         Toast.makeText(getContext(), "onDoubleClick", Toast.LENGTH_SHORT).show();
+
+        Timestream t = null;
+
+        try (SqlSession sqlSession = MyBatisUtil.getSqlSession()){
+
+            TimestreamDAO mapper = sqlSession.getMapper(TimestreamDAO.class);
+
+            t = mapper.getTimestream("66666");
+
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
+
+        Log.d("mybatis", t != null ? t.toString() : "null");
 
         return true;
     }
@@ -525,7 +544,7 @@ public class MyApplication extends Application {
 
     public static void initDatabase(Context context) {
 
-        databasePath = context.getFilesDir().getPath().replaceAll("files", "/streamline.db");
+        databasePath = context.getFilesDir().getPath().replaceAll("files", "streamline.db");
         MyDatabaseHelper.copyDataBase(databasePath);
 
         if (MyApplication.databaseHelper == null) {

@@ -28,7 +28,6 @@ public class PromotionActivity extends AppCompatActivity {
         MyApplication.initDatabase(this);
 
         initActivity();
-
     }
 
     private void initActivity() {
