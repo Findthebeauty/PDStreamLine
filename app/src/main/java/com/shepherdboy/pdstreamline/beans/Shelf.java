@@ -8,7 +8,7 @@ import java.util.UUID;
  */
 public class Shelf {
 
-    private String id; //货架UUID
+    private final String id; //货架UUID
 
     private String name; //货架名
 

@@ -51,6 +51,12 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
     public static final String SETTING_TABLE_NAME = "manage_setting";
 
+    public static final String SHELF_TABLE_NAME = "shelves";
+
+    public static final String ROW_TABLE_NAME = "rows";
+
+    public static final String CELL_TABLE_NAME = "cells";
+
     public static final String PRODUCT_INFO_COLUMNS = "product_code,product_name," +
             "product_exp,product_exp_time_unit,product_group_number," +
             "product_shelves_indexes,product_last_check_date,product_next_check_date," +
@@ -184,6 +190,26 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "setting_index text unique," +
             "setting_value text)";
 
+    public static final String CREATE_TABLE_SHELVES = "create table " + SHELF_TABLE_NAME + "(" +
+            "id text primary key," +
+            "name text unique," +
+            "max_row_count short)";
+
+    public static final String CREATE_TABLE_ROWS = "create table " + ROW_TABLE_NAME + "(" +
+            "id text primary key," +
+            "sort_number short," +
+            "shelf_id text," +
+            "name text," +
+            "unique(sort_number,shelf_id))";
+
+    public static final String CREATE_TABLE_CELLS = "create table " + CELL_TABLE_NAME + "(" +
+            "id text primary key," +
+            "row_id text," +
+            "shelf_id text," +
+            "product_code text," +
+            "column_sort_number short," +
+            "unique(row_id,column_sort_number))";
+
     public MyDatabaseHelper(Context context, String name,
                             SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);
@@ -210,6 +236,9 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(CREATE_TABLE_OBSERVER);
         sqLiteDatabase.execSQL(CREATE_TABLE_DOP_INTERVALS);
         sqLiteDatabase.execSQL(CREATE_TABLE_SETTING);
+        sqLiteDatabase.execSQL(CREATE_TABLE_SHELVES);
+        sqLiteDatabase.execSQL(CREATE_TABLE_ROWS);
+        sqLiteDatabase.execSQL(CREATE_TABLE_CELLS);
     }
 
     @Override

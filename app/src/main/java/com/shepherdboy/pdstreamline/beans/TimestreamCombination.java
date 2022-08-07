@@ -86,4 +86,5 @@ public class TimestreamCombination {
     public void setGiveawayTimestream(Timestream giveawayTimestream) {
         this.giveawayTimestream = giveawayTimestream;
     }
+
 }

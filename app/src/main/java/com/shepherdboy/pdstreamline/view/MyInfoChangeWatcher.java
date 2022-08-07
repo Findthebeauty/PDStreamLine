@@ -3,7 +3,6 @@ package com.shepherdboy.pdstreamline.view;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -316,7 +315,6 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
         if (v instanceof EditText && (!hasFocus) && (!preInf.equals(currentInf)) && this.autoCommitOnLastFocus) {
 
-            Log.e("onFocusChange,In", preInf + ":" + currentInf);
             stopAutoCommit();
             commit();
         }

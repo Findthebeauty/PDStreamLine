@@ -2,6 +2,7 @@ package com.shepherdboy.pdstreamline.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.ViewGroup;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -41,13 +42,35 @@ public class PromotionActivity extends AppCompatActivity {
             autoCombine(MidnightTimestreamManagerService.basket);
 
 
+
     }
 
+    /**
+     * 加载捆绑商品
+     * @param v 目标ViewGroup
+     * @param t 捆绑商品
+     */
+    public static void loadCombination(ViewGroup v, TimestreamCombination t) {
+
+
+    }
+
+    /**
+     * 将单一商品加载到捆绑模式View中
+     * @param v 目标ViewGroup
+     * @param t 捆绑商品
+     */
+    public static void loadCombination(ViewGroup v, Timestream t) {
+
+
+    }
     public void autoCombine(LinkedList<Timestream> basket) {
 
         for (Timestream t : basket) {
 
             combinations.add(combine(t));
+
+            basket.remove(t);
         }
     }
 

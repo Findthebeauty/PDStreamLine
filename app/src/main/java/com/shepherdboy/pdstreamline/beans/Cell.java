@@ -8,9 +8,9 @@ import java.util.UUID;
  */
 public class Cell {
 
-    private String id; //UUID
+    private final String id; //UUID
 
-    private int rowSortNumber; //Cell在整个货架竖向的排序号
+    private String rowId;
 
     private int columnSortNumber; //Cell在一列中横向的排序号，列与列之间不对齐
 
@@ -28,12 +28,12 @@ public class Cell {
         return id;
     }
 
-    public int getRowSortNumber() {
-        return rowSortNumber;
+    public String getRowId() {
+        return rowId;
     }
 
-    public void setRowSortNumber(int rowSortNumber) {
-        this.rowSortNumber = rowSortNumber;
+    public void setRowId(String rowId) {
+        this.rowId = rowId;
     }
 
     public int getColumnSortNumber() {
