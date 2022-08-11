@@ -8,7 +8,7 @@ import java.util.UUID;
  */
 public class Row {
 
-    private final String id; //UUID
+    private String id; //UUID
 
     private int sortNumber; //行号
 
@@ -18,8 +18,25 @@ public class Row {
 
     private ArrayList<Cell> cells; //该行所有的商品位，一般只加载有货的商品位
 
+    private boolean updated;
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public boolean isUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(boolean updated) {
+        this.updated = updated;
+    }
+
     public Row() {
         this.id = UUID.randomUUID().toString();
+    }
+    public Row(String shelfId) {
+        setShelfId(id);
     }
 
     public String getId() {

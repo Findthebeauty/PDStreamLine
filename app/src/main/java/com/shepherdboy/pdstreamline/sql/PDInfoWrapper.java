@@ -30,7 +30,6 @@ public class PDInfoWrapper {
 
         String name;
 
-
         Cursor cursor = MyDatabaseHelper.query(sqLiteDatabase, MyDatabaseHelper.PRODUCT_INFO_TABLE_NAME, new String[]{"*"},
                 "product_code=?", new String[]{productCode});
         try {
@@ -249,8 +248,7 @@ public class PDInfoWrapper {
     private static void queryAndGenerateTimestream(Product product, SQLiteDatabase sqLiteDatabase,
                                                    LinkedHashMap<String, Timestream> timestreamHashMap, String tableName) {
 
-        Cursor cursor;
-        cursor = MyDatabaseHelper.query(sqLiteDatabase, tableName,
+        Cursor cursor = MyDatabaseHelper.query(sqLiteDatabase, tableName,
                 new String[]{"*"}, "product_code=?", new String[]{product.getProductCode()});
 
         boolean isPromoting = Objects.equals(tableName, MyDatabaseHelper.PROMOTION_TIMESTREAM_TABLE_NAME) ||

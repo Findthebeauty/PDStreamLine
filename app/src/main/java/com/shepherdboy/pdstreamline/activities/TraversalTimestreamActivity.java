@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,15 +23,51 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_traversal_timestream);
-        
+
+        MyApplication.scrollView = findViewById(R.id.scroll_root);
+
         initActivity();
         
     }
+
+
+
     private void initActivity() {
 
         MyApplication.activityIndex = TRAVERSAL_TIMESTREAM_ACTIVITY;
         draggableLinearLayout = findViewById(R.id.parent);
         DraggableLinearLayout.setLayoutChanged(true);
+
+        Button addShelfBt = findViewById(R.id.add_shelf);
+
+        addShelfBt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                setContentView(R.layout.shelf_info);
+
+                Button cancelBt = findViewById(R.id.cancel_bt);
+                Button saveBt = findViewById(R.id.save_bt);
+
+                cancelBt.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        setContentView(R.layout.activity_traversal_timestream);
+                        initActivity();
+                    }
+                });
+
+                saveBt.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        setContentView(R.layout.activity_traversal_timestream);
+                        initActivity();
+                    }
+                });
+            }
+        });
+
 
         loadShelf(TraversalTimestreamActivity.this, null);
 

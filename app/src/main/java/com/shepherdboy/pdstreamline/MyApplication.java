@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -86,6 +87,8 @@ public class MyApplication extends Application {
     public static Product currentProduct;
 
     public static int activityIndex;
+
+    public static ScrollView scrollView;
 
     private static long lastClickTime = 0L;
     private static int clickCount;
@@ -174,6 +177,7 @@ public class MyApplication extends Application {
 
         if (event.getActionMasked() ==  MotionEvent.ACTION_UP) {
 
+            draggableLinearLayout.setLongClicking(false);
             stopCountPressTime();
         }
 
@@ -226,6 +230,7 @@ public class MyApplication extends Application {
                 if (pressInterval >= Long.parseLong(settingInstance.getLongClickDelay())) {
 
                     clickCount = 0;
+                    draggableLinearLayout.setLongClicking(true);
                     onLongClick();
                 }
 
@@ -525,7 +530,7 @@ public class MyApplication extends Application {
 
     public static void initDatabase(Context context) {
 
-        databasePath = context.getFilesDir().getPath().replaceAll("files", "streamline.db");
+        databasePath = context.getFilesDir().getPath().replaceAll("files", "databases/streamline.db");
 //        MyDatabaseHelper.copyDataBase(databasePath);
 
         if (MyApplication.databaseHelper == null) {

@@ -92,6 +92,12 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
     public static final String SETTING_COLUMNS = "id,setting_index,setting_value";
 
+    public static final String SHELVES_COLUMNS = "id,name,classify,max_row_count";
+
+    public static final String ROWS_COLUMNS = "id,sort_number,shelf_id,name";
+
+    public static final String CELLS_COLUMNS = "id,row_id,shelf_id,product_code,column_sort_number";
+
     public static final String CREATE_TABLE_PRODUCT_INF = "create table product_inf(" +
             "product_code text primary key," +
             "product_name text," +
@@ -193,11 +199,12 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
     public static final String CREATE_TABLE_SHELVES = "create table " + SHELF_TABLE_NAME + "(" +
             "id text primary key," +
             "name text unique," +
-            "max_row_count short)";
+            "classify text," +
+            "max_row_count integer)";
 
     public static final String CREATE_TABLE_ROWS = "create table " + ROW_TABLE_NAME + "(" +
             "id text primary key," +
-            "sort_number short," +
+            "sort_number integer," +
             "shelf_id text," +
             "name text," +
             "unique(sort_number,shelf_id))";
@@ -207,7 +214,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "row_id text," +
             "shelf_id text," +
             "product_code text," +
-            "column_sort_number short," +
+            "column_sort_number integer," +
             "unique(row_id,column_sort_number))";
 
     public MyDatabaseHelper(Context context, String name,

@@ -8,13 +8,41 @@ import java.util.UUID;
  */
 public class Shelf {
 
-    private final String id; //货架UUID
+    private String id; //货架UUID
 
     private String name; //货架名
+
+    private String classify; //货架类别
 
     private ArrayList<Row> rows; //货架可放商品行数
 
     private int maxRowCount; //最大货架行数，跟真实货架对应
+
+    private boolean updated;
+
+    public Shelf(String id) {
+        setId(id);
+    }
+
+    public String getClassify() {
+        return classify;
+    }
+
+    public void setClassify(String classify) {
+        this.classify = classify;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public boolean isUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(boolean updated) {
+        this.updated = updated;
+    }
 
     public Shelf() {
         this.id = UUID.randomUUID().toString();

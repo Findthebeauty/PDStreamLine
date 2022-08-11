@@ -6,7 +6,6 @@ import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -40,6 +39,8 @@ public class DraggableLinearLayout extends LinearLayout {
     boolean horizontalDraggable;
 
     boolean verticalDraggable;
+
+    private boolean longClicking;
 
     float horizontalDistance = 0; // 控件的水平移动距离
 
@@ -218,7 +219,6 @@ public class DraggableLinearLayout extends LinearLayout {
         if (toCapture instanceof LinearLayout &&
                 MyApplication.originalPositionHashMap.containsKey(toCapture.getId())) {
 
-            Log.d("currentView", toCapture.getId() + "");
             return (LinearLayout) toCapture;
 
         }
@@ -320,39 +320,14 @@ public class DraggableLinearLayout extends LinearLayout {
 
         MyApplication.recordDraggableView();
 
-        Log.d("onLayout", "I'm in!");
-//
-//        LinearLayout l0,l1;
-//        TextView t0,t1,t2,t3;
-//        EditText e0;
-//
-//        l0 = (LinearLayout) (MyApplication.draggableLinearLayout.getChildAt(1));
-//        t0 = (TextView) l0.getChildAt(0);
-//        t1 = (TextView) l0.getChildAt(1);
-//        e0 = (EditText) l0.getChildAt(2);
-//        l1 = (LinearLayout) l0.getChildAt(3);
-//        t2 = (TextView) l1.getChildAt(0);
-//        t3 = (TextView) l1.getChildAt(1);
-//
-//        LinkedList<View> vs = new LinkedList<>();
-//        vs.add(l0);
-//        vs.add(t0);
-//        vs.add(t1);
-//        vs.add(e0);
-//        vs.add(l1);
-//        vs.add(t2);
-//        vs.add(t3);
-//
-//        StringBuilder s = new StringBuilder();
-//
-//        for (View v : vs) {
-//
-//            s.append(v.getHeight());
-//            s.append(",");
-//        }
-//
-//        Log.d("onLayout", s.toString());
+    }
 
+    public boolean isLongClicking() {
+        return longClicking;
+    }
+
+    public void setLongClicking(boolean longClicking) {
+        this.longClicking = longClicking;
     }
 
     public static boolean isLayoutChanged() {

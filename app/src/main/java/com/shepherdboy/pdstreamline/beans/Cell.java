@@ -1,6 +1,6 @@
 package com.shepherdboy.pdstreamline.beans;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.UUID;
 
 /**
@@ -8,7 +8,7 @@ import java.util.UUID;
  */
 public class Cell {
 
-    private final String id; //UUID
+    private String id; //UUID
 
     private String rowId;
 
@@ -18,10 +18,27 @@ public class Cell {
 
     private String productCode; //商品条码号，占位
 
-    private HashMap<String, Timestream> timestreams; //当前位置摆放的最旧的timestream，最多3种，新鲜，临期，到期
+    private LinkedHashMap<String, Timestream> timestreams; //当前位置摆放的最旧的timestream，最多3种，新鲜，临期，到期
+
+    private boolean updated;
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public boolean isUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(boolean updated) {
+        this.updated = updated;
+    }
 
     public Cell() {
         this.id = UUID.randomUUID().toString();
+    }
+    public Cell(String rowId) {
+        setRowId(rowId);
     }
 
     public String getId() {
@@ -60,11 +77,11 @@ public class Cell {
         this.productCode = productCode;
     }
 
-    public HashMap<String, Timestream> getTimestreams() {
+    public LinkedHashMap<String, Timestream> getTimestreams() {
         return timestreams;
     }
 
-    public void setTimestreams(HashMap<String, Timestream> timestreams) {
+    public void setTimestreams(LinkedHashMap<String, Timestream> timestreams) {
         this.timestreams = timestreams;
     }
 
