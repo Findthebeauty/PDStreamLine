@@ -135,7 +135,7 @@ public class ShelfDAO {
         return shelf;
     }
 
-    private static ArrayList<Row> getRows(String shelfId) {
+    public static ArrayList<Row> getRows(String shelfId) {
 
         ArrayList<Row> arrayList = new ArrayList<>();
 
@@ -159,7 +159,7 @@ public class ShelfDAO {
         return arrayList;
     }
 
-    private static ArrayList<Cell> getCells(String rowId) {
+    public static ArrayList<Cell> getCells(String rowId) {
 
         ArrayList<Cell> arrayList = new ArrayList<>();
 
@@ -195,10 +195,31 @@ public class ShelfDAO {
     }
 
 
-    private static void delete(String tableName, String id) {
+    public static void delete(String tableName, String id) {
 
         String sql = "delete from " + tableName + "where id='" + id + "'";
 
         sqLiteDatabase.execSQL(sql);
+    }
+
+    public static ArrayList<String> getClassify() {
+
+
+        ArrayList<String> arrayList = new ArrayList<>();
+
+        Cursor cursor = MyDatabaseHelper.query(sqLiteDatabase, MyDatabaseHelper.SHELF_TABLE_NAME,
+                new String[]{"distinct classify"}, null, null);
+
+        if (cursor.moveToNext()) {
+
+            do {
+
+                String classify = cursor.getString(0);
+
+                arrayList.add(classify);
+            } while (cursor.moveToNext());
+        }
+
+        return arrayList;
     }
 }

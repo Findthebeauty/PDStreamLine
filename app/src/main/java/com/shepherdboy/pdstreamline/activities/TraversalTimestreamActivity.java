@@ -4,18 +4,28 @@ import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_AC
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
+import com.shepherdboy.pdstreamline.sql.ShelfDAO;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
+
+import java.util.ArrayList;
 
 public class TraversalTimestreamActivity extends AppCompatActivity {
 
@@ -26,13 +36,13 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         MyApplication.scrollView = findViewById(R.id.scroll_root);
 
-        initActivity();
+        initActivity(this);
         
     }
 
 
 
-    private void initActivity() {
+    private void initActivity(Context context) {
 
         MyApplication.activityIndex = TRAVERSAL_TIMESTREAM_ACTIVITY;
         draggableLinearLayout = findViewById(R.id.parent);
@@ -46,14 +56,17 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
                 setContentView(R.layout.shelf_info);
 
+                setClassifyList(context);
+
                 Button cancelBt = findViewById(R.id.cancel_bt);
                 Button saveBt = findViewById(R.id.save_bt);
+                Button addClassify = findViewById(R.id.add_classify_bt);
 
                 cancelBt.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         setContentView(R.layout.activity_traversal_timestream);
-                        initActivity();
+                        initActivity(context);
                     }
                 });
 
@@ -62,7 +75,24 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
                     public void onClick(View v) {
 
                         setContentView(R.layout.activity_traversal_timestream);
-                        initActivity();
+                        initActivity(context);
+                    }
+                });
+
+                addClassify.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        final EditText editText = new EditText(context);
+                        AlertDialog.Builder inputClassify = new AlertDialog.Builder(context);
+                        inputClassify.setTitle("请输入类别名").setView(editText);
+                        inputClassify.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                Toast.makeText(context, editText.getText().toString(), Toast.LENGTH_SHORT).show();
+                            }
+                        }).show();
                     }
                 });
             }
@@ -71,6 +101,29 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         loadShelf(TraversalTimestreamActivity.this, null);
 
+    }
+
+    private void setClassifyList(Context context) {
+        Spinner spinner = findViewById(R.id.classify_sp);
+        ArrayList<String> dataList = ShelfDAO.getClassify();
+        dataList.add("低温");
+        dataList.add("调料");
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, R.layout.item_selected,
+                dataList);
+        adapter.setDropDownViewResource(R.layout.item_dropdown);
+        spinner.setAdapter(adapter);
+        spinner.setSelection(0);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(context, dataList.get(position), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
 
 
