@@ -16,7 +16,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -88,14 +87,13 @@ public class MyApplication extends Application {
 
     public static int activityIndex;
 
-    public static ScrollView scrollView;
+//    public static ScrollView scrollView;
 
     private static long lastClickTime = 0L;
     private static int clickCount;
     private static Handler handler;
     private static Runnable runnable;
     private static boolean scheduled;
-
     //数据库助手，全局
     public static MyDatabaseHelper databaseHelper;
     public static SQLiteDatabase sqLiteDatabase;
@@ -115,6 +113,9 @@ public class MyApplication extends Application {
     public static LinkedList thingsToSaveList = new LinkedList();
 
     public static Date today = DateUtil.getStartPointToday();
+
+    private static float oldY;
+    private static float newY;
 
     public static void setContext(Context context) {
         MyApplication.context = context;
@@ -157,6 +158,8 @@ public class MyApplication extends Application {
 
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
+            oldY = event.getY();
+
             clickCount++;
 
             if (lastClickTime != 0L) clickInterval = System.currentTimeMillis() - lastClickTime;
@@ -168,6 +171,7 @@ public class MyApplication extends Application {
 
         if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
 
+            newY = event.getY();
             lastClickTime = System.currentTimeMillis();
             clickCount = 0;
             clickInterval = 0L;
@@ -177,6 +181,7 @@ public class MyApplication extends Application {
 
         if (event.getActionMasked() ==  MotionEvent.ACTION_UP) {
 
+            newY = event.getY();
             draggableLinearLayout.setLongClicking(false);
             stopCountPressTime();
         }
@@ -230,6 +235,9 @@ public class MyApplication extends Application {
                 if (pressInterval >= Long.parseLong(settingInstance.getLongClickDelay())) {
 
                     clickCount = 0;
+
+                    if (Math.abs(newY - oldY) > 20) return;
+
                     draggableLinearLayout.setLongClicking(true);
                     onLongClick();
                 }

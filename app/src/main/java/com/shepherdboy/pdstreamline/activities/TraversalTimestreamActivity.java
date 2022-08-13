@@ -34,7 +34,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_traversal_timestream);
 
-        MyApplication.scrollView = findViewById(R.id.scroll_root);
+//        MyApplication.scrollView = findViewById(R.id.scroll_root);
 
         initActivity(this);
         
