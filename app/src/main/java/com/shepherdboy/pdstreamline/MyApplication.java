@@ -35,6 +35,7 @@ import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
+import com.shepherdboy.pdstreamline.view.ClosableScrollView;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 
@@ -114,9 +115,6 @@ public class MyApplication extends Application {
 
     public static Date today = DateUtil.getStartPointToday();
 
-    private static float oldY;
-    private static float newY;
-
     public static void setContext(Context context) {
         MyApplication.context = context;
     }
@@ -158,8 +156,6 @@ public class MyApplication extends Application {
 
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
-            oldY = event.getY();
-
             clickCount++;
 
             if (lastClickTime != 0L) clickInterval = System.currentTimeMillis() - lastClickTime;
@@ -171,7 +167,6 @@ public class MyApplication extends Application {
 
         if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
 
-            newY = event.getY();
             lastClickTime = System.currentTimeMillis();
             clickCount = 0;
             clickInterval = 0L;
@@ -181,7 +176,6 @@ public class MyApplication extends Application {
 
         if (event.getActionMasked() ==  MotionEvent.ACTION_UP) {
 
-            newY = event.getY();
             draggableLinearLayout.setLongClicking(false);
             stopCountPressTime();
         }
@@ -236,7 +230,7 @@ public class MyApplication extends Application {
 
                     clickCount = 0;
 
-                    if (Math.abs(newY - oldY) > 20) return;
+                    if (Math.abs(ClosableScrollView.getNewY() - ClosableScrollView.getOldY()) > 5) return;
 
                     draggableLinearLayout.setLongClicking(true);
                     onLongClick();
@@ -254,8 +248,6 @@ public class MyApplication extends Application {
         switch (activityIndex) {
 
             case TRAVERSAL_TIMESTREAM_ACTIVITY:
-
-                Log.d("tryCaptureClickEvent", "onLongClick");
 
                 draggableLinearLayout.setVerticalDraggable(true);
 

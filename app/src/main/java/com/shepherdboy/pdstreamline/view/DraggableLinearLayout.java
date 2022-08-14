@@ -145,7 +145,10 @@ public class DraggableLinearLayout extends LinearLayout {
             }
 
 
+
         });
+
+
     }
 
     public void setVerticalDraggable(boolean verticalDraggable) {
@@ -248,9 +251,9 @@ public class DraggableLinearLayout extends LinearLayout {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
 
-        if (event.getActionMasked() == MotionEvent.ACTION_UP) init();
+//        if (viewDragHelper.continueSettling(true)) return false;
 
-//        if (MyApplication.tryCaptureClickEvent(event)) return true;
+        if (event.getActionMasked() == MotionEvent.ACTION_UP) init();
 
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
@@ -288,6 +291,8 @@ public class DraggableLinearLayout extends LinearLayout {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
+        if (viewDragHelper.continueSettling(true)) return false;
+
         if (event.getActionMasked() == MotionEvent.ACTION_UP) init();
 
         if (MyApplication.tryCaptureClickEvent(event)) return true;
@@ -308,6 +313,8 @@ public class DraggableLinearLayout extends LinearLayout {
 
     @Override
     public void computeScroll() {
+
+        super.computeScroll();
 
         if (viewDragHelper.continueSettling(true)) {
             invalidate();
