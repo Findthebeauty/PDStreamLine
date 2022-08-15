@@ -342,7 +342,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
     /**生成的timestreamView参数初始化*/
     private static void decorate(LinearLayout childView) {
 
-        childView.setId(DateUtil.getIdByCurrentTime() + MyApplication.timeStreamIndex++);
+        childView.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
 
         LinearLayout.LayoutParams lParams;
         TextView tv;

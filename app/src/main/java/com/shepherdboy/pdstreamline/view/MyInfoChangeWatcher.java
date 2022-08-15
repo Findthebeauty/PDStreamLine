@@ -3,6 +3,7 @@ package com.shepherdboy.pdstreamline.view;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -15,6 +16,7 @@ import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.activities.PDInfoActivity;
 import com.shepherdboy.pdstreamline.activities.SettingActivity;
 import com.shepherdboy.pdstreamline.beans.DateScope;
+import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
@@ -45,6 +47,28 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
     private static boolean shouldWatch = true;
     private String preInf = "";
     private String currentInf = "";
+    private Shelf shelf;
+
+    /**
+     * 监听货架基本信息修改
+     * @param editText
+     * @param shelf
+     * @param filedIndex
+     */
+    public static void watch(EditText editText, Shelf shelf, int filedIndex) {
+
+
+        MyInfoChangeWatcher myInfoChangeWatcher = new MyInfoChangeWatcher();
+        editText.addTextChangedListener(myInfoChangeWatcher);
+
+        myInfoChangeWatcher.autoCommitOnLastFocus = true;
+
+        myInfoChangeWatcher.watchedEditText = editText;
+        myInfoChangeWatcher.filedIndex = filedIndex;
+        myInfoChangeWatcher.shelf = shelf;
+        myTextWatchers.put(editText, myInfoChangeWatcher);
+
+    }
 
     public static void watch(EditText editText, @Nullable Timestream timestream, int filedIndex, boolean autoCommitOnLastFocus) {
 
@@ -363,11 +387,19 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
     private void commit() {
 
+        Log.d("focusChange", "commit");
+
         switch (MyApplication.activityIndex) {
 
             case MyApplication.SETTING_ACTIVITY:
 
                 MyApplication.afterInfoChanged(watchedEditText,scope,filedIndex,currentInf);
+                break;
+
+            case MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY:
+
+                MyApplication.afterInfoChanged(shelf, currentInf, watchedEditText, filedIndex);
+                preInf = currentInf;
                 break;
 
             default:
@@ -380,12 +412,29 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
     public void stopAutoCommit() {
 
+        Log.d("focusChange", "stopAutoCommit");
         if (handler != null) {
 
             handler.removeCallbacks(runnable);
             handler = null;
             runnable = null;
             setScheduled(false);
+        }
+    }
+
+    /**
+     * 停止倒计时自动提交，将发生变更的信息全部提交
+     */
+    public static void commitAll() {
+
+        for (MyInfoChangeWatcher w : myTextWatchers.values()) {
+
+            if (!w.currentInf.equals(w.preInf)) {
+
+                w.stopAutoCommit();
+                w.commit();
+            }
+
         }
     }
 }

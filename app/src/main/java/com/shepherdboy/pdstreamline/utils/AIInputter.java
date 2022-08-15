@@ -2,13 +2,16 @@ package com.shepherdboy.pdstreamline.utils;
 
 import android.util.Log;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.activities.SettingActivity;
+import com.shepherdboy.pdstreamline.activities.TraversalTimestreamActivity;
 import com.shepherdboy.pdstreamline.beans.DateScope;
 import com.shepherdboy.pdstreamline.beans.Product;
+import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 
 import java.util.ArrayList;
@@ -455,5 +458,48 @@ public class AIInputter {
         }
 
         return true;
+    }
+
+    public static boolean validate(String currentInf, Shelf shelf, int filedIndex) {
+
+        switch (filedIndex) {
+
+            case MyApplication.SHELF_NAME:
+
+                for (Shelf temp : TraversalTimestreamActivity.getShelfList()) {
+
+                    if (temp.getName().equals(currentInf)) {
+
+                        Toast.makeText(MyApplication.getContext(), "货架名称已存在",Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+                }
+                return true;
+
+            case MyApplication.SHELF_CLASSIFY:
+
+                if (!(currentInf.length() > 0 && currentInf.length() < 8)) {
+
+                    Toast.makeText(MyApplication.getContext(), "类别不合法请输入1-7位的类别名称", Toast.LENGTH_SHORT).show();
+
+                    return false;
+                }
+
+                if (TraversalTimestreamActivity.getClassifyList().contains(currentInf)) {
+
+                    Toast.makeText(MyApplication.getContext(), "类别名称已存在", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+
+                return true;
+
+            case MyApplication.SHELF_MAX_ROW:
+
+                return !currentInf.equals("");
+
+            default:
+                return true;
+
+        }
     }
 }

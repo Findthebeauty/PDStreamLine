@@ -12,8 +12,6 @@ import com.shepherdboy.pdstreamline.utils.AscOrderNumberComparator;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  *货架商品加载类，将货架对应的所有商品加载到货架对象中
@@ -35,7 +33,7 @@ public class ShelfDAO {
                 MyDatabaseHelper.SHELVES_COLUMNS + ")" + "values('" + id +
                 "','" + name + "','" + classify + "','" + maxRowCount + "')";
         sqLiteDatabase.execSQL(sql);
-        shelf.setUpdated(true);
+        shelf.setUpdated(false);
     }
 
     /**
@@ -82,9 +80,9 @@ public class ShelfDAO {
      * 获取所有的货架
      * @return
      */
-    public static List<Shelf> getShelves() {
+    public static ArrayList<Shelf> getShelves() {
 
-        LinkedList<Shelf> shelves = new LinkedList<>();
+        ArrayList<Shelf> shelves = new ArrayList<>();
         Shelf shelf;
 
         Cursor cursor = MyDatabaseHelper.query(sqLiteDatabase, MyDatabaseHelper.SHELF_TABLE_NAME,
@@ -194,10 +192,28 @@ public class ShelfDAO {
         return arrayList;
     }
 
+    public static int selectCount(String id) {
 
-    public static void delete(String tableName, String id) {
+        try (Cursor cursor = sqLiteDatabase.rawQuery("select count(id) from " +
+                MyDatabaseHelper.CELL_TABLE_NAME + " where shelf_id=?", new String[]{id})) {
 
-        String sql = "delete from " + tableName + "where id='" + id + "'";
+            cursor.moveToFirst();
+
+            return cursor.getInt(0);
+        }
+    }
+
+
+    public static void deleteShelf(String id) {
+
+        delete(MyDatabaseHelper.CELL_TABLE_NAME ,"shelf_id", id);
+        delete(MyDatabaseHelper.ROW_TABLE_NAME, "shelf_id", id);
+        delete(MyDatabaseHelper.SHELF_TABLE_NAME, "id", id);
+    }
+
+    public static void delete(String tableName,String selection, String selectionArg) {
+
+        String sql = "delete from " + tableName + " where " + selection +"='" + selectionArg + "'";
 
         sqLiteDatabase.execSQL(sql);
     }

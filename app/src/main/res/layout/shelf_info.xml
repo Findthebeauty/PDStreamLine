@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/shelf_info"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical">
     <TextView
         android:layout_width="wrap_content"
@@ -18,6 +18,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintLeft_toRightOf="@id/max_row_tv"
+        android:hint="请输入货架名"
+        android:selectAllOnFocus="true"
         android:id="@+id/name_et"
         android:maxLines="1"/>
     <TextView
@@ -58,7 +60,9 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/add_classify_bt"
         android:inputType="number"
+        android:selectAllOnFocus="true"
         android:id="@+id/max_row_et"
+        android:hint="请输入货架行数"
         android:maxLines="1"/>
     <Button
         android:id="@+id/cancel_bt"
@@ -68,10 +72,18 @@
         android:text="取消"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@id/max_row_et" />
+
+    <Button
+        android:id="@+id/delete_bt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="删除"
+        app:layout_constraintLeft_toRightOf="@id/cancel_bt"
+        app:layout_constraintTop_toBottomOf="@id/max_row_et"
+        app:layout_constraintRight_toLeftOf="@id/save_bt"/>
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="30sp"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/max_row_et"
         android:id="@+id/save_bt"

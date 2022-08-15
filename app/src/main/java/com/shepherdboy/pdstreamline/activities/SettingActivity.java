@@ -664,7 +664,7 @@ public class SettingActivity extends AppCompatActivity {
 
     private void decorate(LinearLayout childView) {
 
-        childView.setId(DateUtil.getIdByCurrentTime() + MyApplication.timeStreamIndex++);
+        childView.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
 
         WindowManager windowManager = getWindowManager();
         LinearLayout.LayoutParams lParams;

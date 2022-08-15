@@ -47,7 +47,12 @@ public class ClosableScrollView extends ScrollView {
         }
         if (ev.getActionMasked() == MotionEvent.ACTION_MOVE) newY = ev.getY();
 
-        return !(MyApplication.draggableLinearLayout.isLongClicking()) && super.onInterceptTouchEvent(ev);
+        if (MyApplication.draggableLinearLayout != null && !MyApplication.draggableLinearLayout.isLongClicking()) {
+
+            return true;
+        }
+
+        return super.onInterceptTouchEvent(ev);
     }
 
 

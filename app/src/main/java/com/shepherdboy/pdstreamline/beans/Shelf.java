@@ -16,12 +16,29 @@ public class Shelf {
 
     private ArrayList<Row> rows; //货架可放商品行数
 
+    private int shelfViewId;
+
     private int maxRowCount; //最大货架行数，跟真实货架对应
 
-    private boolean updated;
+    private boolean updated; //false表示信息未变更且已同步到数据库，true表示信息变更未同步到数据库
 
     public Shelf(String id) {
         setId(id);
+    }
+    public Shelf(Shelf shelf) {
+
+        this.id = shelf.getId();
+        this.name = shelf.getName();
+        this.classify = shelf.getClassify();
+        this.maxRowCount = shelf.getMaxRowCount();
+    }
+
+    public int getShelfViewId() {
+        return shelfViewId;
+    }
+
+    public void setShelfViewId(int shelfViewId) {
+        this.shelfViewId = shelfViewId;
     }
 
     public String getClassify() {
@@ -46,6 +63,9 @@ public class Shelf {
 
     public Shelf() {
         this.id = UUID.randomUUID().toString();
+        this.name = "新货架" + id.hashCode();
+        this.classify = "通用";
+        this.maxRowCount = Integer.MAX_VALUE;
     }
 
     public String getId() {

@@ -415,7 +415,7 @@ public class PDInfoActivity extends AppCompatActivity {
 
     private static void decorate(LinearLayout linearLayout) {
 
-        linearLayout.setId(DateUtil.getIdByCurrentTime() + MyApplication.timeStreamIndex++);
+        linearLayout.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
 
         LinearLayout.LayoutParams layoutParams;
         TextView textView;

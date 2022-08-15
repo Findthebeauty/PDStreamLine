@@ -30,6 +30,7 @@ import com.shepherdboy.pdstreamline.activities.ScanActivity;
 import com.shepherdboy.pdstreamline.activities.SettingActivity;
 import com.shepherdboy.pdstreamline.beans.DateScope;
 import com.shepherdboy.pdstreamline.beans.Product;
+import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
@@ -61,7 +62,7 @@ public class MyApplication extends Application {
     //设置时区
 //    public static final TimeZone timeZone = TimeZone.getTimeZone("Asia/Chongqing");
 
-    public static int timeStreamIndex = 0;
+    public static int idIncrement = 0;
 
     public static final int PRODUCT_CODE = 11;
     public static final int PRODUCT_NAME = 12;
@@ -72,6 +73,10 @@ public class MyApplication extends Application {
     public static final int TIMESTREAM_INVENTORY = 17;
     public static final int TIMESTREAM_BUY_SPECS = 18;
     public static final int TIMESTREAM_PRESENT_SPECS= 19;
+
+    public static final int SHELF_NAME = 20;
+    public static final int SHELF_CLASSIFY = 21;
+    public static final int SHELF_MAX_ROW = 22;
 
     public static final int MAIN_ACTIVITY = 0;
     public static final int PD_INFO_ACTIVITY = 1;
@@ -405,6 +410,48 @@ public class MyApplication extends Application {
                 Log.d("downloadData", "成功：" + response.message());
             }
         });
+    }
+
+    public static void afterInfoChanged(Shelf shelf,String currentInf, EditText watchedEditText, int filedIndex) {
+
+        boolean validated = AIInputter.validate(currentInf, shelf, filedIndex);
+
+        shelf.setUpdated(true);
+
+        switch (filedIndex) {
+
+            case SHELF_NAME:
+
+                if (validated) {
+
+                    shelf.setName(currentInf);
+
+                } else {
+
+                    MyInfoChangeWatcher.setShouldWatch(false);
+                    watchedEditText.setText(shelf.getName());
+                    MyInfoChangeWatcher.setShouldWatch(true);
+
+                }
+                break;
+
+            case SHELF_MAX_ROW:
+
+                if (validated) {
+
+                    shelf.setMaxRowCount(Integer.parseInt(currentInf));
+
+                } else {
+
+                    Toast.makeText(getContext(), "货架行数不合法", Toast.LENGTH_SHORT).show();
+                    MyInfoChangeWatcher.setShouldWatch(false);
+                    watchedEditText.setText(String.valueOf(shelf.getMaxRowCount()));
+                    MyInfoChangeWatcher.setShouldWatch(true);
+                }
+
+            default:
+                break;
+        }
     }
 //
 //    static {
