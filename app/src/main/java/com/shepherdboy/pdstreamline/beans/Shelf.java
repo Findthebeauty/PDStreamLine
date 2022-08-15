@@ -65,7 +65,7 @@ public class Shelf {
         this.id = UUID.randomUUID().toString();
         this.name = "新货架" + id.hashCode();
         this.classify = "通用";
-        this.maxRowCount = Integer.MAX_VALUE;
+        this.maxRowCount = Byte.MAX_VALUE;
     }
 
     public String getId() {

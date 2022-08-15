@@ -19,6 +19,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
@@ -28,6 +30,7 @@ import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
+import com.shepherdboy.pdstreamline.view.ShelfAdapter;
 
 import java.util.ArrayList;
 
@@ -38,17 +41,13 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     private static ArrayList<Shelf> shelfList;
     private static ArrayList<String> classifyList;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_traversal_timestream);
 
         initActivity(this);
-        
     }
-
-
 
     private void initActivity(Context context) {
 
@@ -58,6 +57,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         }
 
         shelfList = ShelfDAO.getShelves();
+        shelfList.add(defaultShelf);
 
         MyApplication.activityIndex = TRAVERSAL_TIMESTREAM_ACTIVITY;
 //
@@ -66,8 +66,8 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         Button addShelfBt = findViewById(R.id.add_shelf);
         
-        setShelfList(context, shelfList);
-
+//        setShelfList(context, shelfList);
+        loadShelfEntry();
         addShelfBt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -98,6 +98,21 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
     public static ArrayList<Shelf> getShelfList() {
         return shelfList;
+    }
+
+    private void loadShelfEntry() {
+
+        RecyclerView recyclerView = findViewById(R.id.shelves);
+
+        StaggeredGridLayoutManager layoutManager = new
+                StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+
+        recyclerView.setLayoutManager(layoutManager);
+
+        ShelfAdapter shelfAdapter = new ShelfAdapter(shelfList);
+
+        recyclerView.setAdapter(shelfAdapter);
+
     }
 
     private void loadShelfEntry(Context context, Shelf shelf) {
@@ -342,9 +357,10 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         if ("默认".equals(shelf.getName())) {
 
             //todo 加载所有商品
-            return;
-        }
+        } else {
 
+
+        }
 
 
     }
