@@ -1,11 +1,14 @@
 package com.shepherdboy.pdstreamline.activities;
 
 import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY;
+import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -14,9 +17,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,7 +29,6 @@ import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.sql.ShelfDAO;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
-import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 import com.shepherdboy.pdstreamline.view.ShelfAdapter;
@@ -41,15 +42,28 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     private static ArrayList<Shelf> shelfList;
     private static ArrayList<String> classifyList;
 
+    public static final int MODIFY_SHELF = 0;
+    public static final int SHOW_SHELF = 1;
+
+    public static final int LAYOUT_SHELF_LIST = 100;
+    public static final int LAYOUT_SHOW_SHELF_PRODUCT = 101;
+    public static final int LAYOUT_MODIFY_SHELF_INFO = 102;
+    private static int layoutIndex;
+
+    public static Handler handler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_traversal_timestream);
 
-        initActivity(this);
     }
 
     private void initActivity(Context context) {
+
+        setContentView(R.layout.activity_traversal_timestream);
+        MyApplication.initActionBar(getSupportActionBar());
+
+        layoutIndex = LAYOUT_SHELF_LIST;
 
         if (defaultShelf == null) {
             defaultShelf = new Shelf();
@@ -60,9 +74,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         shelfList.add(defaultShelf);
 
         MyApplication.activityIndex = TRAVERSAL_TIMESTREAM_ACTIVITY;
-//
-//        draggableLinearLayout = findViewById(R.id.parent);
-//        DraggableLinearLayout.setLayoutChanged(true);
 
         Button addShelfBt = findViewById(R.id.add_shelf);
         
@@ -74,6 +85,8 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
                 setContentView(R.layout.shelf_info);
 
+                layoutIndex = LAYOUT_MODIFY_SHELF_INFO;
+
                 Shelf shelf = new Shelf();
 
                 loadShelfInfo(context, shelf);
@@ -82,19 +95,51 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
             }
         });
 
-    }
+        if (handler == null) {
 
-    private void setShelfList(Context context, ArrayList<Shelf> shelves) {
+            handler = new Handler() {
+                @Override
+                public void handleMessage(@NonNull Message msg) {
 
-        loadShelfEntry(context, defaultShelf);
+                    Shelf shelf = (Shelf) msg.obj;
 
-        for (Shelf shelf : shelves) {
+                    switch (msg.what) {
 
-            loadShelfEntry(context, shelf);
+                        case MODIFY_SHELF:
 
+                            setContentView(R.layout.shelf_info);
+                            layoutIndex = LAYOUT_MODIFY_SHELF_INFO;
+                            loadShelfInfo(context, shelf);
+                            setClassifyList(context, shelf);
+                            break;
+
+                        case SHOW_SHELF:
+
+                            showShelf(shelf);
+                            break;
+
+                        default:
+                            break;
+                    }
+
+                }
+            };
         }
 
     }
+
+
+//    private void setShelfList(Context context, ArrayList<Shelf> shelves) {
+//
+//        loadShelfEntry(context, defaultShelf);
+//
+//        for (Shelf shelf : shelves) {
+//
+//            loadShelfEntry(context, shelf);
+//
+//        }
+//
+//    }
 
     public static ArrayList<Shelf> getShelfList() {
         return shelfList;
@@ -115,69 +160,85 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
     }
 
-    private void loadShelfEntry(Context context, Shelf shelf) {
+    private void clearRecyclerView() {
 
-        LayoutInflater inflater = LayoutInflater.from(context);
+        RecyclerView recyclerView = findViewById(R.id.shelves);
+        recyclerView.setAdapter(null);
+        recyclerView.getLayoutManager().removeAllViews();
+        recyclerView.setLayoutManager(null);
 
-        LinearLayout shelvesView = ((AppCompatActivity)context).findViewById(R.id.shelves);
-
-        LinearLayout shelfView = inflater.inflate(R.layout.shelf_item, null).findViewById(R.id.shelf_item);
-
-        TextView nameTvFlag = shelfView.findViewById(R.id.shelf_name_flag);
-        TextView nameTv = shelfView.findViewById(R.id.shelf_name);
-        TextView classifyTvFlag = shelfView.findViewById(R.id.classify_flag);
-        TextView classifyTv = shelfView.findViewById(R.id.classify);
-        TextView maxRowFlag = shelfView.findViewById(R.id.max_row_flag);
-        TextView maxRow = shelfView.findViewById(R.id.max_row);
-
-        nameTvFlag.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
-        nameTv.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
-        classifyTvFlag.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
-        classifyTv.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
-        maxRowFlag.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
-        maxRow.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
-        shelfView.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
-
-        nameTv.setText(shelf.getName());
-        classifyTv.setText(shelf.getClassify());
-        maxRow.setText(String.valueOf(shelf.getMaxRowCount()));
-
-        shelf.setShelfViewId(shelfView.getId());
-
-        shelfView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-
-                if ("默认".equals(shelf.getName())) {
-
-                    Toast.makeText(context, "默认货架禁止修改", Toast.LENGTH_SHORT).show();
-                    return true;
-                }
-
-                setContentView(R.layout.shelf_info);
-                MyInfoChangeWatcher.clearWatchers();
-
-                tempShelf = new Shelf(shelf);
-
-                loadShelfInfo(context, shelf);
-
-                return true;
-            }
-        });
-
-        shelfView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                loadProductOntoShelf(shelf);
-                showShelf(shelf);
-            }
-        });
-
-        shelvesView.addView(shelfView,0);
     }
 
+//    private void loadShelfEntry(Context context, Shelf shelf) {
+//
+//        LayoutInflater inflater = LayoutInflater.from(context);
+//
+//        LinearLayout shelvesView = ((AppCompatActivity)context).findViewById(R.id.shelves);
+//
+//        LinearLayout shelfView = inflater.inflate(R.layout.shelf_item, null).findViewById(R.id.shelf_item);
+//
+//        TextView nameTvFlag = shelfView.findViewById(R.id.shelf_name_flag);
+//        TextView nameTv = shelfView.findViewById(R.id.shelf_name);
+//        TextView classifyTvFlag = shelfView.findViewById(R.id.classify_flag);
+//        TextView classifyTv = shelfView.findViewById(R.id.classify);
+//        TextView maxRowFlag = shelfView.findViewById(R.id.max_row_flag);
+//        TextView maxRow = shelfView.findViewById(R.id.max_row);
+//
+//        nameTvFlag.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
+//        nameTv.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
+//        classifyTvFlag.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
+//        classifyTv.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
+//        maxRowFlag.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
+//        maxRow.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
+//        shelfView.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
+//
+//        nameTv.setText(shelf.getName());
+//        classifyTv.setText(shelf.getClassify());
+//        maxRow.setText(String.valueOf(shelf.getMaxRowCount()));
+//
+//        shelf.setShelfViewId(shelfView.getId());
+//
+//        shelfView.setOnLongClickListener(new View.OnLongClickListener() {
+//            @Override
+//            public boolean onLongClick(View v) {
+//
+//                if ("默认".equals(shelf.getName())) {
+//
+//                    Toast.makeText(context, "默认货架禁止修改", Toast.LENGTH_SHORT).show();
+//                    return true;
+//                }
+//
+//                setContentView(R.layout.shelf_info);
+//                MyInfoChangeWatcher.clearWatchers();
+//
+//                tempShelf = new Shelf(shelf);
+//
+//                loadShelfInfo(context, shelf);
+//
+//                return true;
+//            }
+//        });
+//
+//        shelfView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//                loadProductOntoShelf(shelf);
+//                showShelf(shelf);
+//            }
+//        });
+//
+//        shelvesView.addView(shelfView,0);
+//    }
+
+    /**
+     * 编辑货架信息
+     * @param context
+     * @param shelf
+     */
     private void loadShelfInfo(Context context, Shelf shelf) {
+
+        tempShelf = new Shelf(shelf);
 
         EditText nameEt = findViewById(R.id.name_et);
         Spinner classifySp = findViewById(R.id.classify_sp);
@@ -243,12 +304,8 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                shelf.setName(tempShelf.getName());
-                shelf.setClassify(tempShelf.getClassify());
-                shelf.setMaxRowCount(tempShelf.getMaxRowCount());
-                shelf.setUpdated(false);
-                setContentView(R.layout.activity_traversal_timestream);
-                initActivity(context);
+                cancelModify(shelf);
+
             }
         });
 
@@ -303,6 +360,15 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         DraggableLinearLayout.setFocus(nameEt);
     }
 
+    private void cancelModify(Shelf shelf) {
+
+        shelf.setName(tempShelf.getName());
+        shelf.setClassify(tempShelf.getClassify());
+        shelf.setMaxRowCount(tempShelf.getMaxRowCount());
+        shelf.setUpdated(false);
+        setContentView(R.layout.activity_traversal_timestream);
+        initActivity(TraversalTimestreamActivity.this);
+    }
 
 
     /**
@@ -313,16 +379,21 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         //todo 展示货架
 
+        setContentView(R.layout.shelf);
+
+        layoutIndex = LAYOUT_SHOW_SHELF_PRODUCT;
+
         LayoutInflater inflater = LayoutInflater.from(TraversalTimestreamActivity.this);
 
-        LinearLayout parent = TraversalTimestreamActivity.this.findViewById(R.id.parent);
+        draggableLinearLayout = TraversalTimestreamActivity.this.findViewById(R.id.row);
 
         LinearLayout cellHead = inflater.inflate(R.layout.cell_head_layout, null).findViewById(R.id.cell_head);
         LinearLayout combination = inflater.inflate(R.layout.comb_layout, null).findViewById(R.id.combination);
 
-        parent.addView(cellHead);
-        parent.addView(combination);
+        draggableLinearLayout.addView(cellHead);
+        draggableLinearLayout.addView(combination);
 
+        DraggableLinearLayout.setLayoutChanged(true);
     }
 
     private void setClassifyList(Context context, Shelf shelf) {
@@ -373,6 +444,53 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         Intent i = new Intent(c, TraversalTimestreamActivity.class);
 
         c.startActivity(i);
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        switch (layoutIndex) {
+
+            case LAYOUT_SHELF_LIST:
+
+                super.onBackPressed();
+                break;
+
+            case LAYOUT_MODIFY_SHELF_INFO:
+
+                cancelModify(ShelfAdapter.getCurrentShelf());
+                break;
+
+            case LAYOUT_SHOW_SHELF_PRODUCT:
+                initActivity(TraversalTimestreamActivity.this);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        initActivity(TraversalTimestreamActivity.this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        finalizeActivity();
+    }
+
+    private void finalizeActivity() {
+
+        shelfList = null;
+        classifyList = null;
+
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+            handler = null;
+        }
     }
 
 }

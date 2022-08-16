@@ -27,7 +27,8 @@
         android:theme="@style/Theme.PDStreamLine">
         <activity
             android:name=".activities.TraversalTimestreamActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:launchMode="singleTask" />
         <activity
             android:name=".activities.ScanActivity"
             android:configChanges="orientation|screenSize"

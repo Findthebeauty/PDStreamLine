@@ -1,5 +1,6 @@
 package com.shepherdboy.pdstreamline.view;
 
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.shepherdboy.pdstreamline.R;
+import com.shepherdboy.pdstreamline.activities.TraversalTimestreamActivity;
 import com.shepherdboy.pdstreamline.beans.Shelf;
 
 import java.util.List;
@@ -17,6 +19,8 @@ import java.util.List;
 public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.ViewHolder> {
 
     private List<Shelf> mShelvesList;
+
+    private static Shelf currentShelf;
 
     public ShelfAdapter(List<Shelf> mShelvesList) {
         this.mShelvesList = mShelvesList;
@@ -35,9 +39,8 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.ViewHolder> 
             @Override
             public void onClick(View v) {
 
-                //todo 显示货架商品页面
-                Toast.makeText(parent.getContext(),viewHolder.shelf.getName(),
-                        Toast.LENGTH_SHORT).show();
+                currentShelf = viewHolder.shelf;
+                postMessage(viewHolder.shelf, TraversalTimestreamActivity.SHOW_SHELF);
             }
         });
 
@@ -45,6 +48,7 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.ViewHolder> 
             @Override
             public boolean onLongClick(View v) {
 
+                currentShelf = viewHolder.shelf;
 
                 if ("默认".equals(viewHolder.shelf.getName())) {
 
@@ -52,14 +56,24 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.ViewHolder> 
                     return true;
                 }
 
-                // todo 进入货架修改信息页面
-                Toast.makeText(v.getContext(), "修改货架信息",Toast.LENGTH_SHORT).show();
+                postMessage(viewHolder.shelf, TraversalTimestreamActivity.MODIFY_SHELF);
 
                 return true;
             }
         });
 
         return viewHolder;
+    }
+
+    private void postMessage(Shelf shelf, int what) {
+        Message msg = Message.obtain();
+        msg.what = what;
+        msg.obj = shelf;
+        TraversalTimestreamActivity.handler.sendMessage(msg);
+    }
+
+    public static Shelf getCurrentShelf() {
+        return currentShelf;
     }
 
     @Override

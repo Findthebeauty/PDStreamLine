@@ -684,9 +684,44 @@ public class MyApplication extends Application {
 
                     makeToast(SettingActivity.getInstance(), "延时值不合法", Toast.LENGTH_SHORT);
                     v.setText(settingInstance.getAutoCommitDelay());
+                    return;
+
+                }
+                break;
+
+            case SettingActivity.SINGLETON_SETTING_DOUBLE_CLICK_DELAY:
+
+                if (validated) {
+
+                    settingInstance.setDoubleClickDelay(after);
+
+                } else {
+
+                    makeToast(SettingActivity.getInstance(), "双击间隔时间值不合法", Toast.LENGTH_SHORT);
+                    v.setText(settingInstance.getDoubleClickDelay());
+                    return;
+
                 }
 
-                return;
+                break;
+
+            case SettingActivity.SINGLETON_SETTING_LONG_CLICK_DELAY:
+
+                if (validated) {
+
+                    settingInstance.setLongClickDelay(after);
+
+                } else {
+
+                    makeToast(SettingActivity.getInstance(), "长按触发延时值不合法", Toast.LENGTH_SHORT);
+                    v.setText(settingInstance.getLongClickDelay());
+                    return;
+
+                }
+
+                break;
+            default:
+                break;
         }
         synchronizeSetting(scope, index);
         SettingActivity.setExpSettingChanged(true);

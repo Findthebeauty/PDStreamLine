@@ -12,6 +12,7 @@ import android.content.res.XmlResourceParser;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -793,21 +794,13 @@ public class SettingActivity extends AppCompatActivity {
 
     private static void saveSingletonSetting() {
 
-        if (!settingInstance.isUpdated()) {
 
-            new Thread() {
+        SettingActivity.applyEXPSetting();
+        PossiblePromotionTimestreamActivity.pickOutPossibleStaleTimestream();
+        String setting = JSON.toJSONString(settingInstance);
+        MyDatabaseHelper.saveSetting(SETTING_SINGLETON_INDEX_NAME, setting, MyApplication.sqLiteDatabase);
+        settingInstance.setUpdated(true);
 
-                @Override
-                public void run() {
-
-                    SettingActivity.applyEXPSetting();
-                    PossiblePromotionTimestreamActivity.pickOutPossibleStaleTimestream();
-                    String setting = JSON.toJSONString(settingInstance);
-                    MyDatabaseHelper.saveSetting(SETTING_SINGLETON_INDEX_NAME, setting, MyApplication.sqLiteDatabase);
-                    settingInstance.setUpdated(true);
-                }
-            }.start();
-        }
     }
 
     private static void saveEXPSetting() {

@@ -409,13 +409,8 @@ public class AIInputter {
                 );
                 return expireOffsetMls > 0 && expireOffsetMls < promotionOffsetMls;
 
-            case SettingActivity.SINGLETON_SETTING_AUTO_COMMIT_DELAY:
-            case SettingActivity.SINGLETON_SETTING_SALESMAN_LAST_CHECK_DATE:
-
-                return true;
-
             default:
-                return false;
+                return true;
         }
     }
 
