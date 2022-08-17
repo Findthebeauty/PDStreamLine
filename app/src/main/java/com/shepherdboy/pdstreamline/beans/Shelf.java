@@ -20,7 +20,7 @@ public class Shelf {
 
     private int maxRowCount; //最大货架行数，跟真实货架对应
 
-    private boolean updated; //false表示信息未变更且已同步到数据库，true表示信息变更未同步到数据库
+    private boolean infoChanged;
 
     public Shelf(String id) {
         setId(id);
@@ -53,12 +53,12 @@ public class Shelf {
         this.id = id;
     }
 
-    public boolean isUpdated() {
-        return updated;
+    public boolean isInfoChanged() {
+        return infoChanged;
     }
 
-    public void setUpdated(boolean updated) {
-        this.updated = updated;
+    public void setInfoChanged(boolean infoChanged) {
+        this.infoChanged = infoChanged;
     }
 
     public Shelf() {

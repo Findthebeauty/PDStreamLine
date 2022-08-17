@@ -39,15 +39,23 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
     public static final String PRODUCT_INFO_TABLE_NAME = "product_inf";
 
+    public static final String PRODUCT_TO_CHECK_TABLE_NAME = "product_to_check";
+
     public static final String FRESH_TIMESTREAM_TABLE_NAME = "fresh_timestream";
 
     public static final String PROMOTION_TIMESTREAM_TABLE_NAME = "promotion_timestream";
 
     public static final String POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME = "possible_promotion_timestream";
 
+    public static final String POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME = "possible_expired_timestream";
+
+    public static final String PROMOTION_HISTORY_TABLE_NAME = "promotion_history";
+
     public static final String OFF_SHELVES_HISTORY_TABLE_NAME = "off_shelves_history";
 
-    public static final String POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME = "possible_expired_timestream";
+    public static final String OBSERVER_TABLE_NAME = "observer";
+
+    public static final String DOP_INTERVALS_TABLE_NAME = "dop_intervals";
 
     public static final String SETTING_TABLE_NAME = "manage_setting";
 
@@ -58,7 +66,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
     public static final String CELL_TABLE_NAME = "cells";
 
     public static final String PRODUCT_INFO_COLUMNS = "product_code,product_name," +
-            "product_exp,product_exp_time_unit,product_group_number," +
+            "product_exp,product_exp_time_unit,product_group_number,product_spec," +
             "product_shelves_indexes,product_last_check_date,product_next_check_date," +
             "product_default_coordinate";
 
@@ -103,16 +111,19 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "product_name text," +
             "product_exp text,product_exp_time_unit text," +
             "product_group_number text," +
+            "product_spec text," +
             "product_shelves_indexes text," +
             "product_last_check_date," +
             "product_next_check_date," +
             "product_default_coordinate text)";
 
-    public static final String CREATE_TABLE_PRODUCT_TO_CHECK = "create table product_to_check(" +
-            "product_code text primary key)";
+    public static final String CREATE_TABLE_PRODUCT_TO_CHECK = "create table " +
+            PRODUCT_TO_CHECK_TABLE_NAME
+            +"(product_code text primary key)";
 
-    public static final String CREATE_TABLE_FRESH_TIMESTREAM = "create table fresh_timestream(" +
-            "id text primary key," +
+    public static final String CREATE_TABLE_FRESH_TIMESTREAM = "create table " +
+            FRESH_TIMESTREAM_TABLE_NAME +
+            "(id text primary key," +
             "product_code text," +
             "product_dop text," +
             "product_promotion_date text," +
@@ -120,8 +131,9 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "product_coordinate text," +
             "product_inventory text)";
 
-    public static final String CREATE_TABLE_POSSIBLE_PROMOTION_TIMESTREAM = "create table possible_promotion_timestream(" +
-            "id text primary key," +
+    public static final String CREATE_TABLE_POSSIBLE_PROMOTION_TIMESTREAM = "create table " +
+            POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME +
+            "(id text primary key," +
             "product_code text not null," +
             "product_dop text," +
             "product_promotion_date text," +
@@ -130,8 +142,9 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "product_inventory text," +
             "in_basket text default 'false')";
 
-    public static final String CREATE_TABLE_PROMOTION_TIMESTREAM = "create table promotion_timestream(" +
-            "id text primary key," +
+    public static final String CREATE_TABLE_PROMOTION_TIMESTREAM = "create table "+
+            PROMOTION_TIMESTREAM_TABLE_NAME +
+            "(id text primary key," +
             "product_code text," +
             "product_dop text," +
             "product_promotion_date text," +
@@ -143,8 +156,9 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "product_giveaway_specs text," +
             "sibling_promotion_id text)";
 
-    public static final String CREATE_TABLE_POSSIBLE_EXPIRED_TIMESTREAM = "create table possible_expired_timestream(" +
-            "id text primary key," +
+    public static final String CREATE_TABLE_POSSIBLE_EXPIRED_TIMESTREAM = "create table "
+        + POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME +
+            "(id text primary key," +
             "product_code text," +
             "product_dop text," +
             "product_promotion_date text," +
@@ -156,8 +170,9 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "product_giveaway_specs text," +
             "sibling_promotion_id text)";
 
-    public static final String CREATE_TABLE_PROMOTION_HISTORY = "create table promotion_history(" +
-            "promotion_id text primary key," +
+    public static final String CREATE_TABLE_PROMOTION_HISTORY = "create table " +
+            PROMOTION_HISTORY_TABLE_NAME +
+            "(promotion_id text primary key," +
             "product_code text," +
             "product_dop text," +
             "product_promotion_date text," +
@@ -167,8 +182,9 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "product_discount_rate text," +
             "sibling_promotion_id text)";
 
-    public static final String CREATE_TABLE_OFF_SHELVES_HISTORY = "create table off_shevles_history(" +
-            "id text primary key," +
+    public static final String CREATE_TABLE_OFF_SHELVES_HISTORY = "create table " +
+            OFF_SHELVES_HISTORY_TABLE_NAME +
+            "(id text primary key," +
             "product_code text," +
             "product_dop text," +
             "product_promotion_date text," +
@@ -176,41 +192,47 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "product_coordinate text," +
             "product_off_shelves_inventory text)";
 
-    public static final String CREATE_TABLE_OBSERVER = "create table observer(" +
-            "id text primary key," +
+    public static final String CREATE_TABLE_OBSERVER = "create table " +
+            OBSERVER_TABLE_NAME +
+            "(id text primary key," +
             "product_code text," +
             "product_has_fresh_timestream boolean," +
             "product_last_check_date text," +
             "product_next_check_date text," +
             "product_dop_interval text)";
 
-    public static final String CREATE_TABLE_DOP_INTERVALS = "create table dop_intervals(" +
-            "id text primary key," +
+    public static final String CREATE_TABLE_DOP_INTERVALS = "create table " +
+            DOP_INTERVALS_TABLE_NAME +
+            "(id text primary key," +
             "product_code text," +
             "dop_interval text," +
             "dop_interval_count text," +
             "unique(product_code,dop_interval))";
 
-    public static final String CREATE_TABLE_SETTING = "create table " + SETTING_TABLE_NAME + "(" +
-            "id integer primary key autoincrement," +
+    public static final String CREATE_TABLE_SETTING = "create table " +
+            SETTING_TABLE_NAME +
+            "(id integer primary key autoincrement," +
             "setting_index text unique," +
             "setting_value text)";
 
-    public static final String CREATE_TABLE_SHELVES = "create table " + SHELF_TABLE_NAME + "(" +
-            "id text primary key," +
+    public static final String CREATE_TABLE_SHELVES = "create table " +
+            SHELF_TABLE_NAME +
+            "(id text primary key," +
             "name text unique," +
             "classify text," +
             "max_row_count integer)";
 
-    public static final String CREATE_TABLE_ROWS = "create table " + ROW_TABLE_NAME + "(" +
-            "id text primary key," +
+    public static final String CREATE_TABLE_ROWS = "create table " +
+            ROW_TABLE_NAME +
+            "(id text primary key," +
             "sort_number integer," +
             "shelf_id text," +
             "name text," +
             "unique(sort_number,shelf_id))";
 
-    public static final String CREATE_TABLE_CELLS = "create table " + CELL_TABLE_NAME + "(" +
-            "id text primary key," +
+    public static final String CREATE_TABLE_CELLS = "create table " +
+            CELL_TABLE_NAME +
+            "(id text primary key," +
             "row_id text," +
             "shelf_id text," +
             "product_code text," +

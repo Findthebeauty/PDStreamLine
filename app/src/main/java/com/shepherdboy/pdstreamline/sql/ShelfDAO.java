@@ -1,5 +1,6 @@
 package com.shepherdboy.pdstreamline.sql;
 
+import static com.shepherdboy.pdstreamline.MyApplication.allProducts;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 
 import android.database.Cursor;
@@ -33,7 +34,7 @@ public class ShelfDAO {
                 MyDatabaseHelper.SHELVES_COLUMNS + ")" + "values('" + id +
                 "','" + name + "','" + classify + "','" + maxRowCount + "')";
         sqLiteDatabase.execSQL(sql);
-        shelf.setUpdated(false);
+        shelf.setInfoChanged(false);
     }
 
     /**
@@ -128,33 +129,71 @@ public class ShelfDAO {
             shelf.setMaxRowCount(cursor.getInt(3));
         }
 
-        shelf.setRows(getRows(id));
+        shelf.setRows(getRows(shelf));
 
         return shelf;
     }
 
-    public static ArrayList<Row> getRows(String shelfId) {
+    public static Row getRow(Shelf shelf, int rowNumber) {
 
-        ArrayList<Row> arrayList = new ArrayList<>();
+        ArrayList<Row> rows = getRows(shelf);
 
+        for (Row row : rows) {
+
+            if (row.getSortNumber() == rowNumber) return row;
+
+
+        }
+
+        return null;
+    }
+
+    public static ArrayList<Row> getRows(Shelf shelf) {
+
+        ArrayList<Row> rows = new ArrayList<>();
+
+        if ("默认".equals(shelf.getName())) { // todo 默认货架的商品排序，根据expire date和remain exp
+
+            allProducts = PDInfoWrapper.getAllProduct();
+
+            Row row = new Row();
+            row.setSortNumber(1);
+            ArrayList<Cell> cells = row.getCells();
+
+            for (String code : allProducts.keySet()) {
+
+                Product product = PDInfoWrapper.getProduct(code, sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
+
+                Cell cell = new Cell(product);
+
+                cells.add(cell);
+            }
+
+            rows.add(row);
+
+            return rows;
+        }
+
+
+        // todo 商品的按分段查询
         Cursor cursor = MyDatabaseHelper.query(sqLiteDatabase, MyDatabaseHelper.ROW_TABLE_NAME,
-                new String[]{"*"}, "shelf_id=?", new String[]{shelfId});
+                new String[]{"*"}, "shelf_id=?", new String[]{shelf.getId()});
 
         if (cursor.moveToNext()) {
 
             do {
 
-                Row row = new Row(shelfId);
+                Row row = new Row(shelf.getId());
                 row.setId(cursor.getString(0));
                 row.setSortNumber(cursor.getInt(1));
                 row.setName(cursor.getString(3));
                 row.setCells(getCells(row.getId()));
-                arrayList.add(row);
+                rows.add(row);
             } while (cursor.moveToNext());
         }
 
-        Collections.sort(arrayList, AscOrderNumberComparator.getInstance());
-        return arrayList;
+        Collections.sort(rows, AscOrderNumberComparator.getInstance());
+        return rows;
     }
 
     public static ArrayList<Cell> getCells(String rowId) {

@@ -13,9 +13,12 @@ public class TimestreamCombination {
 
     private Timestream giveawayTimestream;
 
-    private boolean selfPromotion;
+    private boolean selfPromotion;//同一种产品自身买一赠一
 
     private int packageCount;
+
+    public TimestreamCombination() {
+    }
 
     public TimestreamCombination(Timestream t) {
 

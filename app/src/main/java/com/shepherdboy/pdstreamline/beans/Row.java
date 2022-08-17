@@ -68,6 +68,9 @@ public class Row {
     }
 
     public ArrayList<Cell> getCells() {
+
+        if (cells == null) cells = new ArrayList<>();
+
         return cells;
     }
 

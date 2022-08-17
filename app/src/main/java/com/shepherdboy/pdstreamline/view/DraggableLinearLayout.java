@@ -151,6 +151,10 @@ public class DraggableLinearLayout extends LinearLayout {
 
     }
 
+    public float getHorizontalDistance() {
+        return Math.abs(horizontalDistance);
+    }
+
     public void setVerticalDraggable(boolean verticalDraggable) {
         this.verticalDraggable = verticalDraggable;
     }
@@ -250,8 +254,6 @@ public class DraggableLinearLayout extends LinearLayout {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-
-//        if (viewDragHelper.continueSettling(true)) return false;
 
         if (event.getActionMasked() == MotionEvent.ACTION_UP) init();
 

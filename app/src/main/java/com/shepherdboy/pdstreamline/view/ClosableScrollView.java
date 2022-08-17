@@ -2,6 +2,7 @@ package com.shepherdboy.pdstreamline.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.ScrollView;
 
@@ -37,6 +38,11 @@ public class ClosableScrollView extends ScrollView {
         return newY;
     }
 
+    public static float getDeltaY() {
+
+        return Math.abs(newY - oldY);
+
+    }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
@@ -45,9 +51,8 @@ public class ClosableScrollView extends ScrollView {
             oldY = ev.getY();
             newY = ev.getY();
         }
-        if (ev.getActionMasked() == MotionEvent.ACTION_MOVE) newY = ev.getY();
 
-        if (MyApplication.draggableLinearLayout != null && !MyApplication.draggableLinearLayout.isLongClicking()) {
+        if (MyApplication.draggableLinearLayout != null && MyApplication.draggableLinearLayout.isLongClicking()) {
 
             return false;
         }
@@ -55,6 +60,13 @@ public class ClosableScrollView extends ScrollView {
         return super.onInterceptTouchEvent(ev);
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent ev) {
 
+        if (ev.getActionMasked() == MotionEvent.ACTION_MOVE) {
 
+            newY = ev.getY();
+        }
+        return super.onTouchEvent(ev);
+    }
 }

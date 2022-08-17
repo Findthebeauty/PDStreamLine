@@ -459,7 +459,14 @@ public class PDInfoActivity extends AppCompatActivity {
     protected void onPause() {
 
         //暂停时将改动的商品信息保存到数据库,全局
-        MyApplication.serialize();
+        new Thread() {
+
+            @Override
+            public void run() {
+
+                MyApplication.serialize();
+            }
+        }.start();
         super.onPause();
     }
 

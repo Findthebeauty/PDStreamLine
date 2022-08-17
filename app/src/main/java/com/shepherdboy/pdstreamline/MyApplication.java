@@ -32,6 +32,7 @@ import com.shepherdboy.pdstreamline.beans.DateScope;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
+import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
@@ -97,6 +98,7 @@ public class MyApplication extends Application {
 
     private static long lastClickTime = 0L;
     private static int clickCount;
+    private static long pressInterval;
     private static Handler handler;
     private static Runnable runnable;
     private static boolean scheduled;
@@ -117,6 +119,10 @@ public class MyApplication extends Application {
     public static  HashMap<Integer, Point> originalPositionHashMap = new HashMap<>(); // hashMap存放每个时光流的初始坐标
 
     public static LinkedList thingsToSaveList = new LinkedList();
+
+    public static HashMap<String, Product> allProducts; //仅包含productCode,productEXP,productEXPTimeUnit 3个信息
+
+    public static HashMap<String, TimestreamCombination> combinationHashMap; //已经捆绑的所有商品
 
     public static Date today = DateUtil.getStartPointToday();
 
@@ -170,14 +176,16 @@ public class MyApplication extends Application {
             startCountPressTime();
         }
 
-        if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
-
-            lastClickTime = System.currentTimeMillis();
-            clickCount = 0;
-            clickInterval = 0L;
-            stopCountPressTime();
-            return false;
-        }
+//        if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
+//
+//            pressInterval = System.currentTimeMillis() - lastClickTime;
+//
+//            lastClickTime = System.currentTimeMillis();
+//            clickCount = 0;
+//            clickInterval = 0L;
+//            stopCountPressTime();
+//            return false;
+//        }
 
         if (event.getActionMasked() ==  MotionEvent.ACTION_UP) {
 
@@ -228,14 +236,22 @@ public class MyApplication extends Application {
             @Override
             public void run() {
 
-                long pressInterval = System.currentTimeMillis() - lastClickTime;
-
+                pressInterval = System.currentTimeMillis() - lastClickTime;
 
                 if (pressInterval >= Long.parseLong(settingInstance.getLongClickDelay())) {
 
                     clickCount = 0;
 
-                    if (Math.abs(ClosableScrollView.getNewY() - ClosableScrollView.getOldY()) > 5) return;
+                    float deltaY = ClosableScrollView.getDeltaY();
+                    float deltaX = draggableLinearLayout.getHorizontalDistance();
+
+                    if (deltaY > deltaX) return;
+
+                    double radios = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+                    Toast.makeText(context, radios + "", Toast.LENGTH_SHORT).show();
+
+                    if (radios > 30) return;
 
                     draggableLinearLayout.setLongClicking(true);
                     onLongClick();
@@ -416,7 +432,7 @@ public class MyApplication extends Application {
 
         boolean validated = AIInputter.validate(currentInf, shelf, filedIndex);
 
-        shelf.setUpdated(true);
+        shelf.setInfoChanged(true);
 
         switch (filedIndex) {
 
@@ -452,6 +468,30 @@ public class MyApplication extends Application {
             default:
                 break;
         }
+    }
+
+    public static int getColorByTimestreamStateCode(Context context, int timeStreamStateCode) {
+
+
+        switch (timeStreamStateCode) {
+
+            case Timestream.FRESH:
+
+                return context.getResources().getColor(R.color.green);
+
+            case Timestream.CLOSE_TO_EXPIRE:
+
+                return context.getResources().getColor(R.color.yellow);
+
+            case Timestream.EXPIRED:
+
+                return context.getResources().getColor(R.color.gray);
+
+            default:
+                break;
+        }
+
+        return 0;
     }
 //
 //    static {

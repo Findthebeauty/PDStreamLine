@@ -177,6 +177,7 @@ public class AIInputter {
 
         DateScope scope = SettingActivity.mlScopeMap.get(SettingActivity.dateSettingIndex.get(SettingActivity.dateSettingIndex.size() - 1));
         product.setProductEXP(scope.getRangeValue());
+        product.setProductSpec("spec");
         product.setProductEXPTimeUnit("天");
 
     }

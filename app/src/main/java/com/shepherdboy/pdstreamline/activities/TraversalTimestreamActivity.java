@@ -1,7 +1,10 @@
 package com.shepherdboy.pdstreamline.activities;
 
 import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY;
+import static com.shepherdboy.pdstreamline.MyApplication.allProducts;
+import static com.shepherdboy.pdstreamline.MyApplication.combinationHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
+import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,29 +14,40 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
+import com.shepherdboy.pdstreamline.beans.Cell;
+import com.shepherdboy.pdstreamline.beans.Row;
 import com.shepherdboy.pdstreamline.beans.Shelf;
+import com.shepherdboy.pdstreamline.beans.Timestream;
+import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
+import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.sql.ShelfDAO;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
+import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 import com.shepherdboy.pdstreamline.view.ShelfAdapter;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 public class TraversalTimestreamActivity extends AppCompatActivity {
 
@@ -271,7 +285,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
                         if (validated) {
 
                             shelf.setClassify(editText.getText().toString());
-                            shelf.setUpdated(true);
+                            shelf.setInfoChanged(true);
                             classifyList.add(classify);
                             setClassifyList(context, shelf, classifyList);
                         }
@@ -291,7 +305,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
                 shelf.setClassify(classifyList.get(position));
-                shelf.setUpdated(true);
+                shelf.setInfoChanged(true);
             }
 
             @Override
@@ -351,7 +365,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
                 MyInfoChangeWatcher.commitAll(); //中止自动提交，主动提交变更的信息
 
-                if (shelf.isUpdated()) ShelfDAO.update(shelf);
+                if (shelf.isInfoChanged()) ShelfDAO.update(shelf);
                 setContentView(R.layout.activity_traversal_timestream);
                 initActivity(context);
             }
@@ -365,7 +379,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         shelf.setName(tempShelf.getName());
         shelf.setClassify(tempShelf.getClassify());
         shelf.setMaxRowCount(tempShelf.getMaxRowCount());
-        shelf.setUpdated(false);
+        shelf.setInfoChanged(false);
         setContentView(R.layout.activity_traversal_timestream);
         initActivity(TraversalTimestreamActivity.this);
     }
@@ -383,17 +397,234 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         layoutIndex = LAYOUT_SHOW_SHELF_PRODUCT;
 
-        LayoutInflater inflater = LayoutInflater.from(TraversalTimestreamActivity.this);
-
         draggableLinearLayout = TraversalTimestreamActivity.this.findViewById(R.id.row);
 
-        LinearLayout cellHead = inflater.inflate(R.layout.cell_head_layout, null).findViewById(R.id.cell_head);
-        LinearLayout combination = inflater.inflate(R.layout.comb_layout, null).findViewById(R.id.combination);
-
-        draggableLinearLayout.addView(cellHead);
-        draggableLinearLayout.addView(combination);
+        showRow(draggableLinearLayout, 1); //todo 货架行的遍历方式
 
         DraggableLinearLayout.setLayoutChanged(true);
+    }
+
+    private void showRow(DraggableLinearLayout draggableLinearLayout, int rowNumber) {
+
+
+        Row row = ShelfDAO.getRow(ShelfAdapter.getCurrentShelf(), rowNumber);
+
+        combinationHashMap = PDInfoWrapper.getTimestreamCombinations(sqLiteDatabase);
+
+        for (Cell cell : row.getCells()) {
+
+            showCell(cell, draggableLinearLayout);
+
+        }
+
+
+    }
+
+    private void showCell(Cell cell, DraggableLinearLayout view) {
+
+        LinkedHashMap<String, Timestream> timestreams = cell.getTimestreams();
+
+        loadCellHead(cell, view);
+
+        for (Timestream timestream : timestreams.values()) {
+
+            loadCellBody(view, timestream);
+
+        }
+
+
+    }
+
+    private void loadCellHead(Cell cell, DraggableLinearLayout view) {
+
+        LayoutInflater inflater = LayoutInflater.from(view.getContext());
+        LinearLayout cellHead = inflater.inflate(R.layout.cell_head_layout, null).findViewById(R.id.cell_head);
+        TextView headNameTv = (TextView) cellHead.getChildAt(0);
+        TextView headCodeTv = (TextView) cellHead.getChildAt(1);
+
+        cellHead.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
+        headNameTv.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
+        headCodeTv.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
+
+        headNameTv.setText(PDInfoWrapper.getProductName(cell.getProductCode(),
+                sqLiteDatabase));
+
+        String productCode = cell.getProductCode();
+
+        if (productCode.length() > 6)
+            productCode = productCode.substring(cell.getProductCode().length() - 6);
+
+        headCodeTv.setText(productCode);
+        view.addView(cellHead);
+    }
+
+    private static void loadCellBody(DraggableLinearLayout view, Timestream timestream) {
+
+        LayoutInflater inflater = LayoutInflater.from(view.getContext());
+
+        LinearLayout combination = inflater.inflate(R.layout.comb_layout, null).findViewById(R.id.combination);
+
+
+        LinearLayout buyBackground = combination.findViewById(R.id.buy_background);
+        LinearLayout giveawayBackground = combination.findViewById(R.id.give_away_background);
+
+        TextView buyProductNameTv = combination.findViewById(R.id.buy_pd_name);
+        TextView giveawayProductNameTv = combination.findViewById(R.id.give_away_pd_name);
+        TextView buyDOPMeasure = combination.findViewById(R.id.buy_dop_measure);
+
+        EditText buyDOPEt = combination.findViewById(R.id.buy_dop);
+        EditText inventory = combination.findViewById(R.id.inventory);
+        EditText inventoryMeasure = combination.findViewById(R.id.inventory_measure);
+
+        TextView unitTv = combination.findViewById(R.id.unit);
+        TextView giveawayDOPTv = combination.findViewById(R.id.give_away_dop);
+        TextView giveawayFlagTv = combination.findViewById(R.id.give_away_flag);
+
+        ArrayList<View> giveAwayViews = new ArrayList<>();
+        giveAwayViews.add(giveawayBackground);
+        giveAwayViews.add(giveawayProductNameTv);
+        giveAwayViews.add(giveawayDOPTv);
+        giveAwayViews.add(giveawayFlagTv);
+
+        flushIds(combination);
+
+        ConstraintSet set = new ConstraintSet();
+
+        set.clone((ConstraintLayout) combination.getChildAt(0));
+
+        set.connect(buyBackground.getId(),ConstraintSet.LEFT, ConstraintSet.PARENT_ID, ConstraintSet.LEFT);
+        set.connect(buyBackground.getId(),ConstraintSet.RIGHT, buyDOPEt.getId(), ConstraintSet.RIGHT);
+        set.connect(buyBackground.getId(),ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP);
+        set.connect(buyBackground.getId(),ConstraintSet.BOTTOM, buyProductNameTv.getId(), ConstraintSet.BOTTOM);
+
+        set.connect(giveawayBackground.getId(),ConstraintSet.LEFT, ConstraintSet.PARENT_ID, ConstraintSet.LEFT);
+        set.connect(giveawayBackground.getId(),ConstraintSet.RIGHT, giveawayDOPTv.getId(), ConstraintSet.RIGHT);
+        set.connect(giveawayBackground.getId(),ConstraintSet.TOP, giveawayProductNameTv.getId(), ConstraintSet.TOP);
+        set.connect(giveawayBackground.getId(),ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM);
+
+        set.connect(buyProductNameTv.getId(),ConstraintSet.LEFT, ConstraintSet.PARENT_ID, ConstraintSet.LEFT);
+        set.connect(buyProductNameTv.getId(),ConstraintSet.RIGHT, buyDOPMeasure.getId(), ConstraintSet.LEFT);
+        set.connect(buyProductNameTv.getId(),ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP);
+
+        set.connect(giveawayProductNameTv.getId(),ConstraintSet.LEFT, ConstraintSet.PARENT_ID, ConstraintSet.LEFT);
+        set.connect(giveawayProductNameTv.getId(),ConstraintSet.RIGHT, buyDOPMeasure.getId(), ConstraintSet.LEFT);
+        set.connect(giveawayProductNameTv.getId(),ConstraintSet.TOP, buyProductNameTv.getId(), ConstraintSet.BOTTOM);
+
+        set.connect(buyDOPMeasure.getId(),ConstraintSet.RIGHT, inventoryMeasure.getId(), ConstraintSet.LEFT);
+        set.connect(buyDOPMeasure.getId(),ConstraintSet.BOTTOM, buyProductNameTv.getId(), ConstraintSet.BOTTOM);
+        set.connect(buyDOPMeasure.getId(),ConstraintSet.TOP, buyProductNameTv.getId(), ConstraintSet.TOP);
+
+        set.connect(buyDOPEt.getId(),ConstraintSet.BOTTOM, buyProductNameTv.getId(), ConstraintSet.BOTTOM);
+        set.connect(buyDOPEt.getId(),ConstraintSet.TOP, buyProductNameTv.getId(), ConstraintSet.TOP);
+        set.connect(buyDOPEt.getId(),ConstraintSet.LEFT, buyDOPMeasure.getId(), ConstraintSet.LEFT);
+        set.connect(buyDOPEt.getId(),ConstraintSet.RIGHT, buyDOPMeasure.getId(), ConstraintSet.RIGHT);
+
+        set.connect(inventoryMeasure.getId(),ConstraintSet.RIGHT, unitTv.getId(), ConstraintSet.LEFT);
+        set.connect(inventoryMeasure.getId(),ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP);
+        set.connect(inventoryMeasure.getId(),ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM);
+
+        set.connect(inventory.getId(),ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM);
+        set.connect(inventory.getId(),ConstraintSet.LEFT, inventoryMeasure.getId(), ConstraintSet.LEFT);
+        set.connect(inventory.getId(),ConstraintSet.RIGHT, inventoryMeasure.getId(), ConstraintSet.RIGHT);
+        set.connect(inventory.getId(),ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP);
+
+        set.connect(unitTv.getId(),ConstraintSet.RIGHT, ConstraintSet.PARENT_ID, ConstraintSet.RIGHT);
+        set.connect(unitTv.getId(),ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP);
+        set.connect(unitTv.getId(),ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM);
+
+        set.connect(giveawayDOPTv.getId(),ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM);
+        set.connect(giveawayDOPTv.getId(),ConstraintSet.LEFT, buyDOPMeasure.getId(), ConstraintSet.LEFT);
+        set.connect(giveawayDOPTv.getId(),ConstraintSet.RIGHT, buyDOPMeasure.getId(), ConstraintSet.RIGHT);
+        set.connect(giveawayDOPTv.getId(),ConstraintSet.TOP, buyProductNameTv.getId(), ConstraintSet.BOTTOM);
+
+        set.connect(giveawayFlagTv.getId(),ConstraintSet.LEFT, buyDOPMeasure.getId(), ConstraintSet.LEFT);
+        set.connect(giveawayFlagTv.getId(),ConstraintSet.RIGHT, buyDOPMeasure.getId(), ConstraintSet.RIGHT);
+        set.connect(giveawayFlagTv.getId(),ConstraintSet.BOTTOM, giveawayDOPTv.getId(), ConstraintSet.BOTTOM);
+        set.connect(giveawayFlagTv.getId(),ConstraintSet.TOP, giveawayDOPTv.getId(), ConstraintSet.TOP);
+
+        set.applyTo((ConstraintLayout) combination.getChildAt(0));
+
+        view.addView(combination);
+
+        String discountRate = timestream.getDiscountRate();
+
+        TimestreamCombination timestreamCombination = null;
+
+        switch (discountRate) {
+
+            case "":
+
+                for (View v : giveAwayViews) {
+
+                    v.setVisibility(View.GONE);
+                }
+
+                buyProductNameTv.setText(timestream.getProductName());
+                buyDOPEt.setText(DateUtil.typeMach(timestream.getProductDOP()).substring(0,10));
+                inventory.setText(timestream.getProductInventory());
+                unitTv.setText(allProducts.get(timestream.getProductCode()).getProductSpec());
+
+                int color = MyApplication.getColorByTimestreamStateCode(view.getContext(), timestream.getTimeStreamStateCode());
+
+                buyBackground.setBackgroundColor(color);
+                break;
+
+            case "0.5":
+
+                timestreamCombination = combinationHashMap.get(timestream.getId());
+
+                break;
+
+            case "0":
+
+                timestreamCombination = combinationHashMap.get(timestream.getSiblingPromotionId());
+
+            default:
+                break;
+        }
+
+
+        if (timestreamCombination != null) {
+
+            buyProductNameTv.setText(timestreamCombination.getBuyProductName());
+            buyDOPEt.setText(DateUtil.typeMach(timestreamCombination.getBuyTimestream()
+                    .getProductDOP()).substring(0,10));
+            inventory.setText(timestreamCombination.getPackageCount());
+            unitTv.setText("组");
+
+            giveawayProductNameTv.setText(timestreamCombination.getGiveawayProductName());
+            giveawayDOPTv.setText(DateUtil.typeMach(timestreamCombination.getGiveawayTimestream()
+                    .getProductDOP()).substring(0,10));
+
+
+            int color = MyApplication.getColorByTimestreamStateCode(view.getContext(),
+                    timestreamCombination.getBuyTimestream().getTimeStreamStateCode());
+            buyBackground.setBackgroundColor(color);
+
+
+            color = MyApplication.getColorByTimestreamStateCode(view.getContext(),
+                    timestreamCombination.getGiveawayTimestream().getTimeStreamStateCode());
+            giveawayBackground.setBackgroundColor(color);
+        }
+    }
+
+    /**
+     * 重设模板中view的id为随机值，避免id冲突
+     * @param view
+     */
+    private static void flushIds(View view) {
+
+        view.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
+
+        if (view instanceof ViewGroup ) {
+
+            ViewGroup viewGroup = (ViewGroup)view;
+
+            for (int i = 0; i < viewGroup.getChildCount(); i++) {
+
+                flushIds(viewGroup.getChildAt(i));
+            }
+        }
     }
 
     private void setClassifyList(Context context, Shelf shelf) {

@@ -21,6 +21,8 @@ public class Product {
 
     private String productGroupNumber;
 
+    private String productSpec;
+
     private String shelvesIndexes;
 
     private String defaultCoordinate;
@@ -32,6 +34,14 @@ public class Product {
     private String lastCheckDate;
 
     private String nextCheckDate;
+
+    public String getProductSpec() {
+        return productSpec;
+    }
+
+    public void setProductSpec(String productSpec) {
+        this.productSpec = productSpec;
+    }
 
     public String getLastCheckDate() {
         return lastCheckDate;

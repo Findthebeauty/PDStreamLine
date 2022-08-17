@@ -41,6 +41,14 @@ public class Cell {
         setRowId(rowId);
     }
 
+    public Cell(Product product) {
+
+        this();
+        this.productCode = product.getProductCode();
+        this.timestreams = product.getTimeStreams();
+
+    }
+
     public String getId() {
         return id;
     }

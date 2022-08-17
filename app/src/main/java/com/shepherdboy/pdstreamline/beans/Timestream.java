@@ -50,7 +50,7 @@ public class Timestream {
 
     private String giveawaySpecs;
 
-    private String discountRate;
+    private String discountRate = "";
 
     private String siblingPromotionId;
 

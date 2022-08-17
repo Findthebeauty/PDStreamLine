@@ -7,6 +7,7 @@ import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.activities.SettingActivity;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Timestream;
+import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.AscCoordinateComparator;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
@@ -30,8 +31,8 @@ public class PDInfoWrapper {
 
         String name;
 
-        Cursor cursor = MyDatabaseHelper.query(sqLiteDatabase, MyDatabaseHelper.PRODUCT_INFO_TABLE_NAME, new String[]{"*"},
-                "product_code=?", new String[]{productCode});
+        Cursor cursor = MyDatabaseHelper.query(sqLiteDatabase, MyDatabaseHelper.PRODUCT_INFO_TABLE_NAME,
+                new String[]{"*"},"product_code=?", new String[]{productCode});
         try {
 
             cursor.moveToFirst();
@@ -46,6 +47,13 @@ public class PDInfoWrapper {
     }
 
 
+    /**
+     * 获取Product的完整信息，包含所有的Timestream
+     * @param productCode
+     * @param sqLiteDatabase
+     * @param typeCode
+     * @return
+     */
     public static Product getProduct(String productCode, SQLiteDatabase sqLiteDatabase, int typeCode) {
 
         Product product = new Product();
@@ -67,10 +75,14 @@ public class PDInfoWrapper {
             product.setProductName(cursor.getString(1));
             product.setProductEXP(cursor.getString(2));
             product.setProductEXPTimeUnit(cursor.getString(3));
+            product.setProductGroupNumber(cursor.getString(4));
+            product.setProductSpec(cursor.getString(5));
+            product.setShelvesIndexes(cursor.getString(6));
             product.setUpdated(true);
             product.setNextCheckDate(DateUtil.typeMach(AIInputter.getNextCheckDate(product.getProductEXP(),
                     product.getProductEXPTimeUnit())));
 
+            product.setDefaultCoordinate(cursor.getString(9));
         } else {
 
             AIInputter.fillTheBlanks(product);
@@ -193,6 +205,118 @@ public class PDInfoWrapper {
         return tsLList;
     }
 
+    public static HashMap<String, TimestreamCombination> getTimestreamCombinations(SQLiteDatabase sqLiteDatabase) {
+
+        HashMap<String, Timestream> promotingTimestreams = new HashMap<>();
+        HashMap<String, TimestreamCombination> combs = new HashMap<>();
+
+        queryAndGeneratePromotingTimestream(sqLiteDatabase,
+                MyDatabaseHelper.PROMOTION_TIMESTREAM_TABLE_NAME,
+                promotingTimestreams);
+        queryAndGeneratePromotingTimestream(sqLiteDatabase,
+                MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME,
+                promotingTimestreams);
+
+        assemblingTimestreamCombinations(combs, promotingTimestreams);
+
+        return combs;
+    }
+
+    private static void assemblingTimestreamCombinations(HashMap<String, TimestreamCombination> combs, HashMap<String, Timestream> promotingTimestreams) {
+
+        for (Timestream timestream : promotingTimestreams.values()) {
+
+            String discountRate = timestream.getDiscountRate();
+
+            switch (discountRate) {
+
+                case "0.5":
+
+                    combs.put(timestream.getId(), new TimestreamCombination(timestream));
+                    break;
+
+                case "1":
+
+                    Timestream giveawayTimestream = promotingTimestreams.get(timestream.getSiblingPromotionId());
+                    combs.put(timestream.getId(), new TimestreamCombination(timestream, giveawayTimestream));
+                    break;
+
+                default:
+                    break;
+
+            }
+
+        }
+
+    }
+
+    /**
+     * 从指定表{MyDatabaseHelper.PROMOTION_TIMESTREAM_TABLE_NAME,
+     * MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME}中查询所有timestream
+     * @param sqLiteDatabase
+     * @param tableName
+     * @param timestreams
+     */
+    private static void queryAndGeneratePromotingTimestream(SQLiteDatabase sqLiteDatabase, String tableName, HashMap<String, Timestream> timestreams) {
+
+
+        Cursor cursor = MyDatabaseHelper.query(sqLiteDatabase, tableName,
+                new String[]{"*"}, null, null);
+
+        if (cursor.moveToFirst()) {
+
+            do {
+
+                Timestream timestream = new Timestream();
+
+                timestream.setId(cursor.getString(0));
+                timestream.setProductCode(cursor.getString(1));
+                try {
+                    timestream.setProductDOP(DateUtil.typeMach(cursor.getString(2)));
+                    timestream.setProductPromotionDate(DateUtil.typeMach(cursor.getString(3)));
+                    timestream.setProductExpireDate(DateUtil.typeMach(cursor.getString(4)));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                timestream.setProductCoordinate(cursor.getString(5));
+                timestream.setProductInventory(cursor.getString(6));
+                timestream.setDiscountRate(cursor.getString(7));
+                timestream.setBuySpecs(cursor.getString(8));
+                timestream.setGiveawaySpecs(cursor.getString(9));
+                timestream.setSiblingPromotionId(cursor.getString(10));
+
+                timestreams.put(timestream.getId(), timestream);
+            } while (cursor.moveToNext());
+
+        }
+    }
+
+    /**
+     * 构建已经捆绑的timestream
+     * @param cursor
+     * @param timestream
+     */
+    private static void inflatePromotionTimestream(Cursor cursor, Timestream timestream) {
+
+        timestream.setId(cursor.getString(0));
+        timestream.setProductCode(cursor.getString(1));
+        try {
+            timestream.setProductDOP(DateUtil.typeMach(cursor.getString(2)));
+            timestream.setProductPromotionDate(DateUtil.typeMach(cursor.getString(3)));
+            timestream.setProductExpireDate(DateUtil.typeMach(cursor.getString(4)));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        timestream.setProductCoordinate(cursor.getString(5));
+        timestream.setProductInventory(cursor.getString(6));
+        timestream.setDiscountRate(cursor.getString(7));
+        timestream.setBuySpecs(cursor.getString(8));
+        timestream.setGiveawaySpecs(cursor.getString(9));
+        timestream.setSiblingPromotionId(cursor.getString(10));
+    }
+
     /**
      * @param sqLiteDatabase
      * @param date           当前日期
@@ -261,6 +385,7 @@ public class PDInfoWrapper {
             do {
 
                 temp = new Timestream();
+                temp.setProductName(product.getProductName());
                 temp.setProductCode(product.getProductCode());
                 temp.setId(cursor.getString(0));
 
@@ -303,6 +428,7 @@ public class PDInfoWrapper {
         String productEXP = product.getProductEXP();
         String productEXPTimeUnit = product.getProductEXPTimeUnit();
         String productGroupNumber = product.getProductGroupNumber();
+        String productSpec = product.getProductSpec();
         String productShelvesIndexes = product.getShelvesIndexes();
         String productLastCheckDate = product.getLastCheckDate();
         String productNextCheckDate = product.getNextCheckDate();
@@ -311,7 +437,7 @@ public class PDInfoWrapper {
         String sql = "insert or replace into " + MyDatabaseHelper.PRODUCT_INFO_TABLE_NAME + "(" +
                 MyDatabaseHelper.PRODUCT_INFO_COLUMNS + ") " + "values ('" + productCode +
                 "','" + productName + "','" + productEXP + "','" + productEXPTimeUnit +
-                "','" + productGroupNumber + "','" + productShelvesIndexes +
+                "','" + productGroupNumber + "','" + productSpec + "','" + productShelvesIndexes +
                 "','" + productLastCheckDate + "','" + productNextCheckDate +
                 "','" + productDefaultCoordinate + "')";
 
@@ -330,6 +456,8 @@ public class PDInfoWrapper {
         String productCoordinate = timestream.getProductCoordinate();
         String productInventory = timestream.getProductInventory();
         String discountRate = timestream.getDiscountRate();
+        String buySpecs = timestream.getBuySpecs();
+        String giveawaySpecs = timestream.getGiveawaySpecs();
         String siblingPromotionId = timestream.getSiblingPromotionId();
         String inBasket = String.valueOf(timestream.isInBasket());
 
@@ -340,26 +468,41 @@ public class PDInfoWrapper {
             case MyDatabaseHelper.NEW_TIMESTREAM:
 
                 sql = "insert or replace into " + MyDatabaseHelper.FRESH_TIMESTREAM_TABLE_NAME + "(" +
-                        MyDatabaseHelper.FRESH_TIMESTREAM_COLUMNS + ") " + "values " + "('" + id + "','" + productCode +
-                        "','" + productDOP + "','" + productPromotionDate + "','" + productExpireDate +
-                        "','" + productCoordinate + "','" + productInventory + "')";
+                        MyDatabaseHelper.FRESH_TIMESTREAM_COLUMNS + ") " + "values " + "('" + id +
+                        "','" + productCode +
+                        "','" + productDOP +
+                        "','" + productPromotionDate +
+                        "','" + productExpireDate +
+                        "','" + productCoordinate +
+                        "','" + productInventory + "')";
                 break;
 
             case MyDatabaseHelper.PROMOTION_TIMESTREAM:
 
                 sql = "insert or replace into " + MyDatabaseHelper.PROMOTION_TIMESTREAM_TABLE_NAME + "(" +
-                        MyDatabaseHelper.PROMOTION_TIMESTREAM_COLUMNS + ") " + "values " + "('" + id + "','" + productCode +
-                        "','" + productDOP + "','" + productPromotionDate + "','" + productExpireDate +
-                        "','" + productCoordinate + "','" + productInventory + "','" + discountRate +
+                        MyDatabaseHelper.PROMOTION_TIMESTREAM_COLUMNS + ") " + "values " + "('" + id +
+                        "','" + productCode +
+                        "','" + productDOP +
+                        "','" + productPromotionDate +
+                        "','" + productExpireDate +
+                        "','" + productCoordinate +
+                        "','" + productInventory +
+                        "','" + discountRate +
+                        "','" + buySpecs +
+                        "','" + giveawaySpecs +
                         "','" + siblingPromotionId + "')";
                 break;
 
             case MyDatabaseHelper.OFF_SHELVES_HISTORY:
 
                 sql = "insert into " + MyDatabaseHelper.OFF_SHELVES_HISTORY_TABLE_NAME + "(" +
-                        MyDatabaseHelper.OFF_SHELVES_HISTORY_COLUMNS + ") " + "values " + "('" + id + "','" + productCode +
-                        "','" + productDOP + "','" + productPromotionDate + "','" + productExpireDate +
-                        "','" + productCoordinate + "','" + productInventory + "')";
+                        MyDatabaseHelper.OFF_SHELVES_HISTORY_COLUMNS + ") " + "values " + "('" + id +
+                        "','" + productCode +
+                        "','" + productDOP +
+                        "','" + productPromotionDate +
+                        "','" + productExpireDate +
+                        "','" + productCoordinate +
+                        "','" + productInventory + "')";
                 break;
 
             case MyDatabaseHelper.UPDATE_BASKET:
@@ -405,9 +548,14 @@ public class PDInfoWrapper {
             case MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME:
 
                 sql = "insert into " + tableName + "(" +
-                        MyDatabaseHelper.FRESH_TIMESTREAM_COLUMNS + ") " + "values " + "('" + id + "','" + productCode +
-                        "','" + productDOP + "','" + productPromotionDate + "','" + productExpireDate +
-                        "','" + productCoordinate + "','" + productInventory + "')";
+                        MyDatabaseHelper.FRESH_TIMESTREAM_COLUMNS + ") " + "values " +
+                        "('" + id +
+                        "','" + productCode +
+                        "','" + productDOP +
+                        "','" + productPromotionDate +
+                        "','" + productExpireDate +
+                        "','" + productCoordinate +
+                        "','" + productInventory + "')";
 
                 sqLiteDatabase.execSQL(sql);
                 timestream.setUpdated(true);
@@ -417,10 +565,18 @@ public class PDInfoWrapper {
             case MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME:
 
                 sql = "insert into " + tableName + "(" +
-                        MyDatabaseHelper.PROMOTION_TIMESTREAM_COLUMNS + ") " + "values " + "('" + id + "','" + productCode +
-                        "','" + productDOP + "','" + productPromotionDate + "','" + productExpireDate +
-                        "','" + productCoordinate + "','" + productInventory + "','" + productDiscountRate +
-                        "','" + productBuySpecs + "','" + productGiveawaySpecs + "','" + siblingPromotionId + "')";
+                        MyDatabaseHelper.PROMOTION_TIMESTREAM_COLUMNS + ") " + "values " +
+                        "('" + id +
+                        "','" + productCode +
+                        "','" + productDOP +
+                        "','" + productPromotionDate +
+                        "','" + productExpireDate +
+                        "','" + productCoordinate +
+                        "','" + productInventory +
+                        "','" + productDiscountRate +
+                        "','" + productBuySpecs +
+                        "','" + productGiveawaySpecs +
+                        "','" + siblingPromotionId + "')";
 
                 sqLiteDatabase.execSQL(sql);
                 timestream.setUpdated(true);
@@ -449,6 +605,10 @@ public class PDInfoWrapper {
 
     }
 
+    /**
+     * 仅获取product_code, product_exp, product_exp_time_unit,不包含Timestream列表
+     * @return
+     */
     public static HashMap<String, Product> getAllProduct() {
 
         HashMap<String, Product> r = new HashMap<>();
