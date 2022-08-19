@@ -1,11 +1,11 @@
 package com.shepherdboy.pdstreamline.view;
 
+import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.ScrollView;
-
-import com.shepherdboy.pdstreamline.MyApplication;
 
 public class ClosableScrollView extends ScrollView {
 
@@ -51,7 +51,17 @@ public class ClosableScrollView extends ScrollView {
             newY = ev.getY();
         }
 
-        if (MyApplication.draggableLinearLayout != null && MyApplication.draggableLinearLayout.isLongClicking()) {
+        if (ev.getActionMasked() == MotionEvent.ACTION_MOVE) {
+
+            if (draggableLinearLayout != null && draggableLinearLayout.getHorizontalDistance() > getDeltaY()) {
+
+                return false;
+            }
+
+        }
+
+
+        if (draggableLinearLayout != null && draggableLinearLayout.isLongClicking()) {
 
             return false;
         }
@@ -62,13 +72,15 @@ public class ClosableScrollView extends ScrollView {
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
 
-        boolean consumed = MyApplication.draggableLinearLayout.onTouchEvent(ev);
+        boolean consumed = draggableLinearLayout.onTouchEvent(ev);
+
+        if (draggableLinearLayout.viewDragHelper.continueSettling(true)) return false;
 
         if (ev.getActionMasked() == MotionEvent.ACTION_MOVE) {
 
             newY = ev.getY();
 
-            if (MyApplication.draggableLinearLayout != null && MyApplication.draggableLinearLayout.isLongClicking()) {
+            if (draggableLinearLayout != null && draggableLinearLayout.isLongClicking()) {
 
                 return consumed;
             }
@@ -82,5 +94,10 @@ public class ClosableScrollView extends ScrollView {
     @Override
     public boolean performClick() {
         return super.performClick();
+    }
+
+    @Override
+    public void fling(int velocityY) {
+        super.fling(velocityY);
     }
 }

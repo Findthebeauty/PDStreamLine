@@ -249,8 +249,6 @@ public class MyApplication extends Application {
 
                     double radios = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-                    Toast.makeText(context, radios + "", Toast.LENGTH_SHORT).show();
-
                     if (radios > 30) return;
 
                     draggableLinearLayout.setLongClicking(true);

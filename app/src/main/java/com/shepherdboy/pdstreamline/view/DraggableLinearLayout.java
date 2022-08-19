@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -118,6 +119,8 @@ public class DraggableLinearLayout extends LinearLayout {
                 }
 
                 Point originalPoint = MyApplication.originalPositionHashMap.get(currentTimestreamView.getId());
+
+                Toast.makeText(MyApplication.getContext(),originalPoint == null ? "" : originalPoint.toString(), Toast.LENGTH_SHORT).show();
 
                 if (null != originalPoint) {
 
