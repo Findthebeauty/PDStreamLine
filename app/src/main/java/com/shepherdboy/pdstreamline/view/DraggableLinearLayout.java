@@ -253,6 +253,10 @@ public class DraggableLinearLayout extends LinearLayout {
     }
 
     @Override
+    public boolean performClick() {
+        return super.performClick();
+    }
+    @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
 
         if (event.getActionMasked() == MotionEvent.ACTION_UP) init();
@@ -295,7 +299,10 @@ public class DraggableLinearLayout extends LinearLayout {
 
         if (viewDragHelper.continueSettling(true)) return false;
 
-        if (event.getActionMasked() == MotionEvent.ACTION_UP) init();
+        if (event.getActionMasked() == MotionEvent.ACTION_UP) {
+            init();
+            performClick();
+        }
 
         if (MyApplication.tryCaptureClickEvent(event)) return true;
 
