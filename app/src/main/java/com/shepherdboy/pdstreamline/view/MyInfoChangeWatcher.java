@@ -285,9 +285,9 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
                 if (!w.preInf.equals("") && w.filedIndex == MyApplication.TIMESTREAM_DOP) {
 
                     w.preInf = DateUtil.getShortKey(w.preInf);
-                    w.currentInf = w.preInf;
 
                 }
+                w.currentInf = w.preInf;
             }
         }
         MyInfoChangeWatcher.shouldWatch = shouldWatch;
@@ -386,8 +386,6 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
     }
 
     private void commit() {
-
-        Log.d("focusChange", "commit");
 
         switch (MyApplication.activityIndex) {
 

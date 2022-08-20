@@ -1,14 +1,18 @@
 package com.shepherdboy.pdstreamline.view;
 
+import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewParent;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -302,9 +306,34 @@ public class DraggableLinearLayout extends LinearLayout {
 
         if (viewDragHelper.continueSettling(true)) return false;
 
+
+        ViewParent view = draggableLinearLayout.getParent();
+
+        if (view instanceof ClosableScrollView) {
+
+            ClosableScrollView mScrollView = (ClosableScrollView) view;
+
+            if (!mScrollView.isScrollOver()) return false;
+
+            ClosableScrollView.setNewY(event.getY());
+            ClosableScrollView.setNewX(event.getX());
+
+            float deltaY = ClosableScrollView.getDeltaY();
+            float deltaX = ClosableScrollView.getDeltaX();
+
+            Log.d("onTouch", "dx:" + deltaX + ",dy:" + deltaY);
+
+            float k = deltaX / deltaY;
+            double radios = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+            Log.d("onTouch", "k: " + k + ",radios: " + radios);
+
+        }
         if (event.getActionMasked() == MotionEvent.ACTION_UP) {
             init();
             performClick();
+            getParent().requestDisallowInterceptTouchEvent(false);
+
         }
 
         if (MyApplication.tryCaptureClickEvent(event)) return true;
@@ -312,11 +341,16 @@ public class DraggableLinearLayout extends LinearLayout {
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
             currentTimestreamView = getCurrentView(event);
+            ClosableScrollView.setOldY(getY());
+            ClosableScrollView.setNewY(getY());
+            ClosableScrollView.setOldX(getX());
+            ClosableScrollView.setNewX(getX());
         }
 
         if (currentTimestreamView != null) {
 
             viewDragHelper.processTouchEvent(event);
+            getParent().requestDisallowInterceptTouchEvent(true);
             return true;
         }
 
