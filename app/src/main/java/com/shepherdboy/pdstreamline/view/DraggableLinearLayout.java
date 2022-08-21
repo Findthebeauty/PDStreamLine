@@ -1,25 +1,20 @@
 package com.shepherdboy.pdstreamline.view;
 
-import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewParent;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -123,8 +118,6 @@ public class DraggableLinearLayout extends LinearLayout {
                 }
 
                 Point originalPoint = MyApplication.originalPositionHashMap.get(currentTimestreamView.getId());
-
-                Toast.makeText(MyApplication.getContext(),originalPoint == null ? "" : originalPoint.toString(), Toast.LENGTH_SHORT).show();
 
                 if (null != originalPoint) {
 
@@ -233,9 +226,12 @@ public class DraggableLinearLayout extends LinearLayout {
         if (toCapture instanceof LinearLayout &&
                 MyApplication.originalPositionHashMap.containsKey(toCapture.getId())) {
 
+            currentTimestreamView = (LinearLayout) toCapture;
+
             return (LinearLayout) toCapture;
 
         }
+
         return null;
     }
 
@@ -266,14 +262,7 @@ public class DraggableLinearLayout extends LinearLayout {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
 
-        if (event.getActionMasked() == MotionEvent.ACTION_UP) init();
-
-        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-
-            currentTimestreamView = getCurrentView(event);
-            MyApplication.recordDraggableView();
-        }
-
+        initTouch(event);
 
         if (currentTimestreamView != null) {
 
@@ -281,6 +270,16 @@ public class DraggableLinearLayout extends LinearLayout {
         }
 
         return super.onInterceptTouchEvent(event);
+    }
+
+    public void initTouch(MotionEvent event) {
+        if (event.getActionMasked() == MotionEvent.ACTION_UP) init();
+
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+
+            getCurrentView(event);
+            MyApplication.recordDraggableView();
+        }
     }
 
     public static float dpToFloat(int dpInt, Context context) {
@@ -304,35 +303,13 @@ public class DraggableLinearLayout extends LinearLayout {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
+        if (event.getActionMasked() == MotionEvent.ACTION_UP) init();
+
         if (viewDragHelper.continueSettling(true)) return false;
 
-
-        ViewParent view = draggableLinearLayout.getParent();
-
-        if (view instanceof ClosableScrollView) {
-
-            ClosableScrollView mScrollView = (ClosableScrollView) view;
-
-            if (!mScrollView.isScrollOver()) return false;
-
-            ClosableScrollView.setNewY(event.getY());
-            ClosableScrollView.setNewX(event.getX());
-
-            float deltaY = ClosableScrollView.getDeltaY();
-            float deltaX = ClosableScrollView.getDeltaX();
-
-            Log.d("onTouch", "dx:" + deltaX + ",dy:" + deltaY);
-
-            float k = deltaX / deltaY;
-            double radios = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-            Log.d("onTouch", "k: " + k + ",radios: " + radios);
-
-        }
         if (event.getActionMasked() == MotionEvent.ACTION_UP) {
             init();
             performClick();
-            getParent().requestDisallowInterceptTouchEvent(false);
 
         }
 
@@ -340,17 +317,12 @@ public class DraggableLinearLayout extends LinearLayout {
 
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
-            currentTimestreamView = getCurrentView(event);
-            ClosableScrollView.setOldY(getY());
-            ClosableScrollView.setNewY(getY());
-            ClosableScrollView.setOldX(getX());
-            ClosableScrollView.setNewX(getX());
+            getCurrentView(event);
         }
 
         if (currentTimestreamView != null) {
 
             viewDragHelper.processTouchEvent(event);
-            getParent().requestDisallowInterceptTouchEvent(true);
             return true;
         }
 

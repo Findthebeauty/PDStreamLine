@@ -4,6 +4,7 @@ import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
@@ -34,22 +35,6 @@ public class ClosableScrollView extends ScrollView {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
-    public static void setNewX(float newX) {
-        ClosableScrollView.newX = newX;
-    }
-
-    public static void setOldX(float oldX) {
-        ClosableScrollView.oldX = oldX;
-    }
-
-    public static void setNewY(float newY) {
-        ClosableScrollView.newY = newY;
-    }
-
-    public static void setOldY(float oldY) {
-        ClosableScrollView.oldY = oldY;
-    }
-
     public static float getDeltaX() {
 
         return Math.abs(newX - oldX);
@@ -67,28 +52,9 @@ public class ClosableScrollView extends ScrollView {
 
         if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
+            scrollOver = true;
             newY = oldY = ev.getY();
             newX = oldX = ev.getX();
-
-        }
-
-        if (ev.getActionMasked() == MotionEvent.ACTION_MOVE) {
-
-            if (draggableLinearLayout != null && draggableLinearLayout.getHorizontalDistance() > getDeltaY()) {
-
-                return false;
-            }
-
-        }
-//
-//        if (draggableLinearLayout != null && draggableLinearLayout.isLongClicking()) {
-//
-//            return false;
-//        }
-
-        if (draggableLinearLayout.onInterceptTouchEvent(ev)) {
-
-            return false;
 
         }
 
@@ -98,14 +64,12 @@ public class ClosableScrollView extends ScrollView {
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
 
-//        boolean consumed = draggableLinearLayout.onTouchEvent(ev);
-//
-//        if (draggableLinearLayout.viewDragHelper.continueSettling(true)) return false;
-//
+
         if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
             newY = oldY = ev.getY();
             newX = oldX = ev.getX();
+
         }
 
         if (ev.getActionMasked() == MotionEvent.ACTION_MOVE) {
@@ -113,15 +77,30 @@ public class ClosableScrollView extends ScrollView {
             newY = ev.getY();
             newX = ev.getX();
 
-//            if (draggableLinearLayout != null && draggableLinearLayout.isLongClicking()) {
-//
-//                return consumed;
-//            }
-
         }
 
         if (ev.getActionMasked() == MotionEvent.ACTION_UP) performClick();
+
         return super.onTouchEvent(ev);
+    }
+
+    /**
+     * 判断是水平滑动还是竖直滑动
+     * @return
+     */
+    public boolean intentToScrollView() {
+
+        float deltaY = getDeltaY();
+        float deltaX = getDeltaX();
+
+        Log.d("onTouch", "dx:" + deltaX + ",dy:" + deltaY);
+
+        float k = deltaY / deltaX;
+        double radios = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+        Log.d("onTouch", "k: " + k + ",radios: " + radios);
+
+        return (!Float.isNaN(k)) && (k < Math.tan(Math.toRadians(40)));
     }
 
     @Override

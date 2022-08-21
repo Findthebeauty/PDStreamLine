@@ -402,6 +402,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         showRow(draggableLinearLayout, 1); //todo 货架行的遍历方式
 
         DraggableLinearLayout.setLayoutChanged(true);
+
     }
 
     private void showRow(DraggableLinearLayout draggableLinearLayout, int rowNumber) {
