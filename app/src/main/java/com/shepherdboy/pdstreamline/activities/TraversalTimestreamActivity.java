@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -73,6 +74,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     }
 
     private void initActivity(Context context) {
+        Log.d("Traversal","initActivity");
 
         setContentView(R.layout.activity_traversal_timestream);
         MyApplication.initActionBar(getSupportActionBar());

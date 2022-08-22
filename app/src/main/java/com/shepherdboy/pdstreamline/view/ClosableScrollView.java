@@ -4,20 +4,25 @@ import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
 
+import com.shepherdboy.pdstreamline.MyApplication;
+
 public class ClosableScrollView extends ScrollView {
 
-    //记录触摸位置的变化，用于判断是滑动还是长按
+    //记录触摸位置的变化，用于判断是滑动还是长按 todo 重写一个Draggable scrollView
     private static float newY;
     private static float oldY;
     private static float newX;
     private static float oldX;
     //滚动结束标志
-    private boolean scrollOver;
+    private static boolean flingFinished;
+
+    private GestureDetector mGestureDetector;
+    View.OnTouchListener mGestureListener;
 
     public ClosableScrollView(Context context) {
         super(context);
@@ -25,6 +30,9 @@ public class ClosableScrollView extends ScrollView {
 
     public ClosableScrollView(Context context, AttributeSet attrs) {
         super(context, attrs);
+
+//        mGestureDetector = new GestureDetector(new YScrollDetector());
+//        setFadingEdgeLength(0);
     }
 
     public ClosableScrollView(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -48,22 +56,26 @@ public class ClosableScrollView extends ScrollView {
     }
 
     @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        return super.dispatchTouchEvent(ev);
+    }
+
+    @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
 
-        if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
-
-            scrollOver = true;
-            newY = oldY = ev.getY();
-            newX = oldX = ev.getX();
-
-        }
-
+//        if (draggableLinearLayout.isDragging() || draggableLinearLayout.isLongClicking()) return false;
+//
+//        if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
+//
+//            newY = oldY = ev.getY();
+//            newX = oldX = ev.getX();
+//        }
+//
         return super.onInterceptTouchEvent(ev);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-
 
         if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
@@ -79,28 +91,14 @@ public class ClosableScrollView extends ScrollView {
 
         }
 
-        if (ev.getActionMasked() == MotionEvent.ACTION_UP) performClick();
+        if (ev.getActionMasked() == MotionEvent.ACTION_UP) {
+
+            MyApplication.stopCountPressTime();
+            performClick();
+        }
+
 
         return super.onTouchEvent(ev);
-    }
-
-    /**
-     * 判断是水平滑动还是竖直滑动
-     * @return
-     */
-    public boolean intentToScrollView() {
-
-        float deltaY = getDeltaY();
-        float deltaX = getDeltaX();
-
-        Log.d("onTouch", "dx:" + deltaX + ",dy:" + deltaY);
-
-        float k = deltaY / deltaX;
-        double radios = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-        Log.d("onTouch", "k: " + k + ",radios: " + radios);
-
-        return (!Float.isNaN(k)) && (k < Math.tan(Math.toRadians(40)));
     }
 
     @Override
@@ -108,15 +106,15 @@ public class ClosableScrollView extends ScrollView {
         return super.performClick();
     }
 
-    public boolean isScrollOver() {
-        return scrollOver;
+    public static boolean isFlingFinished() {
+        return flingFinished;
     }
 
     @Override
     public void fling(int velocityY) {
         super.fling(velocityY);
 
-        scrollOver = false;
+        flingFinished = false;
 
         new Thread(new Runnable() {
             @Override
@@ -137,13 +135,39 @@ public class ClosableScrollView extends ScrollView {
 
                     } while (delta > 0);
 
-                    scrollOver = true;
+                    flingFinished = true;
                 } catch (Exception e){
 
                     e.printStackTrace();
                 }
             }
         }).start();
+    }
+
+    class YScrollDetector extends GestureDetector.SimpleOnGestureListener {
+
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+
+            return TouchEventDispatcher.intentToScrollView(distanceX, distanceY);
+
+        }
+    }
+
+    public static void setNewY(float newY) {
+        ClosableScrollView.newY = newY;
+    }
+
+    public static void setOldY(float oldY) {
+        ClosableScrollView.oldY = oldY;
+    }
+
+    public static void setNewX(float newX) {
+        ClosableScrollView.newX = newX;
+    }
+
+    public static void setOldX(float oldX) {
+        ClosableScrollView.oldX = oldX;
     }
 
 }

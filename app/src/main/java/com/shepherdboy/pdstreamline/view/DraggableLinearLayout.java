@@ -9,6 +9,7 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewParent;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -41,6 +42,8 @@ public class DraggableLinearLayout extends LinearLayout {
     boolean verticalDraggable;
 
     private boolean longClicking;
+
+    private boolean dragging;
 
     float horizontalDistance = 0; // 控件的水平移动距离
 
@@ -259,6 +262,12 @@ public class DraggableLinearLayout extends LinearLayout {
     public boolean performClick() {
         return super.performClick();
     }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        return super.dispatchTouchEvent(ev);
+    }
+
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
 
@@ -268,6 +277,7 @@ public class DraggableLinearLayout extends LinearLayout {
 
             return viewDragHelper.shouldInterceptTouchEvent(event);
         }
+
 
         return super.onInterceptTouchEvent(event);
     }
@@ -303,21 +313,38 @@ public class DraggableLinearLayout extends LinearLayout {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-        if (event.getActionMasked() == MotionEvent.ACTION_UP) init();
+        ViewParent p =  getParent();
 
-        if (viewDragHelper.continueSettling(true)) return false;
+        if (p instanceof ClosableScrollView) {
+
+            ClosableScrollView.setNewX(event.getX());
+            ClosableScrollView.setNewY(event.getY());
+
+//            if (((ClosableScrollView) p).isScrollOver()) return false;
+        }
 
         if (event.getActionMasked() == MotionEvent.ACTION_UP) {
+
+            dragging = false;
+            longClicking = false;
             init();
             performClick();
 
         }
 
-        if (MyApplication.tryCaptureClickEvent(event)) return true;
+        if (viewDragHelper.continueSettling(true)) return false;
+
+        MyApplication.tryCaptureClickEvent(event);
 
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
             getCurrentView(event);
+        }
+
+        if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
+
+            dragging = true;
+            getParent().requestDisallowInterceptTouchEvent(true);
         }
 
         if (currentTimestreamView != null) {
@@ -325,6 +352,7 @@ public class DraggableLinearLayout extends LinearLayout {
             viewDragHelper.processTouchEvent(event);
             return true;
         }
+
 
         return super.onTouchEvent(event);
     }
@@ -345,6 +373,14 @@ public class DraggableLinearLayout extends LinearLayout {
 
         MyApplication.recordDraggableView();
 
+    }
+
+    public boolean isDragging() {
+        return dragging;
+    }
+
+    public void setDragging(boolean dragging) {
+        this.dragging = dragging;
     }
 
     public boolean isLongClicking() {

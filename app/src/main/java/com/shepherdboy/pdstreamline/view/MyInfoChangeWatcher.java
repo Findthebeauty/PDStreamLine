@@ -234,7 +234,8 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
         for (Map.Entry<EditText, MyInfoChangeWatcher> entry : myTextWatchers.entrySet()) {
 
             entry.getKey().removeTextChangedListener(entry.getValue());
-
+            entry.getKey().setOnFocusChangeListener(null);
+            entry.getValue().stopAutoCommit();
         }
 
         myTextWatchers.clear();

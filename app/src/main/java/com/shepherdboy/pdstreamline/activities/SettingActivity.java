@@ -12,7 +12,6 @@ import android.content.res.XmlResourceParser;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -349,6 +348,17 @@ public class SettingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onStart() {
+
+        super.onStart();
+        initActivity();
+    }
+
+    private void initActivity() {
+
         setContentView(R.layout.activity_setting);
 
         instance = SettingActivity.this;
@@ -362,7 +372,7 @@ public class SettingActivity extends AppCompatActivity {
         initDateSettingView();
 
         if (dateSettingMap.isEmpty() || dateSettingIndex == null || settingInstance == null)
-        initSetting();
+            initSetting();
 
         loadSetting();
 
@@ -376,6 +386,8 @@ public class SettingActivity extends AppCompatActivity {
 
                 saveSetting();
                 SettingActivity.this.finish();
+                MyInfoChangeWatcher.commitAll();
+                MyInfoChangeWatcher.clearWatchers();
             }
         });
 
@@ -401,6 +413,7 @@ public class SettingActivity extends AppCompatActivity {
 
     private void loadSetting() {
 
+        MyInfoChangeWatcher.clearWatchers();
         loadEXPSetting();
         loadSingletonSetting();
     }

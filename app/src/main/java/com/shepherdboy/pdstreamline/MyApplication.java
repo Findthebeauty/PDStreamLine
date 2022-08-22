@@ -40,6 +40,7 @@ import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.ClosableScrollView;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
+import com.shepherdboy.pdstreamline.view.TouchEventDispatcher;
 
 import java.io.IOException;
 import java.util.Date;
@@ -216,7 +217,7 @@ public class MyApplication extends Application {
         return true;
     }
 
-    private static void stopCountPressTime() {
+    public static void stopCountPressTime() {
 
         if (handler != null) {
 
@@ -242,14 +243,9 @@ public class MyApplication extends Application {
 
                     clickCount = 0;
 
-                    float deltaY = ClosableScrollView.getDeltaY();
-                    float deltaX = draggableLinearLayout.getHorizontalDistance();
 
-                    if (deltaY > deltaX) return;
-
-                    double radios = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-                    if (radios > 30) return;
+                    if((!ClosableScrollView.isFlingFinished()) || TouchEventDispatcher.intentToScrollView(ClosableScrollView.getDeltaY(),
+                            ClosableScrollView.getDeltaX())) return;
 
                     draggableLinearLayout.setLongClicking(true);
                     onLongClick();

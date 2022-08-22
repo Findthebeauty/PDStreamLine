@@ -228,6 +228,8 @@ public class PDInfoWrapper {
 
             String discountRate = timestream.getDiscountRate();
 
+            discountRate = discountRate == null ? "" : discountRate;
+
             switch (discountRate) {
 
                 case "0.5":
