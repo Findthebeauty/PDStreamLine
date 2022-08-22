@@ -4,7 +4,6 @@ import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
@@ -21,9 +20,6 @@ public class ClosableScrollView extends ScrollView {
     //滚动结束标志
     private static boolean flingFinished;
 
-    private GestureDetector mGestureDetector;
-    View.OnTouchListener mGestureListener;
-
     public ClosableScrollView(Context context) {
         super(context);
     }
@@ -31,8 +27,6 @@ public class ClosableScrollView extends ScrollView {
     public ClosableScrollView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-//        mGestureDetector = new GestureDetector(new YScrollDetector());
-//        setFadingEdgeLength(0);
     }
 
     public ClosableScrollView(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -63,14 +57,11 @@ public class ClosableScrollView extends ScrollView {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
 
-//        if (draggableLinearLayout.isDragging() || draggableLinearLayout.isLongClicking()) return false;
-//
-//        if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
-//
-//            newY = oldY = ev.getY();
-//            newX = oldX = ev.getX();
-//        }
-//
+        if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
+
+            newY = oldY = ev.getY();
+            newX = oldX = ev.getX();
+        }
         return super.onInterceptTouchEvent(ev);
     }
 
@@ -81,6 +72,7 @@ public class ClosableScrollView extends ScrollView {
 
             newY = oldY = ev.getY();
             newX = oldX = ev.getX();
+
 
         }
 
@@ -121,9 +113,7 @@ public class ClosableScrollView extends ScrollView {
             public void run() {
                 View view = ((ScrollView)(draggableLinearLayout.getParent()));
                 long l = view.getScrollY();
-                long s = System.currentTimeMillis();
-                long delta = 0;
-
+                long delta;
                 try {
 
                     do {
@@ -142,16 +132,6 @@ public class ClosableScrollView extends ScrollView {
                 }
             }
         }).start();
-    }
-
-    class YScrollDetector extends GestureDetector.SimpleOnGestureListener {
-
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-
-            return TouchEventDispatcher.intentToScrollView(distanceX, distanceY);
-
-        }
     }
 
     public static void setNewY(float newY) {

@@ -31,7 +31,7 @@ import java.util.TimerTask;
 
 public class DraggableLinearLayout extends LinearLayout {
 
-    private LinearLayout currentTimestreamView;
+    private LinearLayout draggableView;
 
     final boolean initHorizontalDraggable;
 
@@ -99,7 +99,7 @@ public class DraggableLinearLayout extends LinearLayout {
             public void onViewReleased(@NonNull View releasedChild, float xvel, float yvel) {
 
 
-                releasedChild = currentTimestreamView;
+                releasedChild = draggableView;
 
                 MyApplication.onTimestreamViewReleased(releasedChild, horizontalDistance, verticalDistance, xvel, yvel);
 
@@ -114,13 +114,13 @@ public class DraggableLinearLayout extends LinearLayout {
             public void onViewPositionChanged(@NonNull View changedView, int left, int top, int dx, int dy) {
                 super.onViewPositionChanged(changedView, left, top, dx, dy);
 
-                changedView = currentTimestreamView;
+                changedView = draggableView;
 
                 if (changedView == null) {
                     return;
                 }
 
-                Point originalPoint = MyApplication.originalPositionHashMap.get(currentTimestreamView.getId());
+                Point originalPoint = MyApplication.originalPositionHashMap.get(draggableView.getId());
 
                 if (null != originalPoint) {
 
@@ -175,7 +175,7 @@ public class DraggableLinearLayout extends LinearLayout {
         Timestream ts = (Timestream) MyApplication.onShowTimeStreamsHashMap.get(view.getId());
         MyApplication.setTimeStreamViewOriginalBackgroundColor(ts);
 
-        currentTimestreamView.invalidate();
+        draggableView.invalidate();
     }
 
     // 设置view的字体
@@ -229,7 +229,7 @@ public class DraggableLinearLayout extends LinearLayout {
         if (toCapture instanceof LinearLayout &&
                 MyApplication.originalPositionHashMap.containsKey(toCapture.getId())) {
 
-            currentTimestreamView = (LinearLayout) toCapture;
+            draggableView = (LinearLayout) toCapture;
 
             return (LinearLayout) toCapture;
 
@@ -273,7 +273,7 @@ public class DraggableLinearLayout extends LinearLayout {
 
         initTouch(event);
 
-        if (currentTimestreamView != null) {
+        if (draggableView != null) {
 
             return viewDragHelper.shouldInterceptTouchEvent(event);
         }
@@ -313,47 +313,59 @@ public class DraggableLinearLayout extends LinearLayout {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
+        //更新触控坐标
         ViewParent p =  getParent();
-
         if (p instanceof ClosableScrollView) {
+
+            if(event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+
+                ClosableScrollView.setOldX(event.getX());
+                ClosableScrollView.setOldY(event.getY());
+            }
 
             ClosableScrollView.setNewX(event.getX());
             ClosableScrollView.setNewY(event.getY());
 
-//            if (((ClosableScrollView) p).isScrollOver()) return false;
         }
 
-        if (event.getActionMasked() == MotionEvent.ACTION_UP) {
-
-            dragging = false;
-            longClicking = false;
-            init();
-            performClick();
-
-        }
-
+        //如果上次滑动动画还未结束则阻止下一次拖拽
         if (viewDragHelper.continueSettling(true)) return false;
 
+        //监听双击和长按
         MyApplication.tryCaptureClickEvent(event);
 
-        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+        switch (event.getActionMasked()) {
 
-            getCurrentView(event);
+            case MotionEvent.ACTION_UP:
+                //释放
+                dragging = false;
+                longClicking = false;
+                init();
+                performClick();
+                break;
+
+            case MotionEvent.ACTION_DOWN:
+                //记录被点击的view
+                getCurrentView(event);
+                break;
+
+            case MotionEvent.ACTION_MOVE:
+                //进入拖拽模式，阻止父view打断touch
+                dragging = true;
+                getParent().requestDisallowInterceptTouchEvent(true);
+                break;
+            default:
+                break;
         }
 
-        if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
-
-            dragging = true;
-            getParent().requestDisallowInterceptTouchEvent(true);
-        }
-
-        if (currentTimestreamView != null) {
-
+        //获取到可拖拽的view
+        if (draggableView != null) {
+            //拖拽助手处理touch
             viewDragHelper.processTouchEvent(event);
             return true;
         }
 
-
+        //未获取到拖拽对象
         return super.onTouchEvent(event);
     }
 
@@ -372,7 +384,6 @@ public class DraggableLinearLayout extends LinearLayout {
         super.onLayout(changed, l, t, r, b);
 
         MyApplication.recordDraggableView();
-
     }
 
     public boolean isDragging() {

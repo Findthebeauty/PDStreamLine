@@ -177,17 +177,6 @@ public class MyApplication extends Application {
             startCountPressTime();
         }
 
-//        if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
-//
-//            pressInterval = System.currentTimeMillis() - lastClickTime;
-//
-//            lastClickTime = System.currentTimeMillis();
-//            clickCount = 0;
-//            clickInterval = 0L;
-//            stopCountPressTime();
-//            return false;
-//        }
-
         if (event.getActionMasked() ==  MotionEvent.ACTION_UP) {
 
             draggableLinearLayout.setLongClicking(false);
@@ -243,9 +232,8 @@ public class MyApplication extends Application {
 
                     clickCount = 0;
 
-
-                    if((!ClosableScrollView.isFlingFinished()) || TouchEventDispatcher.intentToScrollView(ClosableScrollView.getDeltaY(),
-                            ClosableScrollView.getDeltaX())) return;
+                    if((!ClosableScrollView.isFlingFinished()) || !TouchEventDispatcher.validateDragRange(
+                            ClosableScrollView.getDeltaX(), ClosableScrollView.getDeltaY(),90d)) return;
 
                     draggableLinearLayout.setLongClicking(true);
                     onLongClick();
