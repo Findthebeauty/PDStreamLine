@@ -8,6 +8,8 @@
         <entry key="..\:/AndroidSDK/platforms/android-30/data/res/drawable/edit_text.xml" value="0.5208333333333334" />
         <entry key="..\:/AndroidSDK/platforms/android-30/data/res/layout/preference_dialog_edittext.xml" value="0.65375" />
         <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/drawable/border.xml" value="0.38177083333333334" />
+        <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/drawable/cell_border.xml" value="0.25" />
+        <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/drawable/item_selected.xml" value="0.33425925925925926" />
         <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/drawable/table_frame_gray.xml" value="0.1" />
         <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/drawable/timestream_border.xml" value="0.29444444444444445" />
         <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/drawable/underline.xml" value="0.33125" />
@@ -23,6 +25,7 @@
         <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/layout/activity_traversal_timestream.xml" value="0.25" />
         <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/layout/cell_head_layout.xml" value="0.24818840579710144" />
         <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/layout/comb_layout.xml" value="0.24242424242424243" />
+        <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/layout/comb_layout_1.xml" value="0.17806484295845998" />
         <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/layout/item_dropdown.xml" value="0.1" />
         <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/layout/item_selected.xml" value="0.3619791666666667" />
         <entry key="..\:/AndroidStudioProjects/PDStreamLine/app/src/main/res/layout/layout.xml" value="0.33" />
@@ -32,7 +35,7 @@
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_15" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_X" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">

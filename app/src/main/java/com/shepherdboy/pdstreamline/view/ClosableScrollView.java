@@ -12,13 +12,13 @@ import com.shepherdboy.pdstreamline.MyApplication;
 
 public class ClosableScrollView extends ScrollView {
 
-    //记录触摸位置的变化，用于判断是滑动还是长按 todo 重写一个Draggable scrollView
+    //记录触摸位置的变化，用于判断是滑动还是长按
     private static float newY;
     private static float oldY;
     private static float newX;
     private static float oldX;
     //滚动结束标志
-    private static boolean flingFinished;
+    private static boolean flingFinished = true;
 
     public ClosableScrollView(Context context) {
         super(context);
@@ -59,8 +59,8 @@ public class ClosableScrollView extends ScrollView {
 
         if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
-            newY = oldY = ev.getY();
-            newX = oldX = ev.getX();
+            newY = oldY = ev.getRawY();
+            newX = oldX = ev.getRawX();
         }
         return super.onInterceptTouchEvent(ev);
     }
@@ -70,16 +70,16 @@ public class ClosableScrollView extends ScrollView {
 
         if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
-            newY = oldY = ev.getY();
-            newX = oldX = ev.getX();
+            newY = oldY = ev.getRawY();
+            newX = oldX = ev.getRawX();
 
 
         }
 
         if (ev.getActionMasked() == MotionEvent.ACTION_MOVE) {
 
-            newY = ev.getY();
-            newX = ev.getX();
+            newY = ev.getRawY();
+            newX = ev.getRawX();
 
         }
 

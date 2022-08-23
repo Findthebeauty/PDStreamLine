@@ -1,6 +1,5 @@
 package com.shepherdboy.pdstreamline.view;
 
-import android.util.Log;
 import android.view.MotionEvent;
 
 /**
@@ -11,6 +10,8 @@ public class TouchEventDispatcher {
     private static boolean intentToScroll; //竖直滑动flag
     private static boolean directionConfirmed; //确认手势意图flag
 
+    static float startX;
+    static float startY;
 
     private TouchEventDispatcher() {
     }
@@ -26,44 +27,27 @@ public class TouchEventDispatcher {
 
         float k = deltaY / deltaX;
         double radios = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-        return radios > 0 && k < Math.tan(Math.toRadians(degree)) && radios < 50;
+        return radios == 0 || (k < Math.tan(Math.toRadians(degree)) && radios < 50);
     }
 
     public static void onTouchEvent(MotionEvent ev) {
 
-        if (!directionConfirmed) {
+        if (ev.getActionMasked() == MotionEvent.ACTION_UP || ev.getActionMasked() == MotionEvent.ACTION_DOWN )
+            directionConfirmed = false;
 
-            float startX = 0;
-            float startY = 0;
+        float dx = ClosableScrollView.getDeltaX();
+        float dy = ClosableScrollView.getDeltaY();
 
-            if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
+        if (dx + dy > 0) {
 
-                startX = ev.getX();
-                startY = ev.getY();
-
-            } else {
-
-                float dx = Math.abs(ev.getX() - startX);
-                float dy = Math.abs(ev.getY() - startY);
-
-                if (startX + startY > 0 && dx + dy > 0) {
-
-                    directionConfirmed = true;
-                    intentToScroll = validateDragRange(dx, dy, 40d);
-                }
-            }
+            directionConfirmed = true;
+            intentToScroll = !validateDragRange(dx, dy, 40d);
         }
-    }
-
-    public static boolean directionConfirmed() {
-
-        return directionConfirmed;
     }
 
     public static boolean isIntentToScroll() {
 
-        return intentToScroll;
+        return directionConfirmed && intentToScroll;
     }
 
 }

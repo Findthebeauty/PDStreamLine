@@ -144,19 +144,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
     }
 
-
-//    private void setShelfList(Context context, ArrayList<Shelf> shelves) {
-//
-//        loadShelfEntry(context, defaultShelf);
-//
-//        for (Shelf shelf : shelves) {
-//
-//            loadShelfEntry(context, shelf);
-//
-//        }
-//
-//    }
-
     public static ArrayList<Shelf> getShelfList() {
         return shelfList;
     }
@@ -433,8 +420,8 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
             loadCellBody(view, timestream);
 
+//            draggableLinearLayout.addView(new TimestreamCombinationView(draggableLinearLayout.getContext(), timestream));
         }
-
 
     }
 
@@ -608,6 +595,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
             color = MyApplication.getColorByTimestreamStateCode(view.getContext(),
                     timestreamCombination.getGiveawayTimestream().getTimeStreamStateCode());
             giveawayBackground.setBackgroundColor(color);
+
         }
     }
 

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/combination"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/timestream_border"
+    android:layout_margin="2dp">
+
+    <TextView
+        android:id="@+id/buy_pd_name"
+        android:layout_width="200sp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="3dp"
+        android:minLines="2"
+        android:padding="1dp"
+        android:text="光明杯酸原味320g光明杯酸原味320g"
+        android:textSize="15sp"
+        android:gravity="center_vertical" />
+
+
+
+    <EditText
+        android:id="@+id/buy_dop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:inputType="number"
+        android:padding="1dp"
+        android:selectAllOnFocus="true"
+        android:text="2022-06-22"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toBottomOf="@+id/buy_pd_name"
+        app:layout_constraintTop_toTopOf="@+id/buy_pd_name"
+        app:layout_constraintLeft_toLeftOf="@id/buy_dop_measure"
+        app:layout_constraintRight_toRightOf="@id/buy_dop_measure"/>
+
+
+
+    <EditText
+        android:id="@+id/inventory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:selectAllOnFocus="true"
+        android:text="10"
+        android:gravity="center"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="@id/inventory_measure"
+        app:layout_constraintRight_toRightOf="@id/inventory_measure"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/unit"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:text="组"
+        android:layout_marginEnd="2dp"
+        android:layout_marginStart="1dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+</LinearLayout>
+

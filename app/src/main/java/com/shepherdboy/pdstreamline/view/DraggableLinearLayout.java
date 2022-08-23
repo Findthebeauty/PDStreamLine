@@ -222,6 +222,27 @@ public class DraggableLinearLayout extends LinearLayout {
 
     }
 
+    public void setBackgroundToPointedView(int stateCode) {
+
+        switch (stateCode) {
+
+            case MyApplication.ITEM_SELECTED:
+
+                draggableView.setBackground(getResources().getDrawable(R.drawable.item_selected));
+
+                break;
+            default:
+                break;
+        }
+
+
+    }
+
+    public LinearLayout getCapturedView() {
+
+        return draggableView;
+    }
+
     public LinearLayout getCurrentView(MotionEvent event) {
 
         View toCapture = viewDragHelper.findTopChildUnder((int)event.getX(), (int)event.getY());
@@ -273,6 +294,20 @@ public class DraggableLinearLayout extends LinearLayout {
 
         initTouch(event);
 
+        //更新触控坐标
+        ViewParent p =  getParent();
+        if (p instanceof ClosableScrollView) {
+
+            if(event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+
+                ClosableScrollView.setOldX(event.getRawX());
+                ClosableScrollView.setOldY(event.getRawY());
+            }
+
+            ClosableScrollView.setNewX(event.getRawX());
+            ClosableScrollView.setNewY(event.getRawY());
+
+        }
         if (draggableView != null) {
 
             return viewDragHelper.shouldInterceptTouchEvent(event);
@@ -319,13 +354,12 @@ public class DraggableLinearLayout extends LinearLayout {
 
             if(event.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
-                ClosableScrollView.setOldX(event.getX());
-                ClosableScrollView.setOldY(event.getY());
+                ClosableScrollView.setOldX(event.getRawX());
+                ClosableScrollView.setOldY(event.getRawY());
             }
 
-            ClosableScrollView.setNewX(event.getX());
-            ClosableScrollView.setNewY(event.getY());
-
+            ClosableScrollView.setNewX(event.getRawX());
+            ClosableScrollView.setNewY(event.getRawY());
         }
 
         //如果上次滑动动画还未结束则阻止下一次拖拽

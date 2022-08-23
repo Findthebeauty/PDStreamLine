@@ -89,6 +89,9 @@ public class MyApplication extends Application {
     public static final int SETTING_ACTIVITY = 6;
     public static final int TRAVERSAL_TIMESTREAM_ACTIVITY = 7;
 
+    public static final int ITEM_SELECTED = 100;
+
+
     public static DraggableLinearLayout draggableLinearLayout;
 
     public static Product currentProduct;
@@ -116,6 +119,7 @@ public class MyApplication extends Application {
     static LinearLayout temp;
 
     public static LinkedHashMap<Integer, Timestream> onShowTimeStreamsHashMap = new LinkedHashMap<>(); // hashMap存放当前展示的时光流
+    public static LinkedHashMap<Integer, TimestreamCombination> onShowCombsHashMap = new LinkedHashMap<>(); // hashMap存放当前展示的时光流
 
     public static  HashMap<Integer, Point> originalPositionHashMap = new HashMap<>(); // hashMap存放每个时光流的初始坐标
 
@@ -180,6 +184,7 @@ public class MyApplication extends Application {
         if (event.getActionMasked() ==  MotionEvent.ACTION_UP) {
 
             draggableLinearLayout.setLongClicking(false);
+            draggableLinearLayout.getCapturedView().setBackground(null);
             stopCountPressTime();
         }
 
@@ -253,6 +258,7 @@ public class MyApplication extends Application {
             case TRAVERSAL_TIMESTREAM_ACTIVITY:
 
                 draggableLinearLayout.setVerticalDraggable(true);
+                draggableLinearLayout.setBackgroundToPointedView(ITEM_SELECTED);
 
         }
 
@@ -468,6 +474,10 @@ public class MyApplication extends Application {
             case Timestream.EXPIRED:
 
                 return context.getResources().getColor(R.color.gray);
+
+            case ITEM_SELECTED:
+
+                return context.getResources().getColor(R.color.item_selected);
 
             default:
                 break;
