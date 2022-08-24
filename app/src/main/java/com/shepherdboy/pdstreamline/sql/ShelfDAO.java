@@ -141,8 +141,6 @@ public class ShelfDAO {
         for (Row row : rows) {
 
             if (row.getSortNumber() == rowNumber) return row;
-
-
         }
 
         return null;

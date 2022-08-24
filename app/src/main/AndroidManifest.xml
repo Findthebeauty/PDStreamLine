@@ -28,7 +28,8 @@
         <activity
             android:name=".activities.TraversalTimestreamActivity"
             android:exported="true"
-            android:launchMode="singleTask" />
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustNothing"/>
         <activity
             android:name=".activities.ScanActivity"
             android:configChanges="orientation|screenSize"

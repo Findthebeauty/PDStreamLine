@@ -8,6 +8,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -120,6 +121,7 @@ public class MyApplication extends Application {
     public static LinkedHashMap<Integer, TimestreamCombination> onShowCombsHashMap = new LinkedHashMap<>(); // hashMap存放当前展示的时光流
 
     public static  HashMap<Integer, Point> originalPositionHashMap = new HashMap<>(); // hashMap存放每个时光流的初始坐标
+    public static  HashMap<Integer, Drawable> originalBackgroundHashMap = new HashMap<>(); // hashMap存放每个时光流的初始坐标
 
     public static LinkedList thingsToSaveList = new LinkedList();
 
@@ -182,8 +184,18 @@ public class MyApplication extends Application {
         if (event.getActionMasked() ==  MotionEvent.ACTION_UP) {
 
             draggableLinearLayout.setLongClicking(false);
-            draggableLinearLayout.getCapturedView().setBackground(null);
             stopCountPressTime();
+
+            switch (activityIndex) {
+
+                case TRAVERSAL_TIMESTREAM_ACTIVITY:
+
+                    draggableLinearLayout.getCapturedView().setBackground(
+                            originalBackgroundHashMap.get(draggableLinearLayout.getCapturedView().getId()));
+                    break;
+                default:
+                    break;
+            }
         }
 
         if (clickInterval > Long.parseLong(settingInstance.getDoubleClickDelay())) {
@@ -456,26 +468,26 @@ public class MyApplication extends Application {
         }
     }
 
-    public static int getColorByTimestreamStateCode(Context context, int timeStreamStateCode) {
+    public static int getColorByTimestreamStateCode(int timeStreamStateCode) {
 
 
         switch (timeStreamStateCode) {
 
             case Timestream.FRESH:
 
-                return context.getResources().getColor(R.color.green);
+                return getContext().getResources().getColor(R.color.green);
 
             case Timestream.CLOSE_TO_EXPIRE:
 
-                return context.getResources().getColor(R.color.yellow);
+                return getContext().getResources().getColor(R.color.yellow);
 
             case Timestream.EXPIRED:
 
-                return context.getResources().getColor(R.color.gray);
+                return getContext().getResources().getColor(R.color.gray);
 
             case ITEM_SELECTED:
 
-                return context.getResources().getColor(R.color.item_selected);
+                return getContext().getResources().getColor(R.color.item_selected);
 
             default:
                 break;
@@ -596,7 +608,7 @@ public class MyApplication extends Application {
 
         originalPosition = new Point(temp.getLeft(), temp.getTop());
         MyApplication.originalPositionHashMap.put(temp.getId(), originalPosition);
-
+        MyApplication.originalBackgroundHashMap.put(temp.getId(),temp.getBackground());
     }
 
     public static void init() {

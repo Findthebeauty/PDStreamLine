@@ -4,9 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/timestream_border"
     android:id="@+id/combination"
-    android:layout_margin="2dp">
+    android:padding="1sp">
 
     <LinearLayout
         android:layout_width="0dp"
@@ -36,8 +35,8 @@
         android:layout_height="match_parent"
         android:layout_marginStart="5dp"
         android:layout_marginEnd="5dp"
-        android:layout_marginTop="3dp"
-        android:layout_marginBottom="3dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="1dp"
         android:minLines="2"
         android:padding="1dp"
         android:text="光明杯酸原味320g光明杯酸原味320g"
@@ -53,8 +52,8 @@
         android:layout_height="match_parent"
         android:layout_marginStart="5dp"
         android:layout_marginEnd="5dp"
-        android:layout_marginTop="3dp"
-        android:layout_marginBottom="3dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="1dp"
         android:minLines="2"
         android:padding="1dp"
         android:text="光明杯酸原味320g光明杯酸原味320g光明杯酸原味320g光明杯酸原味320g"
@@ -74,8 +73,8 @@
         android:inputType="number"
         android:layout_marginStart="5dp"
         android:layout_marginEnd="5dp"
-        android:layout_marginTop="3dp"
-        android:layout_marginBottom="3dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="1dp"
         android:padding="1dp"
         android:selectAllOnFocus="true"
         android:text="@string/empty_date"
@@ -104,12 +103,12 @@
     <EditText
         android:id="@+id/inventory_measure"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         app:layout_constraintRight_toLeftOf="@id/unit"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:text="@string/default_inventory"
-        android:textSize="20sp"
+        android:textSize="17sp"
         android:visibility="invisible"
         android:focusable="false"/>
 
@@ -121,7 +120,7 @@
         android:selectAllOnFocus="true"
         android:text="10"
         android:gravity="center"
-        android:textSize="20sp"
+        android:textSize="17sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="@id/inventory_measure"
         app:layout_constraintRight_toRightOf="@id/inventory_measure"

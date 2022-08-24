@@ -24,38 +24,53 @@ import java.util.ArrayList;
 
 public class TimestreamCombinationView extends LinearLayout {
 
-
+    private LinearLayout buyBackground;
+    private LinearLayout giveawayBackground;
+    private TextView buyProductNameTv;
+    private TextView giveawayProductNameTv;
+    private EditText buyDOPEt;
+    private EditText inventory;
+    private TextView unitTv;
+    private TextView giveawayDOPTv;
+    private TimestreamCombination timestreamCombination = null;
+    private ArrayList<View> giveAwayViews;
 
     public TimestreamCombinationView(Context context, Timestream timestream) {
         super(context);
 
+
+        initView(context);
+
+        bindData(timestream);
+    }
+
+    private void initView(Context context) {
         this.setId(View.generateViewId());
 
         LayoutInflater inflater = LayoutInflater.from(context);
         ConstraintLayout combination = inflater.inflate(R.layout.comb_layout_1, null).findViewById(R.id.combination);
 
         ConstraintLayout.LayoutParams lp = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.setMargins(2,2,2,2);
-        combination.setBackground(getResources().getDrawable(R.drawable.timestream_border));
-
+        this.setPadding(1,0,1,0);
+        this.setBackground(getResources().getDrawable(R.drawable.timestream_border));
         this.addView(combination,lp);
 
-        LinearLayout buyBackground = combination.findViewById(R.id.buy_background);
-        LinearLayout giveawayBackground = combination.findViewById(R.id.give_away_background);
+        buyBackground = combination.findViewById(R.id.buy_background);
+        giveawayBackground = combination.findViewById(R.id.give_away_background);
 
-        TextView buyProductNameTv = combination.findViewById(R.id.buy_pd_name);
-        TextView giveawayProductNameTv = combination.findViewById(R.id.give_away_pd_name);
+        buyProductNameTv = combination.findViewById(R.id.buy_pd_name);
+        giveawayProductNameTv = combination.findViewById(R.id.give_away_pd_name);
         TextView buyDOPMeasure = combination.findViewById(R.id.buy_dop_measure);
 
-        EditText buyDOPEt = combination.findViewById(R.id.buy_dop);
-        EditText inventory = combination.findViewById(R.id.inventory);
+        buyDOPEt = combination.findViewById(R.id.buy_dop);
+        inventory = combination.findViewById(R.id.inventory);
         EditText inventoryMeasure = combination.findViewById(R.id.inventory_measure);
 
-        TextView unitTv = combination.findViewById(R.id.unit);
-        TextView giveawayDOPTv = combination.findViewById(R.id.give_away_dop);
+        unitTv = combination.findViewById(R.id.unit);
+        giveawayDOPTv = combination.findViewById(R.id.give_away_dop);
         TextView giveawayFlagTv = combination.findViewById(R.id.give_away_flag);
 
-        ArrayList<View> giveAwayViews = new ArrayList<>();
+        giveAwayViews = new ArrayList<>();
         giveAwayViews.add(giveawayBackground);
         giveAwayViews.add(giveawayProductNameTv);
         giveAwayViews.add(giveawayDOPTv);
@@ -77,7 +92,7 @@ public class TimestreamCombinationView extends LinearLayout {
         set.connect(giveawayBackground.getId(),ConstraintSet.TOP, giveawayProductNameTv.getId(), ConstraintSet.TOP);
         set.connect(giveawayBackground.getId(),ConstraintSet.BOTTOM, combination.getId(), ConstraintSet.BOTTOM);
 
-        set.connect(buyProductNameTv.getId(),ConstraintSet.LEFT, combination.getId(), ConstraintSet.LEFT);
+        set.connect(buyProductNameTv.getId(), ConstraintSet.LEFT, combination.getId(), ConstraintSet.LEFT);
         set.connect(buyProductNameTv.getId(),ConstraintSet.RIGHT, buyDOPMeasure.getId(), ConstraintSet.LEFT);
         set.connect(buyProductNameTv.getId(),ConstraintSet.TOP, combination.getId(), ConstraintSet.TOP);
 
@@ -119,9 +134,11 @@ public class TimestreamCombinationView extends LinearLayout {
 
         set.applyTo(combination);
 
-        String discountRate = timestream.getDiscountRate();
+    }
 
-        TimestreamCombination timestreamCombination = null;
+    public void bindData(Timestream timestream) {
+
+        String discountRate = timestream.getDiscountRate();
 
         switch (discountRate) {
 
@@ -137,18 +154,28 @@ public class TimestreamCombinationView extends LinearLayout {
                 inventory.setText(timestream.getProductInventory());
                 unitTv.setText(allProducts.get(timestream.getProductCode()).getProductSpec());
 
-                int color = MyApplication.getColorByTimestreamStateCode(context, timestream.getTimeStreamStateCode());
+                int color = MyApplication.getColorByTimestreamStateCode(timestream.getTimeStreamStateCode());
 
                 buyBackground.setBackgroundColor(color);
                 break;
 
             case "0.5":
 
+                for (View v : giveAwayViews) {
+
+                    v.setVisibility(View.VISIBLE);
+                }
+
                 timestreamCombination = combinationHashMap.get(timestream.getId());
 
                 break;
 
             case "0":
+
+                for (View v : giveAwayViews) {
+
+                    v.setVisibility(View.VISIBLE);
+                }
 
                 timestreamCombination = combinationHashMap.get(timestream.getSiblingPromotionId());
 
@@ -170,19 +197,15 @@ public class TimestreamCombinationView extends LinearLayout {
                     .getProductDOP()).substring(0,10));
 
 
-            int color = MyApplication.getColorByTimestreamStateCode(context,
-                    timestreamCombination.getBuyTimestream().getTimeStreamStateCode());
+            int color = MyApplication.getColorByTimestreamStateCode(timestreamCombination.getBuyTimestream().getTimeStreamStateCode());
             buyBackground.setBackgroundColor(color);
 
 
-            color = MyApplication.getColorByTimestreamStateCode(context,
-                    timestreamCombination.getGiveawayTimestream().getTimeStreamStateCode());
+            color = MyApplication.getColorByTimestreamStateCode(timestreamCombination.getGiveawayTimestream().getTimeStreamStateCode());
             giveawayBackground.setBackgroundColor(color);
 
         }
-
     }
-
 
     /**
      * 重设模板中view的id为不重复的随机值，避免id冲突

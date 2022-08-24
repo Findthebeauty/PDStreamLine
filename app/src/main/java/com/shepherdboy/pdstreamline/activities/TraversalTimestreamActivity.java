@@ -555,7 +555,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
                 inventory.setText(timestream.getProductInventory());
                 unitTv.setText(allProducts.get(timestream.getProductCode()).getProductSpec());
 
-                int color = MyApplication.getColorByTimestreamStateCode(view.getContext(), timestream.getTimeStreamStateCode());
+                int color = MyApplication.getColorByTimestreamStateCode(timestream.getTimeStreamStateCode());
 
                 buyBackground.setBackgroundColor(color);
                 break;
@@ -588,12 +588,12 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
                     .getProductDOP()).substring(0,10));
 
 
-            int color = MyApplication.getColorByTimestreamStateCode(view.getContext(),
+            int color = MyApplication.getColorByTimestreamStateCode(
                     timestreamCombination.getBuyTimestream().getTimeStreamStateCode());
             buyBackground.setBackgroundColor(color);
 
 
-            color = MyApplication.getColorByTimestreamStateCode(view.getContext(),
+            color = MyApplication.getColorByTimestreamStateCode(
                     timestreamCombination.getGiveawayTimestream().getTimeStreamStateCode());
             giveawayBackground.setBackgroundColor(color);
 

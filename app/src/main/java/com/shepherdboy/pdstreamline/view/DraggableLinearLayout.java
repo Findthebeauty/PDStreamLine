@@ -203,12 +203,20 @@ public class DraggableLinearLayout extends LinearLayout {
 
     }
 
+    public static void setFocus(View view){
+        view.setFocusable(true);
+        view.setFocusableInTouchMode(true);
+        view.requestFocus();
+        view.requestFocusFromTouch();
+        InputMethodManager m = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        m.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+
+    }
+
     public static void setFocus(EditText editText) {
 
-        editText.setFocusable(true);
-        editText.setFocusableInTouchMode(true);
-        editText.requestFocus();
-        editText.requestFocusFromTouch();
+        setFocus((View) editText);
         editText.selectAll();
 
         new Timer().schedule(new TimerTask() {
@@ -363,6 +371,7 @@ public class DraggableLinearLayout extends LinearLayout {
             ClosableScrollView.setNewX(event.getRawX());
             ClosableScrollView.setNewY(event.getRawY());
 
+            setFocus(draggableView);
         }
 
         //如果上次滑动动画还未结束则阻止下一次拖拽
