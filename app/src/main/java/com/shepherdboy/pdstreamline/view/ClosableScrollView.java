@@ -50,11 +50,6 @@ public class ClosableScrollView extends ScrollView {
     }
 
     @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        return super.dispatchTouchEvent(ev);
-    }
-
-    @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
 
         if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {

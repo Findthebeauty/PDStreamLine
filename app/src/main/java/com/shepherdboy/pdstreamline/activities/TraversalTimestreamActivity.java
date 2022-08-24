@@ -39,6 +39,7 @@ import com.shepherdboy.pdstreamline.beans.Row;
 import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
+import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
 import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.sql.ShelfDAO;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
@@ -187,13 +188,13 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 //        TextView maxRowFlag = shelfView.findViewById(R.id.max_row_flag);
 //        TextView maxRow = shelfView.findViewById(R.id.max_row);
 //
-//        nameTvFlag.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
-//        nameTv.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
-//        classifyTvFlag.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
-//        classifyTv.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
-//        maxRowFlag.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
-//        maxRow.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
-//        shelfView.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
+//        nameTvFlag.setId(View.generateViewId());
+//        nameTv.setId(View.generateViewId());
+//        classifyTvFlag.setId(View.generateViewId());
+//        classifyTv.setId(View.generateViewId());
+//        maxRowFlag.setId(View.generateViewId());
+//        maxRow.setId(View.generateViewId());
+//        shelfView.setId(View.generateViewId());
 //
 //        nameTv.setText(shelf.getName());
 //        classifyTv.setText(shelf.getClassify());
@@ -418,9 +419,9 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         for (Timestream timestream : timestreams.values()) {
 
-            loadCellBody(view, timestream);
+//            loadCellBody(view, timestream);
 
-//            draggableLinearLayout.addView(new TimestreamCombinationView(draggableLinearLayout.getContext(), timestream));
+            draggableLinearLayout.addView(new TimestreamCombinationView(draggableLinearLayout.getContext(), timestream));
         }
 
     }
@@ -432,9 +433,9 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         TextView headNameTv = (TextView) cellHead.getChildAt(0);
         TextView headCodeTv = (TextView) cellHead.getChildAt(1);
 
-        cellHead.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
-        headNameTv.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
-        headCodeTv.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
+        cellHead.setId(View.generateViewId());
+        headNameTv.setId(View.generateViewId());
+        headCodeTv.setId(View.generateViewId());
 
         headNameTv.setText(PDInfoWrapper.getProductName(cell.getProductCode(),
                 sqLiteDatabase));
@@ -605,7 +606,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
      */
     private static void flushIds(View view) {
 
-        view.setId(DateUtil.getIdByCurrentTime() + MyApplication.idIncrement++);
+        view.setId(View.generateViewId());
 
         if (view instanceof ViewGroup ) {
 

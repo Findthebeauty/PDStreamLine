@@ -348,10 +348,12 @@ public class DraggableLinearLayout extends LinearLayout {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
+
         //更新触控坐标
         ViewParent p =  getParent();
         if (p instanceof ClosableScrollView) {
 
+            TouchEventDispatcher.onTouchEvent(event);
             if(event.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
                 ClosableScrollView.setOldX(event.getRawX());
@@ -360,6 +362,7 @@ public class DraggableLinearLayout extends LinearLayout {
 
             ClosableScrollView.setNewX(event.getRawX());
             ClosableScrollView.setNewY(event.getRawY());
+
         }
 
         //如果上次滑动动画还未结束则阻止下一次拖拽
@@ -384,6 +387,7 @@ public class DraggableLinearLayout extends LinearLayout {
                 break;
 
             case MotionEvent.ACTION_MOVE:
+
                 //进入拖拽模式，阻止父view打断touch
                 dragging = true;
                 getParent().requestDisallowInterceptTouchEvent(true);

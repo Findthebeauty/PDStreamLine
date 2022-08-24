@@ -9,8 +9,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 public class DateUtil {
+
+    static final List<Integer> ids = new LinkedList<Integer>();
 
     static SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     static SimpleDateFormat formatNowToId = new SimpleDateFormat("MMddHHmmss");
@@ -88,14 +92,28 @@ public class DateUtil {
         }
     }
 
+    /**
+     * 根据系统毫秒值生成唯一id
+     * @return 全局的唯一id
+     */
     public static int getIdByCurrentTime() {
 
         String time = String.valueOf(System.currentTimeMillis());
 
         time = time.substring(time.length() - 8);
 
-        return Integer.parseInt(time);
+        Integer id = Integer.parseInt(time);
 
+        if (ids.contains(id)) {
+
+            return getIdByCurrentTime();
+
+        } else {
+
+            ids.add(id);
+        }
+
+        return id;
     }
 
     /**

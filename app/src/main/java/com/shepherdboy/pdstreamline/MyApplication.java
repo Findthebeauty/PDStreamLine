@@ -64,8 +64,6 @@ public class MyApplication extends Application {
     //设置时区
 //    public static final TimeZone timeZone = TimeZone.getTimeZone("Asia/Chongqing");
 
-    public static int idIncrement = 0;
-
     public static final int PRODUCT_CODE = 11;
     public static final int PRODUCT_NAME = 12;
     public static final int PRODUCT_EXP = 13;
