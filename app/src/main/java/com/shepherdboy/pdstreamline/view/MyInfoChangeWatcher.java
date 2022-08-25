@@ -69,7 +69,11 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
                     case SELECT_ALL:
 
                         EditText editText = (EditText) msg.obj;
-                        editText.selectAll();
+                        Editable text = editText.getText();
+                        if (text.length() > 0) {
+                            text.replace(0, 1, text.subSequence(0, 1), 0, 1);
+                            editText.selectAll();
+                        }
                         break;
                     default:
                         break;

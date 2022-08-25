@@ -10,6 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -21,6 +23,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -44,6 +47,8 @@ public class PDInfoActivity extends AppCompatActivity {
 
     private static final int ADD_TIMESTREAM_LAYOUT = 1;
     private static final int REMOVE_TIMESTREAM_LAYOUT = 2;
+
+    private static Handler showHandler;
 
     private static ArrayList<TextView> timestreamChildTextViewList = new ArrayList<>(3);
     private static ArrayList<EditText> timestreamChildEditTextList = new ArrayList<>(3);
@@ -71,7 +76,23 @@ public class PDInfoActivity extends AppCompatActivity {
             loadProduct(currentProduct);
         }
 
+        if (showHandler == null) {
+
+            showHandler = new Handler() {
+
+                @Override
+                public void handleMessage(@NonNull Message msg) {
+
+                    searchNext();
+                }
+            };
+
+        }
         super.onStart();
+    }
+
+    public static Handler getShowHandler() {
+        return showHandler;
     }
 
     private void initActivity() {
@@ -469,4 +490,14 @@ public class PDInfoActivity extends AppCompatActivity {
         super.onPause();
     }
 
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (showHandler != null) {
+
+            showHandler.removeCallbacksAndMessages(null);
+        }
+    }
 }

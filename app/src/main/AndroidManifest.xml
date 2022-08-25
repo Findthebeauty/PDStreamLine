@@ -56,7 +56,8 @@
         <activity
             android:name=".activities.PDInfoActivity"
             android:exported="true"
-            android:launchMode="singleTask" />
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustNothing"/>
         <activity
             android:name=".utils.ErrorInfoDisplayActivity"
             android:exported="true"

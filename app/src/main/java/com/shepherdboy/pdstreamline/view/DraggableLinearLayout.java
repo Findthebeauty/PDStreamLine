@@ -411,6 +411,7 @@ public class DraggableLinearLayout extends LinearLayout {
             case MotionEvent.ACTION_DOWN:
                 //记录被点击的view
                 getCurrentView(event);
+                if (draggableView != null) setFocus(draggableView);
                 break;
 
             case MotionEvent.ACTION_MOVE:
