@@ -1,5 +1,7 @@
 package com.shepherdboy.pdstreamline.view;
 
+import static com.shepherdboy.pdstreamline.MyApplication.currentProduct;
+
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -395,14 +397,16 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
                 MyApplication.afterInfoChanged(watchedEditText,scope,filedIndex,currentInf);
                 break;
 
-            case MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY:
+            case MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_MODIFY_SHELF:
 
                 MyApplication.afterInfoChanged(shelf, currentInf, watchedEditText, filedIndex);
                 preInf = currentInf;
                 break;
 
             default:
-
+                currentProduct = currentProduct == null ? MyApplication.allProducts
+                        .get(timestream.getProductCode())
+                        : currentProduct;
                 MyApplication.afterInfoChanged(currentInf, currentWatcher.watchedEditText, currentWatcher.timestream,
                         currentWatcher.filedIndex);
 

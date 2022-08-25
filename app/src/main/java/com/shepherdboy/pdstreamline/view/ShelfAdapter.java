@@ -40,7 +40,7 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.ViewHolder> 
             public void onClick(View v) {
 
                 currentShelf = viewHolder.shelf;
-                postMessage(viewHolder.shelf, TraversalTimestreamActivity.SHOW_SHELF);
+                postMessage(viewHolder.shelf, TraversalTimestreamActivity.MSG_SHOW_SHELF);
             }
         });
 
@@ -56,7 +56,7 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.ViewHolder> 
                     return true;
                 }
 
-                postMessage(viewHolder.shelf, TraversalTimestreamActivity.MODIFY_SHELF);
+                postMessage(viewHolder.shelf, TraversalTimestreamActivity.MSG_MODIFY_SHELF);
 
                 return true;
             }

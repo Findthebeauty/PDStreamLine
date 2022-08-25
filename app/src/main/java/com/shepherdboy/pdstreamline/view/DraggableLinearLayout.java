@@ -371,7 +371,7 @@ public class DraggableLinearLayout extends LinearLayout {
             ClosableScrollView.setNewX(event.getRawX());
             ClosableScrollView.setNewY(event.getRawY());
 
-            setFocus(draggableView);
+            if (draggableView != null) setFocus(draggableView);
         }
 
         //如果上次滑动动画还未结束则阻止下一次拖拽

@@ -19,6 +19,7 @@ import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
+import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 
 import java.util.ArrayList;
 
@@ -48,7 +49,7 @@ public class TimestreamCombinationView extends LinearLayout {
         this.setId(View.generateViewId());
 
         LayoutInflater inflater = LayoutInflater.from(context);
-        ConstraintLayout combination = inflater.inflate(R.layout.comb_layout_1, null).findViewById(R.id.combination);
+        ConstraintLayout combination = inflater.inflate(R.layout.comb_layout, null).findViewById(R.id.combination);
 
         ConstraintLayout.LayoutParams lp = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         this.setPadding(1,0,1,0);
@@ -157,6 +158,8 @@ public class TimestreamCombinationView extends LinearLayout {
                 int color = MyApplication.getColorByTimestreamStateCode(timestream.getTimeStreamStateCode());
 
                 buyBackground.setBackgroundColor(color);
+                timestream.setBoundLayoutId(String.valueOf(buyBackground.getId()));
+
                 break;
 
             case "0.5":
@@ -183,7 +186,6 @@ public class TimestreamCombinationView extends LinearLayout {
                 break;
         }
 
-
         if (timestreamCombination != null) {
 
             buyProductNameTv.setText(timestreamCombination.getBuyProductName());
@@ -204,7 +206,15 @@ public class TimestreamCombinationView extends LinearLayout {
             color = MyApplication.getColorByTimestreamStateCode(timestreamCombination.getGiveawayTimestream().getTimeStreamStateCode());
             giveawayBackground.setBackgroundColor(color);
 
+            MyInfoChangeWatcher.watch(buyDOPEt,timestreamCombination.getBuyTimestream(),MyApplication.TIMESTREAM_DOP,true);
+            MyInfoChangeWatcher.watch(inventory,timestreamCombination.getBuyTimestream(),MyApplication.TIMESTREAM_INVENTORY,true);
+
+        } else {
+
+            MyInfoChangeWatcher.watch(buyDOPEt,timestream,MyApplication.TIMESTREAM_DOP,true);
+            MyInfoChangeWatcher.watch(inventory,timestream,MyApplication.TIMESTREAM_INVENTORY,true);
         }
+
     }
 
     /**

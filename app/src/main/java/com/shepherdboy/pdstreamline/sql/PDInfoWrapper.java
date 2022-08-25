@@ -361,12 +361,20 @@ public class PDInfoWrapper {
         queryAndGenerateTimestream(product, sqLiteDatabase, timestreamHashMap, MyDatabaseHelper.PROMOTION_TIMESTREAM_TABLE_NAME);
         queryAndGenerateTimestream(product, sqLiteDatabase, timestreamHashMap, MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME);
 
-        if (timestreamHashMap.size() == 0) {
+        switch (MyApplication.activityIndex) {
 
-            Timestream temp = new Timestream();
-            AIInputter.fillTheBlanks(product, temp);
-            timestreamHashMap.put(temp.getId(), temp);
+            case MyApplication.PD_INFO_ACTIVITY:
+                if (timestreamHashMap.size() == 0) {
 
+                    Timestream temp = new Timestream();
+                    AIInputter.fillTheBlanks(product, temp);
+                    timestreamHashMap.put(temp.getId(), temp);
+
+                }
+                break;
+
+            default:
+                break;
         }
 
     }

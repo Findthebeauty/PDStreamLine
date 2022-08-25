@@ -87,6 +87,8 @@ public class MyApplication extends Application {
     public static final int EXPIRED_TIMESTREAM_ACTIVITY = 5;
     public static final int SETTING_ACTIVITY = 6;
     public static final int TRAVERSAL_TIMESTREAM_ACTIVITY = 7;
+    public static final int TRAVERSAL_TIMESTREAM_ACTIVITY_MODIFY_SHELF = 8;
+    public static final int TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF = 9;
 
     public static final int ITEM_SELECTED = 100;
 
@@ -188,7 +190,7 @@ public class MyApplication extends Application {
 
             switch (activityIndex) {
 
-                case TRAVERSAL_TIMESTREAM_ACTIVITY:
+                case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
 
                     draggableLinearLayout.getCapturedView().setBackground(
                             originalBackgroundHashMap.get(draggableLinearLayout.getCapturedView().getId()));
@@ -265,7 +267,7 @@ public class MyApplication extends Application {
 
         switch (activityIndex) {
 
-            case TRAVERSAL_TIMESTREAM_ACTIVITY:
+            case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
 
                 draggableLinearLayout.setVerticalDraggable(true);
                 draggableLinearLayout.setBackgroundToPointedView(ITEM_SELECTED);
@@ -475,19 +477,15 @@ public class MyApplication extends Application {
 
             case Timestream.FRESH:
 
-                return getContext().getResources().getColor(R.color.green);
+                return Color.GREEN;
 
             case Timestream.CLOSE_TO_EXPIRE:
 
-                return getContext().getResources().getColor(R.color.yellow);
+                return Color.YELLOW;
 
             case Timestream.EXPIRED:
 
-                return getContext().getResources().getColor(R.color.gray);
-
-            case ITEM_SELECTED:
-
-                return getContext().getResources().getColor(R.color.item_selected);
+                return Color.GRAY;
 
             default:
                 break;
@@ -586,7 +584,7 @@ public class MyApplication extends Application {
                     }
                     break;
 
-                case TRAVERSAL_TIMESTREAM_ACTIVITY:
+                case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
 
                     for (int i = 0; i < draggableLinearLayout.getChildCount(); i++) {
 
@@ -892,7 +890,7 @@ public class MyApplication extends Application {
                 break;
 
             default:
-                timeStreamLinearLayout.setBackgroundColor(0);
+                timeStreamLinearLayout.setBackgroundColor(Color.GREEN);
                 break;
 
         }
@@ -922,7 +920,7 @@ public class MyApplication extends Application {
                 break;
 
             default:
-                timestreamLinearLayout.setBackgroundColor(0);
+                timestreamLinearLayout.setBackgroundColor(Color.GREEN);
                 break;
 
         }
