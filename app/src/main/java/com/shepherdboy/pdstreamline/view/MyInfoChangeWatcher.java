@@ -3,15 +3,16 @@ package com.shepherdboy.pdstreamline.view;
 import static com.shepherdboy.pdstreamline.MyApplication.currentProduct;
 
 import android.os.Handler;
+import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.shepherdboy.pdstreamline.MyApplication;
@@ -33,11 +34,15 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
     public static HashMap<EditText, MyInfoChangeWatcher> myTextWatchers = new HashMap<>();
 
-    private boolean autoCommitOnLastFocus = false;
+    private boolean autoCommitOnLostFocus = false;
+
+    public static final int SELECT_ALL = 1;
 
     private static boolean scheduled = false;
-    private static Handler handler;
-    private static Runnable runnable;
+    private static Handler commitHandler;
+    public static Handler selectHandler;
+    private static Runnable commitRunnable;
+    private static Runnable selectRunnable;
     private static long timeMillis = 0;
     private static long lastInputTimeMillis = 0;
     private static MyInfoChangeWatcher currentWatcher;
@@ -51,6 +56,31 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
     private String currentInf = "";
     private Shelf shelf;
 
+
+    static {
+
+        selectHandler = new Handler() {
+
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+
+                switch (msg.what) {
+
+                    case SELECT_ALL:
+
+                        EditText editText = (EditText) msg.obj;
+                        editText.selectAll();
+                        break;
+                    default:
+                        break;
+
+                }
+
+            }
+        };
+
+    }
+
     /**
      * 监听货架基本信息修改
      * @param editText
@@ -62,8 +92,9 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
         MyInfoChangeWatcher myInfoChangeWatcher = new MyInfoChangeWatcher();
         editText.addTextChangedListener(myInfoChangeWatcher);
+        editText.setOnFocusChangeListener(myInfoChangeWatcher);
 
-        myInfoChangeWatcher.autoCommitOnLastFocus = true;
+        myInfoChangeWatcher.autoCommitOnLostFocus = true;
 
         myInfoChangeWatcher.watchedEditText = editText;
         myInfoChangeWatcher.filedIndex = filedIndex;
@@ -76,7 +107,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
         MyInfoChangeWatcher myInfoChangeWatcher = new MyInfoChangeWatcher();
         editText.addTextChangedListener(myInfoChangeWatcher);
-        myInfoChangeWatcher.autoCommitOnLastFocus = autoCommitOnLastFocus;
+        myInfoChangeWatcher.autoCommitOnLostFocus = autoCommitOnLastFocus;
 
         if (autoCommitOnLastFocus) editText.setOnFocusChangeListener(myInfoChangeWatcher);
 
@@ -340,7 +371,12 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
 
-        if (v instanceof EditText && (!hasFocus) && (!preInf.equals(currentInf)) && this.autoCommitOnLastFocus) {
+        if (v instanceof EditText && hasFocus) {
+
+            DraggableLinearLayout.selectAllAfter((EditText) v, 5);
+        }
+
+        if (v instanceof EditText && (!hasFocus) && (!preInf.equals(currentInf)) && this.autoCommitOnLostFocus) {
 
             stopAutoCommit();
             commit();
@@ -352,8 +388,8 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
         if (scheduled) return;
 
-        handler = new Handler();
-        runnable = new Runnable() {
+        commitHandler = new Handler();
+        commitRunnable = new Runnable() {
             @Override
             public void run() {
 
@@ -380,11 +416,11 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
                     return;
                 }
 
-                handler.postDelayed(this, 10);
+                commitHandler.postDelayed(this, 10);
             }
         };
 
-        handler.postDelayed(runnable, 10);
+        commitHandler.postDelayed(commitRunnable, 10);
         setScheduled(true);
     }
 
@@ -415,12 +451,11 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
     public void stopAutoCommit() {
 
-        Log.d("focusChange", "stopAutoCommit");
-        if (handler != null) {
+        if (commitHandler != null) {
 
-            handler.removeCallbacks(runnable);
-            handler = null;
-            runnable = null;
+            commitHandler.removeCallbacks(commitRunnable);
+            commitHandler = null;
+            commitRunnable = null;
             setScheduled(false);
         }
     }

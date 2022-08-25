@@ -84,12 +84,12 @@ public class TimestreamCombinationView extends LinearLayout {
         set.clone(combination);
 
         set.connect(buyBackground.getId(),ConstraintSet.LEFT, combination.getId(), ConstraintSet.LEFT);
-        set.connect(buyBackground.getId(),ConstraintSet.RIGHT, buyDOPEt.getId(), ConstraintSet.RIGHT);
+        set.connect(buyBackground.getId(),ConstraintSet.RIGHT, combination.getId(), ConstraintSet.RIGHT);
         set.connect(buyBackground.getId(),ConstraintSet.TOP, combination.getId(), ConstraintSet.TOP);
         set.connect(buyBackground.getId(),ConstraintSet.BOTTOM, buyProductNameTv.getId(), ConstraintSet.BOTTOM);
 
         set.connect(giveawayBackground.getId(),ConstraintSet.LEFT, combination.getId(), ConstraintSet.LEFT);
-        set.connect(giveawayBackground.getId(),ConstraintSet.RIGHT, giveawayDOPTv.getId(), ConstraintSet.RIGHT);
+        set.connect(giveawayBackground.getId(),ConstraintSet.RIGHT, combination.getId(), ConstraintSet.RIGHT);
         set.connect(giveawayBackground.getId(),ConstraintSet.TOP, giveawayProductNameTv.getId(), ConstraintSet.TOP);
         set.connect(giveawayBackground.getId(),ConstraintSet.BOTTOM, combination.getId(), ConstraintSet.BOTTOM);
 

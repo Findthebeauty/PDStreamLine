@@ -163,7 +163,7 @@ public class PDInfoActivity extends AppCompatActivity {
 
         loadTimestreams(timeStreams);
 
-        if(timeStreams.size() > 0) DraggableLinearLayout.setFocus(topDOPEditText);
+        if(timeStreams.size() > 0) DraggableLinearLayout.selectAll(topDOPEditText);
 
         MyInfoChangeWatcher.setShouldWatch(true);
     }
@@ -245,7 +245,7 @@ public class PDInfoActivity extends AppCompatActivity {
 
         onShowTimeStreamsHashMap.put(tView.getId(), timestream);
 
-        DraggableLinearLayout.setFocus(timestreamDOPEditText);
+        DraggableLinearLayout.selectAll(timestreamDOPEditText);
     }
 
     private static void initTimestreamView(LinkedHashMap<String, Timestream> timestreams) {
@@ -450,7 +450,6 @@ public class PDInfoActivity extends AppCompatActivity {
             textView.setGravity(Gravity.CENTER);
             editText.setGravity(Gravity.CENTER);
 
-            editText.setSelectAllOnFocus(true);
             editText.setInputType(InputType.TYPE_CLASS_NUMBER);
         }
     }

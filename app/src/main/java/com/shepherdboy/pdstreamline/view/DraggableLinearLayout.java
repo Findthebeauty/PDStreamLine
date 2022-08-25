@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -208,26 +209,43 @@ public class DraggableLinearLayout extends LinearLayout {
         view.setFocusableInTouchMode(true);
         view.requestFocus();
         view.requestFocusFromTouch();
-        InputMethodManager m = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (!(view instanceof EditText)) {
 
-        m.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+            InputMethodManager m = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+
+            m.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        }
 
     }
 
-    public static void setFocus(EditText editText) {
+    public static void selectAll(EditText editText) {
 
-        setFocus((View) editText);
-        editText.selectAll();
+        setFocus(editText);
+
+        selectAllAfter(editText, 25);
+
+    }
+
+    public static void selectAllAfter(EditText editText, int delay) {
 
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
 
-            InputMethodManager m = (InputMethodManager) editText.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-            m.showSoftInput(editText, 0);
-            }
-        },200); //todo 关于软键盘弹出edittext内容消失的问题
+                InputMethodManager m = (InputMethodManager) editText.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                m.showSoftInput(editText, 0);
+                
+                if (MyInfoChangeWatcher.selectHandler != null) {
 
+                    Message msg = Message.obtain();
+                    msg.what = MyInfoChangeWatcher.SELECT_ALL;
+                    msg.obj = editText;
+                    MyInfoChangeWatcher.selectHandler.sendMessage(msg);
+                    
+                }
+
+            }
+        },delay); //todo 关于软键盘弹出edittext内容消失的问题
     }
 
     public void setBackgroundToPointedView(int stateCode) {
@@ -366,12 +384,12 @@ public class DraggableLinearLayout extends LinearLayout {
 
                 ClosableScrollView.setOldX(event.getRawX());
                 ClosableScrollView.setOldY(event.getRawY());
+                if (draggableView != null) setFocus(draggableView);
             }
 
             ClosableScrollView.setNewX(event.getRawX());
             ClosableScrollView.setNewY(event.getRawY());
 
-            if (draggableView != null) setFocus(draggableView);
         }
 
         //如果上次滑动动画还未结束则阻止下一次拖拽

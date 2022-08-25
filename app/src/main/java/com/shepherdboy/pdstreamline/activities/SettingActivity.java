@@ -279,7 +279,7 @@ public class SettingActivity extends AppCompatActivity {
 
         MyInfoChangeWatcher.setShouldWatch(true);
         setExpSettingChanged(true);
-        DraggableLinearLayout.setFocus(lEditText);
+        DraggableLinearLayout.selectAll(lEditText);
         DraggableLinearLayout.setLayoutChanged(true);
     }
 

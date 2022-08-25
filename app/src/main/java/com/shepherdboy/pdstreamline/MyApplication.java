@@ -813,7 +813,7 @@ public class MyApplication extends Application {
 
                             if (watchedEditText.hasFocus()) {
 
-                                DraggableLinearLayout.setFocus(watchedEditText);
+                                DraggableLinearLayout.selectAll(watchedEditText);
                             }
 
                             MyInfoChangeWatcher.setShouldWatch(true);

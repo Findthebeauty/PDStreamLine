@@ -13,16 +13,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -36,6 +33,7 @@ import com.shepherdboy.pdstreamline.beans.Cell;
 import com.shepherdboy.pdstreamline.beans.Row;
 import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
+import com.shepherdboy.pdstreamline.beanview.CellHeadView;
 import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
 import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.sql.ShelfDAO;
@@ -305,7 +303,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
             }
         });
 
-        DraggableLinearLayout.setFocus(nameEt);
+        DraggableLinearLayout.selectAll(nameEt);
     }
 
     private void exitModifyShelf() {
@@ -389,38 +387,13 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         LinkedHashMap<String, Timestream> timestreams = cell.getTimestreams();
 
-        loadCellHead(cell, view);
+        view.addView(new CellHeadView(view.getContext(), cell));
 
         for (Timestream timestream : timestreams.values()) {
 
-//            loadCellBody(view, timestream);
-
-            draggableLinearLayout.addView(new TimestreamCombinationView(draggableLinearLayout.getContext(), timestream));
+            view.addView(new TimestreamCombinationView(draggableLinearLayout.getContext(), timestream));
         }
 
-    }
-
-    private void loadCellHead(Cell cell, DraggableLinearLayout view) {
-
-        LayoutInflater inflater = LayoutInflater.from(view.getContext());
-        LinearLayout cellHead = inflater.inflate(R.layout.cell_head_layout, null).findViewById(R.id.cell_head);
-        TextView headNameTv = (TextView) cellHead.getChildAt(0);
-        TextView headCodeTv = (TextView) cellHead.getChildAt(1);
-
-        cellHead.setId(View.generateViewId());
-        headNameTv.setId(View.generateViewId());
-        headCodeTv.setId(View.generateViewId());
-
-        headNameTv.setText(PDInfoWrapper.getProductName(cell.getProductCode(),
-                sqLiteDatabase));
-
-        String productCode = cell.getProductCode();
-
-        if (productCode.length() > 6)
-            productCode = productCode.substring(cell.getProductCode().length() - 6);
-
-        headCodeTv.setText(productCode);
-        view.addView(cellHead);
     }
 
 
