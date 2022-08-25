@@ -835,6 +835,7 @@ public class MyApplication extends Application {
 
                     }
                     synchronize(timestream, filedIndex);
+
                     break;
 
                 case TIMESTREAM_COORDINATE:
@@ -988,6 +989,22 @@ public class MyApplication extends Application {
         setTimeStreamViewOriginalBackgroundColor(timestream);
 
         timestream.setUpdated(false);
+
+        switch (activityIndex) {
+
+            case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
+
+                timestream.setBuySpecs(null);
+                timestream.setGiveawaySpecs(null);
+                timestream.setSiblingPromotionId(null);
+                timestream.setDiscountRate("");
+                timestream.setPromoting(false);
+                PDInfoWrapper.updateInfo(sqLiteDatabase, timestream, MyDatabaseHelper.FRESH_TIMESTREAM_TABLE_NAME);
+                break;
+
+            default:
+                break;
+        }
     }
 
     public static void onViewPositionChanged(View changedView, float horizontalDistance, float verticalDistance) {

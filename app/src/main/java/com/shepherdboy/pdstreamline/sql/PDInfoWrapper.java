@@ -1,5 +1,6 @@
 package com.shepherdboy.pdstreamline.sql;
 
+import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -27,6 +28,7 @@ import java.util.Objects;
 public class PDInfoWrapper {
 
 
+    @SuppressLint("Range")
     public static String getProductName(String productCode, SQLiteDatabase sqLiteDatabase) {
 
         String name;
@@ -108,7 +110,6 @@ public class PDInfoWrapper {
 //                    break;
 
         }
-
 
         cursor.close();
         sqLiteDatabase.setTransactionSuccessful();
@@ -607,11 +608,17 @@ public class PDInfoWrapper {
                 "id='" + timeStreamId + "'";
         String sql4 = "delete from " + MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME + " where " +
                 "id='" + timeStreamId + "'";
+        String sql5 = "delete from " + MyDatabaseHelper.PROMOTION_TIMESTREAM_TABLE_NAME + " where " +
+                "sibling_promotion_id='" + timeStreamId + "'";
+        String sql6 = "delete from " + MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME + " where " +
+                "sibling_promotion_id='" + timeStreamId + "'";
 
         sqLiteDatabase.execSQL(sql1);
         sqLiteDatabase.execSQL(sql2);
         sqLiteDatabase.execSQL(sql3);
         sqLiteDatabase.execSQL(sql4);
+        sqLiteDatabase.execSQL(sql5);
+        sqLiteDatabase.execSQL(sql6);
 
     }
 
