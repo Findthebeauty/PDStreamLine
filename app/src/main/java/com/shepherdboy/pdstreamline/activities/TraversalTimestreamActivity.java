@@ -5,20 +5,25 @@ import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_AC
 import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
 import static com.shepherdboy.pdstreamline.MyApplication.combinationHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
+import static com.shepherdboy.pdstreamline.MyApplication.setTimeStreamViewOriginalBackgroundColor;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
+import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.basket;
 
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
@@ -29,10 +34,12 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
+import com.shepherdboy.pdstreamline.activities.transaction.Streamline;
 import com.shepherdboy.pdstreamline.beans.Cell;
 import com.shepherdboy.pdstreamline.beans.Row;
 import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
+import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.beanview.CellHeadView;
 import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
 import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
@@ -44,8 +51,13 @@ import com.shepherdboy.pdstreamline.view.ShelfAdapter;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class TraversalTimestreamActivity extends AppCompatActivity {
+
+    private static int dragThreshold = 105;
+    private static final int DRAG_LEFT = 200;
+    private static final int DRAG_RIGHT = 201;
 
     private Shelf tempShelf;//货架信息改变时临时保存改变后的信息，用于回滚操作
     private Shelf defaultShelf;
@@ -62,6 +74,93 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     private static int layoutIndex;
 
     public static Handler handler;
+
+    public static void onViewPositionChanged(View changedView, float horizontalDistance, float verticalDistance) {
+
+        int viewState = getViewState(changedView, horizontalDistance);
+
+        switch (viewState) {
+
+            case DRAG_LEFT:
+
+                changedView.setBackgroundColor(Color.parseColor("#8BC34A"));
+                break;
+
+            case DRAG_RIGHT:
+
+                changedView.setBackgroundColor(Color.parseColor("#FF0000"));
+                break;
+
+            default:
+
+                setTimeStreamViewOriginalBackgroundColor((LinearLayout) changedView);
+        }
+    }
+
+    private static int getViewState(View changedView, float horizontalDistance) {
+
+        Log.d("getViewState", horizontalDistance + "");
+
+        if (horizontalDistance < 0 && Math.abs(horizontalDistance) > dragThreshold)
+            return DRAG_LEFT;
+
+        if (horizontalDistance > 0 && Math.abs(horizontalDistance) > dragThreshold)
+            return DRAG_RIGHT;
+
+        return 0;
+    }
+
+    public static void onViewReleased(View releasedChild, float horizontalDistance, float verticalDistance) {
+
+        int stateCode = getViewState(releasedChild, horizontalDistance);
+
+        switch (stateCode) {
+
+            case DRAG_LEFT:
+
+                Timestream ts = MyApplication.unloadTimestream((LinearLayout) releasedChild);
+                if (ts == null) return;
+                PDInfoWrapper.deleteTimestream(sqLiteDatabase, ts.getId());
+                ts.setInBasket(false);
+                basket.remove(ts);
+                break;
+
+            case DRAG_RIGHT:
+
+                ts = MyApplication.unloadTimestream((LinearLayout) releasedChild);
+
+                if (ts == null) return;
+                PDInfoWrapper.deleteTimestream(sqLiteDatabase, ts.getId());
+
+                if (ts.getSiblingPromotionId() != null) {
+
+                    TimestreamCombination comb = combinationHashMap.get(ts.getId());
+                    List<Timestream> unpackedTimestreams = comb.unpack();
+
+                    for (Timestream t : unpackedTimestreams) {
+
+                        basket.add(t);
+                        t.setInBasket(true);
+
+                    }
+
+                    Streamline.reposition(unpackedTimestreams);
+
+                } else {
+
+                    basket.add(ts);
+                    ts.setInBasket(true);
+
+                    Streamline.position(ts);
+                }
+
+            default:
+                draggableLinearLayout.putBack(releasedChild);
+
+                break;
+        }
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -313,6 +412,8 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     }
 
     private void initTransaction() {
+
+        MyApplication.initActionBar(getSupportActionBar());
 
         if (layoutIndex == LAYOUT_SHOW_SHELF_PRODUCT) {
 

@@ -22,7 +22,7 @@ public class ScanEventReceiver extends BroadcastReceiver {
         if (!AIInputter.isNumeric(newerProductCode)) return;
 
         //todo 判断pdInfoactivity的状态决定是resume还是start
-        PDInfoActivity.actionStart();
+        PDInfoActivity.actionStart(null);
         MyApplication.saveChanges();
 
 

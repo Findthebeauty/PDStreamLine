@@ -396,7 +396,7 @@ public class DraggableLinearLayout extends LinearLayout {
         if (viewDragHelper.continueSettling(true)) return false;
 
         //监听双击和长按
-        MyApplication.tryCaptureClickEvent(event);
+        if (MyApplication.tryCaptureClickEvent(event)) return false;
 
         switch (event.getActionMasked()) {
 

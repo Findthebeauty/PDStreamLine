@@ -3,6 +3,8 @@ package com.shepherdboy.pdstreamline.beans;
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
 
+import java.util.LinkedList;
+
 public class TimestreamCombination {
 
     private String buyProductName;
@@ -90,4 +92,23 @@ public class TimestreamCombination {
         this.giveawayTimestream = giveawayTimestream;
     }
 
+    /**
+     * 将捆绑商品分解
+     * @return
+     */
+    public LinkedList<Timestream> unpack() {
+
+        LinkedList<Timestream> list = new LinkedList<>();
+
+        Timestream.refresh(buyTimestream);
+        list.add(buyTimestream);
+
+        if (!selfPromotion) {
+
+            Timestream.refresh(giveawayTimestream);
+            list.add(giveawayTimestream);
+        }
+
+        return list;
+    }
 }

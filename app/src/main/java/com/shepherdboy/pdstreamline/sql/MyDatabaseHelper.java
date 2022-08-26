@@ -1,5 +1,6 @@
 package com.shepherdboy.pdstreamline.sql;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -30,6 +31,8 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
     public static final int NEW_TIMESTREAM = 5;
 
     public static final int UPDATE_BASKET = 6;
+
+    public static final int UNPACK_COMBINATION = 7;
 
     public static final String PROMOTION_DATE_SELECTION = "product_promotion_date";
 
@@ -319,6 +322,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(sql);
     }
 
+    @SuppressLint("Range")
     public static String getSetting(String index, SQLiteDatabase sqLiteDatabase) {
 
         String value = null;

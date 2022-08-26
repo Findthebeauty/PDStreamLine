@@ -52,31 +52,68 @@
             android:inputType="text"/>
     </LinearLayout>
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="end"
-        android:orientation="horizontal">
+        android:gravity="end">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+            <TextView
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:text="@string/expTextView" />
+
+            <EditText
+                android:id="@+id/product_exp"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:inputType="number"/>
+
+            <Button
+                android:id="@+id/time_unit"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:text="天" />
+        </LinearLayout>
 
         <TextView
-            android:layout_width="50dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/expTextView" />
-
+            android:text="规格:"
+            android:layout_marginEnd="3sp"
+            app:layout_constraintRight_toLeftOf="@id/spec_measure"
+            app:layout_constraintTop_toTopOf="@id/spec_measure"
+            app:layout_constraintBottom_toBottomOf="@id/spec_measure"/>
         <EditText
-            android:id="@+id/product_exp"
-            android:layout_width="50dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:inputType="number"/>
-
-        <Button
-            android:id="@+id/time_unit"
-            android:layout_width="50dp"
+            android:id="@+id/spec_measure"
+            android:textAlignment="center"
+            android:layout_marginEnd="5sp"
+            android:text="spec"
+            android:visibility="invisible"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+        <EditText
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="天" />
-
-    </LinearLayout>
+            android:id="@+id/spec"
+            android:hint="spec"
+            android:textAlignment="center"
+            app:layout_constraintLeft_toLeftOf="@id/spec_measure"
+            app:layout_constraintRight_toRightOf="@id/spec_measure"
+            app:layout_constraintTop_toTopOf="@id/spec_measure"
+            app:layout_constraintBottom_toBottomOf="@id/spec_measure"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content">

@@ -2,6 +2,7 @@ package com.shepherdboy.pdstreamline.beanview;
 
 import static com.shepherdboy.pdstreamline.MyApplication.allProducts;
 import static com.shepherdboy.pdstreamline.MyApplication.combinationHashMap;
+import static com.shepherdboy.pdstreamline.MyApplication.onShowCombsHashMap;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -141,6 +142,9 @@ public class TimestreamCombinationView extends LinearLayout {
 
         String discountRate = timestream.getDiscountRate();
 
+        MyApplication.onShowTimeStreamsHashMap.put(this.getId(), timestream);
+        timestream.setBoundLayoutId(String.valueOf(this.getId()));
+
         switch (discountRate) {
 
             case "":
@@ -158,7 +162,6 @@ public class TimestreamCombinationView extends LinearLayout {
                 int color = MyApplication.getColorByTimestreamStateCode(timestream.getTimeStreamStateCode());
 
                 buyBackground.setBackgroundColor(color);
-                timestream.setBoundLayoutId(String.valueOf(buyBackground.getId()));
 
                 break;
 
@@ -182,11 +185,18 @@ public class TimestreamCombinationView extends LinearLayout {
 
                 timestreamCombination = combinationHashMap.get(timestream.getSiblingPromotionId());
 
+
+                MyApplication.onShowTimeStreamsHashMap.put(this.getId(), timestreamCombination.getBuyTimestream());
+                timestreamCombination.getBuyTimestream().setBoundLayoutId(String.valueOf(this.getId()));
+                break;
+
             default:
                 break;
         }
 
         if (timestreamCombination != null) {
+
+            onShowCombsHashMap.put(this.getId(), timestreamCombination);
 
             buyProductNameTv.setText(timestreamCombination.getBuyProductName());
             buyDOPEt.setText(DateUtil.typeMach(timestreamCombination.getBuyTimestream()

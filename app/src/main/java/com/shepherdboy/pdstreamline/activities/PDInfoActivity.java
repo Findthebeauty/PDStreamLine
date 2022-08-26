@@ -49,6 +49,7 @@ public class PDInfoActivity extends AppCompatActivity {
     private static final int REMOVE_TIMESTREAM_LAYOUT = 2;
 
     private static Handler showHandler;
+    private static String productToShow;
 
     private static ArrayList<TextView> timestreamChildTextViewList = new ArrayList<>(3);
     private static ArrayList<EditText> timestreamChildEditTextList = new ArrayList<>(3);
@@ -56,25 +57,22 @@ public class PDInfoActivity extends AppCompatActivity {
     private static String[] textArray = new String[]{"生产日期:", "坐标:", "库存:"};
 
     private static LinearLayout topTimestreamView;
-    private static EditText topDOPEditText,productCodeEditText,productNameEditText,productEXPEditText;
+    private static EditText topDOPEditText,productCodeEditText,productNameEditText,
+            productEXPEditText,productSpecEditText;
     public static Button scanner,productEXPTimeUnitButton;
 
-    public static void actionStart() {
+    public static void actionStart(String code) {
 
         Intent intent = new Intent(MyApplication.getContext(), PDInfoActivity.class);
         MyApplication.getContext().startActivity(intent);
 
+        productToShow = code;
     }
 
     @Override
     protected void onStart() {
 
         initActivity();
-
-        if (currentProduct != null) {
-
-            loadProduct(currentProduct);
-        }
 
         if (showHandler == null) {
 
@@ -83,15 +81,27 @@ public class PDInfoActivity extends AppCompatActivity {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
 
-                    searchNext();
+                    searchNext((String) msg.obj);
                 }
             };
 
         }
+
+        if (productToShow != null) {
+
+            searchNext(productToShow);
+            productToShow = null;
+
+        } else if (currentProduct != null) {
+
+            loadProduct(currentProduct);
+        }
+
         super.onStart();
     }
 
     public static Handler getShowHandler() {
+
         return showHandler;
     }
 
@@ -103,6 +113,7 @@ public class PDInfoActivity extends AppCompatActivity {
         productNameEditText = findViewById(R.id.product_name);
         productEXPEditText = findViewById(R.id.product_exp);
         productEXPTimeUnitButton = findViewById(R.id.time_unit);
+        productSpecEditText = findViewById(R.id.spec);
 
         scanner = findViewById(R.id.zxing_barcode_scanner);
 
@@ -123,7 +134,7 @@ public class PDInfoActivity extends AppCompatActivity {
                 || (event != null) && KeyEvent.KEYCODE_ENTER == event.getKeyCode()
                 && KeyEvent.ACTION_UP == event.getAction()) {
 
-                    searchNext();
+                    searchNext(v.getText().toString());
                 }
                 return true;
             }
@@ -138,9 +149,10 @@ public class PDInfoActivity extends AppCompatActivity {
         return MyApplication.tryCatchVolumeDown(this, keyCode) || super.onKeyDown(keyCode, event);
     }
 
-    private void searchNext() {
+    private void searchNext(String code) {
 
-        String code = ((EditText)findViewById(R.id.product_code)).getText().toString();
+        if (code == null)
+        code = ((EditText)findViewById(R.id.product_code)).getText().toString();
         ScanEventReceiver.show(code);
     }
 
@@ -178,10 +190,12 @@ public class PDInfoActivity extends AppCompatActivity {
         productNameEditText.setText(product.getProductName());
         productEXPEditText.setText(product.getProductEXP());
         productEXPTimeUnitButton.setText(product.getProductEXPTimeUnit());
+        productSpecEditText.setText(product.getProductSpec());
 
         MyInfoChangeWatcher.watch(productCodeEditText, null, MyApplication.PRODUCT_CODE, true);
         MyInfoChangeWatcher.watch(productNameEditText, null, MyApplication.PRODUCT_NAME, true);
         MyInfoChangeWatcher.watch(productEXPEditText, null, MyApplication.PRODUCT_EXP, true);
+        MyInfoChangeWatcher.watch(productSpecEditText, null, MyApplication.PRODUCT_SPEC, true);
         MyInfoChangeWatcher.watch(productEXPTimeUnitButton);
 
         loadTimestreams(timeStreams);
@@ -260,13 +274,14 @@ public class PDInfoActivity extends AppCompatActivity {
 
         timestream.setBoundLayoutId(String.valueOf(timestreamViewId));
 
+        onShowTimeStreamsHashMap.put(tView.getId(), timestream);
+
         MyApplication.setTimeStreamViewOriginalBackgroundColor(timestream);
 
         MyInfoChangeWatcher.watch(timestreamDOPEditText, timestream, MyApplication.TIMESTREAM_DOP, true);
         MyInfoChangeWatcher.watch(timestreamCoordinateEditText, timestream, MyApplication.TIMESTREAM_COORDINATE, true);
         MyInfoChangeWatcher.watch(timestreamInventoryEditText, timestream, MyApplication.TIMESTREAM_INVENTORY, true);
 
-        onShowTimeStreamsHashMap.put(tView.getId(), timestream);
 
         DraggableLinearLayout.selectAll(timestreamDOPEditText);
     }

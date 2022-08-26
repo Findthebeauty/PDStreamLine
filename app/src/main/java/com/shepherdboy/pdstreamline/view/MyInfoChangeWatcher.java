@@ -71,8 +71,10 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
                         EditText editText = (EditText) msg.obj;
                         Editable text = editText.getText();
                         if (text.length() > 0) {
+                            setShouldWatch(false);
                             text.replace(0, 1, text.subSequence(0, 1), 0, 1);
                             editText.selectAll();
+                            setShouldWatch(true);
                         }
                         break;
                     default:

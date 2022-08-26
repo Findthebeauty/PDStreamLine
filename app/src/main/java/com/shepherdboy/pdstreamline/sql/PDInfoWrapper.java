@@ -3,6 +3,7 @@ package com.shepherdboy.pdstreamline.sql;
 import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.activities.SettingActivity;
@@ -365,6 +366,7 @@ public class PDInfoWrapper {
         switch (MyApplication.activityIndex) {
 
             case MyApplication.PD_INFO_ACTIVITY:
+
                 if (timestreamHashMap.size() == 0) {
 
                     Timestream temp = new Timestream();
@@ -472,7 +474,7 @@ public class PDInfoWrapper {
         String siblingPromotionId = timestream.getSiblingPromotionId();
         String inBasket = String.valueOf(timestream.isInBasket());
 
-        String sql = null;
+        String sql;
 
         switch (transactionCode) {
 
@@ -486,6 +488,9 @@ public class PDInfoWrapper {
                         "','" + productExpireDate +
                         "','" + productCoordinate +
                         "','" + productInventory + "')";
+
+                sqLiteDatabase.execSQL(sql);
+                timestream.setUpdated(true);
                 break;
 
             case MyDatabaseHelper.PROMOTION_TIMESTREAM:
@@ -502,6 +507,9 @@ public class PDInfoWrapper {
                         "','" + buySpecs +
                         "','" + giveawaySpecs +
                         "','" + siblingPromotionId + "')";
+
+                sqLiteDatabase.execSQL(sql);
+                timestream.setUpdated(true);
                 break;
 
             case MyDatabaseHelper.OFF_SHELVES_HISTORY:
@@ -514,25 +522,30 @@ public class PDInfoWrapper {
                         "','" + productExpireDate +
                         "','" + productCoordinate +
                         "','" + productInventory + "')";
+
+                sqLiteDatabase.execSQL(sql);
+                timestream.setUpdated(true);
                 break;
 
             case MyDatabaseHelper.UPDATE_BASKET:
 
                 sql = "update " + MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME + " set " + MyDatabaseHelper.IN_BASKET_SELECTION +
                         "='" + inBasket + "' where id='" + id + "'";
+                sqLiteDatabase.execSQL(sql);
+
+                sql = "update " + MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME + " set " + MyDatabaseHelper.IN_BASKET_SELECTION +
+                        "='" + inBasket + "' where id='" + id + "'";
+
+                sqLiteDatabase.execSQL(sql);
+                timestream.setUpdated(true);
                 break;
 
             default:
+                Log.e("updateInfo", "更新失败，传入的transactionCode未分配更新方案");
                 break;
 
         }
 
-
-        if (sql != null) {
-
-            sqLiteDatabase.execSQL(sql);
-            timestream.setUpdated(true);
-        }
     }
 
     public static void updateInfo(SQLiteDatabase sqLiteDatabase, Timestream timestream, String tableName) {
@@ -623,7 +636,7 @@ public class PDInfoWrapper {
     }
 
     /**
-     * 仅获取product_code, product_exp, product_exp_time_unit,不包含Timestream列表
+     * 不包含Timestream列表
      * @return
      */
     public static HashMap<String, Product> getAllProduct() {
@@ -631,7 +644,7 @@ public class PDInfoWrapper {
         HashMap<String, Product> r = new HashMap<>();
 
         Cursor cursor = MyDatabaseHelper.query(MyApplication.sqLiteDatabase, MyDatabaseHelper.PRODUCT_INFO_TABLE_NAME,
-                new String[]{"product_code", "product_exp", "product_exp_time_unit"},
+                new String[]{MyDatabaseHelper.PRODUCT_INFO_COLUMNS},
                 null, null);
 
         if (!cursor.moveToFirst()) return r;
@@ -640,8 +653,15 @@ public class PDInfoWrapper {
 
             Product p = new Product();
             p.setProductCode(cursor.getString(0));
-            p.setProductEXP(cursor.getString(1));
-            p.setProductEXPTimeUnit(cursor.getString(2));
+            p.setProductName(cursor.getString(1));
+            p.setProductEXP(cursor.getString(2));
+            p.setProductEXPTimeUnit(cursor.getString(3));
+            p.setProductGroupNumber(cursor.getString(4));
+            p.setProductSpec(cursor.getString(5));
+            p.setShelvesIndexes(cursor.getString(6));
+            p.setLastCheckDate(cursor.getString(7));
+            p.setNextCheckDate(cursor.getString(8));
+            p.setDefaultCoordinate(cursor.getString(9));
             r.put(p.getProductCode(), p);
 
         } while (cursor.moveToNext());

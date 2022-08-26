@@ -55,7 +55,7 @@ public class MidnightTimestreamManagerService extends Service {
             @Override
             public void handleMessage(@NonNull Message msg) {
 
-                MyApplication.restoreTimestreams(MidnightTimestreamManagerService.basket);
+                MyApplication.restoreTimestreams(basket);
                 timestreamRestoreTimer.cancel();
                 super.handleMessage(msg);
             }

@@ -20,6 +20,21 @@ public class Timestream {
 
     private String id = null;
 
+    /**
+     * 去掉捆绑信息
+     * @param t 从捆绑商品中分解出来的Timestream
+     */
+    public static void refresh(Timestream t) {
+        t.setPromoting(false);
+        t.setDiscountRate("");
+        t.setGiveawaySpecs(null);
+        t.setBuySpecs(null);
+        t.setProductPromotionDate(null);
+        t.setUpdated(false);
+        t.setSiblingPromotionId(null);
+        t.setInBasket(true);
+    }
+
     public String getId() {
         return id;
     }
@@ -72,7 +87,6 @@ public class Timestream {
         if (productExpireDate == null) return FRESH;
 
         Date target = DateUtil.getStartPointToday();
-
 
         Date next = null;
         try {

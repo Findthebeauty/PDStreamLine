@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -29,6 +30,7 @@ import com.shepherdboy.pdstreamline.activities.PDInfoActivity;
 import com.shepherdboy.pdstreamline.activities.PossiblePromotionTimestreamActivity;
 import com.shepherdboy.pdstreamline.activities.ScanActivity;
 import com.shepherdboy.pdstreamline.activities.SettingActivity;
+import com.shepherdboy.pdstreamline.activities.TraversalTimestreamActivity;
 import com.shepherdboy.pdstreamline.beans.DateScope;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Shelf;
@@ -69,15 +71,16 @@ public class MyApplication extends Application {
     public static final int PRODUCT_NAME = 12;
     public static final int PRODUCT_EXP = 13;
     public static final int PRODUCT_EXP_TIME_UNIT = 14;
-    public static final int TIMESTREAM_DOP = 15;
-    public static final int TIMESTREAM_COORDINATE = 16;
-    public static final int TIMESTREAM_INVENTORY = 17;
-    public static final int TIMESTREAM_BUY_SPECS = 18;
-    public static final int TIMESTREAM_PRESENT_SPECS= 19;
+    public static final int PRODUCT_SPEC = 15;
+    public static final int TIMESTREAM_DOP = 16;
+    public static final int TIMESTREAM_COORDINATE = 17;
+    public static final int TIMESTREAM_INVENTORY = 18;
+    public static final int TIMESTREAM_BUY_SPECS = 19;
+    public static final int TIMESTREAM_PRESENT_SPECS = 20;
 
-    public static final int SHELF_NAME = 20;
-    public static final int SHELF_CLASSIFY = 21;
-    public static final int SHELF_MAX_ROW = 22;
+    public static final int SHELF_NAME = 21;
+    public static final int SHELF_CLASSIFY = 22;
+    public static final int SHELF_MAX_ROW = 23;
 
     public static final int MAIN_ACTIVITY = 0;
     public static final int PD_INFO_ACTIVITY = 1;
@@ -119,11 +122,11 @@ public class MyApplication extends Application {
 
     static LinearLayout temp;
 
-    public static LinkedHashMap<Integer, Timestream> onShowTimeStreamsHashMap = new LinkedHashMap<>(); // hashMap存放当前展示的时光流
-    public static LinkedHashMap<Integer, TimestreamCombination> onShowCombsHashMap = new LinkedHashMap<>(); // hashMap存放当前展示的时光流
+    public static LinkedHashMap<Integer, Timestream> onShowTimeStreamsHashMap = new LinkedHashMap<>(); // hashMap存放当前展示的时光流，key为viewId
+    public static LinkedHashMap<Integer, TimestreamCombination> onShowCombsHashMap = new LinkedHashMap<>(); // hashMap存放当前展示的捆绑商品，key为viewId
 
-    public static  HashMap<Integer, Point> originalPositionHashMap = new HashMap<>(); // hashMap存放每个时光流的初始坐标
-    public static  HashMap<Integer, Drawable> originalBackgroundHashMap = new HashMap<>(); // hashMap存放每个时光流的初始坐标
+    public static  HashMap<Integer, Point> originalPositionHashMap = new HashMap<>(); // hashMap存放每个时光流的初始坐标，key为viewId
+    public static  HashMap<Integer, Drawable> originalBackgroundHashMap = new HashMap<>(); // hashMap存放每个view的初始背景，key为viewId
 
     public static LinkedList thingsToSaveList = new LinkedList();
 
@@ -186,6 +189,7 @@ public class MyApplication extends Application {
         if (event.getActionMasked() ==  MotionEvent.ACTION_UP) {
 
             draggableLinearLayout.setLongClicking(false);
+            lastClickTime = System.currentTimeMillis();
             stopCountPressTime();
 
             switch (activityIndex) {
@@ -218,7 +222,29 @@ public class MyApplication extends Application {
 
     private static boolean onDBClick() {
 
-        Toast.makeText(getContext(), "onDoubleClick", Toast.LENGTH_SHORT).show();
+        stopCountPressTime();
+        switch (activityIndex) {
+
+            case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
+                Timestream t = onShowTimeStreamsHashMap.get(
+                        draggableLinearLayout.getCapturedView().getId());
+
+                if (t == null) return false;
+
+                String code = t.getProductCode();
+
+                PDInfoActivity.actionStart(code);
+
+                break;
+
+            case PD_INFO_ACTIVITY:
+                TraversalTimestreamActivity.actionStart();
+                break;
+
+            default:
+                break;
+
+        }
 
         return true;
     }
@@ -283,7 +309,7 @@ public class MyApplication extends Application {
 
             Timestream t = (Timestream) linkedList.remove();
             t.setInBasket(false);
-            PDInfoWrapper.updateInfo(sqLiteDatabase, t, MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME);
+            PDInfoWrapper.updateInfo(sqLiteDatabase, t, MyDatabaseHelper.UPDATE_BASKET);
         }
     }
 
@@ -613,6 +639,7 @@ public class MyApplication extends Application {
 
         onShowTimeStreamsHashMap.clear();
         originalPositionHashMap.clear();
+        originalBackgroundHashMap.clear();
     }
 
     public static void initDatabase(Context context) {
@@ -650,6 +677,10 @@ public class MyApplication extends Application {
 
             case SETTING_ACTIVITY:
                 SettingActivity.onScopeViewReleased(releasedChild, horizontalDistance);
+                break;
+
+            case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
+                TraversalTimestreamActivity.onViewReleased(releasedChild, horizontalDistance, verticalDistance);
                 break;
 
             default:
@@ -780,8 +811,9 @@ public class MyApplication extends Application {
                     if (allProducts == null) allProducts = PDInfoWrapper.getAllProduct();
                     if (allProducts.containsKey(after)) {
 
-                        PDInfoActivity.getShowHandler().sendEmptyMessage(0);
-
+                        Message msg = Message.obtain();
+                        msg.obj = after;
+                        PDInfoActivity.getShowHandler().sendMessage(msg);
                     }
                     break;
 
@@ -803,6 +835,11 @@ public class MyApplication extends Application {
 
                     currentProduct.setProductEXPTimeUnit(after);
                     synchronize(null, filedIndex);
+
+                case PRODUCT_SPEC:
+
+                    currentProduct.setProductSpec(after);
+                    currentProduct.setUpdated(false);
 
 
                 case TIMESTREAM_DOP:
@@ -879,28 +916,11 @@ public class MyApplication extends Application {
 
         if (ts == null) return;
 
-        int timeStreamStateCode = ts.getTimeStreamStateCode();
         LinearLayout timeStreamLinearLayout =
                 draggableLinearLayout.findViewById(Integer.parseInt(ts.getBoundLayoutId()
         ));
 
-        switch (timeStreamStateCode) {
-
-            case 1:
-
-                timeStreamLinearLayout.setBackgroundColor(Color.YELLOW);
-                break;
-
-            case -1:
-
-                timeStreamLinearLayout.setBackgroundColor(Color.GRAY);
-                break;
-
-            default:
-                timeStreamLinearLayout.setBackgroundColor(Color.GREEN);
-                break;
-
-        }
+        setTimeStreamViewOriginalBackgroundColor(timeStreamLinearLayout);
 
     }
 
@@ -912,24 +932,39 @@ public class MyApplication extends Application {
 
         Timestream ts = onShowTimeStreamsHashMap.get(timestreamLinearLayout.getId());
 
-        int timeStreamStateCode = ts.getTimeStreamStateCode();
+        int timeStreamStateCode = 0;
 
-        switch (timeStreamStateCode) {
+        if (ts == null) return;
 
-            case 1:
+        timeStreamStateCode = ts.getTimeStreamStateCode();
 
-                timestreamLinearLayout.setBackgroundColor(Color.YELLOW);
-                break;
+        switch (activityIndex) {
 
-            case -1:
+            case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
 
-                timestreamLinearLayout.setBackgroundColor(Color.GRAY);
+                draggableLinearLayout.getCapturedView().setBackground(
+                        originalBackgroundHashMap.get(draggableLinearLayout.getCapturedView().getId()));
                 break;
 
             default:
-                timestreamLinearLayout.setBackgroundColor(Color.GREEN);
-                break;
+                    switch (timeStreamStateCode) {
 
+                        case 1:
+
+                            timestreamLinearLayout.setBackgroundColor(Color.YELLOW);
+                            break;
+
+                        case -1:
+
+                            timestreamLinearLayout.setBackgroundColor(Color.GRAY);
+                            break;
+
+                        default:
+                            timestreamLinearLayout.setBackgroundColor(Color.GREEN);
+                            break;
+
+                    }
+                break;
         }
 
     }
@@ -1029,6 +1064,14 @@ public class MyApplication extends Application {
 
             case SETTING_ACTIVITY:
                 SettingActivity.onScopeViewPositionChanged(changedView, horizontalDistance);
+                break;
+
+            case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
+                TraversalTimestreamActivity.onViewPositionChanged(changedView, horizontalDistance, verticalDistance);
+                break;
+
+            default:
+                break;
         }
     }
 
@@ -1036,7 +1079,12 @@ public class MyApplication extends Application {
 
         Timestream mT = onShowTimeStreamsHashMap.remove(releasedChild.getId());
 
+        if (mT == null) return null;
+
+        onShowCombsHashMap.remove(mT.getId());
+
         originalPositionHashMap.remove(releasedChild.getId());
+        originalBackgroundHashMap.remove(releasedChild.getId());
 
         DraggableLinearLayout.setLayoutChanged(true);
 
