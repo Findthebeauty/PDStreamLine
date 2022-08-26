@@ -80,6 +80,8 @@ public class DateUtil {
 
     public static String getShortKey(String dateString) {
 
+        if (!dateString.contains("-")) return dateString;
+
         try {
 
             Date date = shortNormalFormat.parse(dateString);
@@ -88,7 +90,7 @@ public class DateUtil {
         } catch (ParseException e) {
 
             e.printStackTrace();
-            return "";
+            return dateString;
         }
     }
 

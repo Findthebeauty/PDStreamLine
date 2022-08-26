@@ -777,12 +777,12 @@ public class MyApplication extends Application {
 
                 case PRODUCT_CODE:
 
-//                    if (allProducts == null) allProducts = PDInfoWrapper.getAllProduct();
-//                    if (allProducts.containsKey(after)) {
-//
-//                        PDInfoActivity.getShowHandler().sendEmptyMessage(0);
-//
-//                    }
+                    if (allProducts == null) allProducts = PDInfoWrapper.getAllProduct();
+                    if (allProducts.containsKey(after)) {
+
+                        PDInfoActivity.getShowHandler().sendEmptyMessage(0);
+
+                    }
                     break;
 
                 case PRODUCT_NAME:

@@ -356,7 +356,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
         if (shouldWatch) {
 
-            currentInf = s.toString().trim();
+            currentInf = DateUtil.getShortKey(s.toString().trim());
 
             if (!preInf.equals(currentInf)) {
 
@@ -444,9 +444,10 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
                 break;
 
             default:
-                currentProduct = currentProduct == null ? MyApplication.allProducts
-                        .get(timestream.getProductCode())
-                        : currentProduct;
+
+                if (currentProduct == null && timestream != null)
+                    currentProduct = MyApplication.allProducts.get(timestream.getProductCode());
+
                 MyApplication.afterInfoChanged(currentInf, currentWatcher.watchedEditText, currentWatcher.timestream,
                         currentWatcher.filedIndex);
 

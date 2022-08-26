@@ -128,6 +128,8 @@ public class PDInfoActivity extends AppCompatActivity {
                 return true;
             }
         });
+
+        MyInfoChangeWatcher.watch(productCodeEditText, null, MyApplication.PRODUCT_CODE, true);
     }
 
     @Override
@@ -177,7 +179,7 @@ public class PDInfoActivity extends AppCompatActivity {
         productEXPEditText.setText(product.getProductEXP());
         productEXPTimeUnitButton.setText(product.getProductEXPTimeUnit());
 
-        MyInfoChangeWatcher.watch(productCodeEditText, null, MyApplication.PRODUCT_CODE, false);
+        MyInfoChangeWatcher.watch(productCodeEditText, null, MyApplication.PRODUCT_CODE, true);
         MyInfoChangeWatcher.watch(productNameEditText, null, MyApplication.PRODUCT_NAME, true);
         MyInfoChangeWatcher.watch(productEXPEditText, null, MyApplication.PRODUCT_EXP, true);
         MyInfoChangeWatcher.watch(productEXPTimeUnitButton);
