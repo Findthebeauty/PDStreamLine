@@ -160,6 +160,7 @@ public class AIInputter {
     public static void fillTheBlanks(Product product, Timestream temp) {
 
         temp.setProductCode(product.getProductCode());
+        temp.setProductName(product.getProductName());
         Date[] timestream = getPossibleTimeStream(product.getProductEXP(),
                 product.getProductEXPTimeUnit());
         temp.setProductDOP(timestream[0]);

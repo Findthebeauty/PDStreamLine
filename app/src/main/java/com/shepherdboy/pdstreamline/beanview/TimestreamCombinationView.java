@@ -24,7 +24,7 @@ import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 
 import java.util.ArrayList;
 
-public class TimestreamCombinationView extends LinearLayout {
+public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
     private LinearLayout buyBackground;
     private LinearLayout giveawayBackground;
@@ -37,13 +37,18 @@ public class TimestreamCombinationView extends LinearLayout {
     private TimestreamCombination timestreamCombination = null;
     private ArrayList<View> giveAwayViews;
 
+    private String productCode;
+
     public TimestreamCombinationView(Context context, Timestream timestream) {
-        super(context);
-
-
-        initView(context);
+        this(context);
 
         bindData(timestream);
+    }
+
+    public TimestreamCombinationView(Context context) {
+        super(context);
+
+        initView(context);
     }
 
     private void initView(Context context) {
@@ -77,6 +82,11 @@ public class TimestreamCombinationView extends LinearLayout {
         giveAwayViews.add(giveawayProductNameTv);
         giveAwayViews.add(giveawayDOPTv);
         giveAwayViews.add(giveawayFlagTv);
+
+        for (View v : giveAwayViews) {
+
+            v.setVisibility(View.GONE);
+        }
 
         flushIds(combination);
 
@@ -140,6 +150,8 @@ public class TimestreamCombinationView extends LinearLayout {
 
     public void bindData(Timestream timestream) {
 
+        this.productCode = timestream.getProductCode();
+
         String discountRate = timestream.getDiscountRate();
 
         MyApplication.onShowTimeStreamsHashMap.put(this.getId(), timestream);
@@ -148,11 +160,6 @@ public class TimestreamCombinationView extends LinearLayout {
         switch (discountRate) {
 
             case "":
-
-                for (View v : giveAwayViews) {
-
-                    v.setVisibility(View.GONE);
-                }
 
                 buyProductNameTv.setText(timestream.getProductName());
                 buyDOPEt.setText(DateUtil.typeMach(timestream.getProductDOP()).substring(0,10));
@@ -225,6 +232,26 @@ public class TimestreamCombinationView extends LinearLayout {
             MyInfoChangeWatcher.watch(inventory,timestream,MyApplication.TIMESTREAM_INVENTORY,true);
         }
 
+    }
+
+    public EditText getBuyDOPEt() {
+        return buyDOPEt;
+    }
+
+    public TextView getBuyProductNameTv() {
+        return buyProductNameTv;
+    }
+
+    public EditText getInventory() {
+        return inventory;
+    }
+
+    public String getProductCode() {
+        return productCode;
+    }
+
+    public void setProductCode(String productCode) {
+        this.productCode = productCode;
     }
 
     /**

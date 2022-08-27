@@ -36,6 +36,7 @@ import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
+import com.shepherdboy.pdstreamline.beanview.BeanView;
 import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
@@ -102,6 +103,9 @@ public class MyApplication extends Application {
 
     public static int activityIndex;
 
+    public static int DRAG_RANGE_FIRST_LEVEL = Color.parseColor("#8BC34A");
+    public static int DRAG_RANGE_SECOND_LEVEL = Color.parseColor("#FF0000");
+
 //    public static ScrollView scrollView;
 
     private static long lastClickTime = 0L;
@@ -130,7 +134,7 @@ public class MyApplication extends Application {
 
     public static LinkedList thingsToSaveList = new LinkedList();
 
-    public static HashMap<String, Product> allProducts; //仅包含productCode,productEXP,productEXPTimeUnit 3个信息
+    public static HashMap<String, Product> allProducts; //无Timestream的Product
 
     public static HashMap<String, TimestreamCombination> combinationHashMap; //已经捆绑的所有商品
 
@@ -226,18 +230,17 @@ public class MyApplication extends Application {
         switch (activityIndex) {
 
             case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
-                Timestream t = onShowTimeStreamsHashMap.get(
-                        draggableLinearLayout.getCapturedView().getId());
 
-                if (t == null) return false;
+                BeanView beanView = (BeanView) draggableLinearLayout.getCapturedView();
 
-                String code = t.getProductCode();
+                String code = beanView.getProductCode();
 
                 PDInfoActivity.actionStart(code);
 
                 break;
 
             case PD_INFO_ACTIVITY:
+                serialize();
                 TraversalTimestreamActivity.actionStart();
                 break;
 
@@ -638,8 +641,14 @@ public class MyApplication extends Application {
     public static void init() {
 
         onShowTimeStreamsHashMap.clear();
+
+        clearOriginalInfo();
+    }
+
+    public static void clearOriginalInfo() {
         originalPositionHashMap.clear();
         originalBackgroundHashMap.clear();
+
     }
 
     public static void initDatabase(Context context) {
@@ -932,22 +941,23 @@ public class MyApplication extends Application {
 
         Timestream ts = onShowTimeStreamsHashMap.get(timestreamLinearLayout.getId());
 
-        int timeStreamStateCode = 0;
-
-        if (ts == null) return;
-
-        timeStreamStateCode = ts.getTimeStreamStateCode();
 
         switch (activityIndex) {
 
             case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
-
-                draggableLinearLayout.getCapturedView().setBackground(
-                        originalBackgroundHashMap.get(draggableLinearLayout.getCapturedView().getId()));
+                Drawable drawable = originalBackgroundHashMap.get(draggableLinearLayout.getCapturedView().getId());
+                draggableLinearLayout.getCapturedView().setBackground(drawable);
                 break;
 
             default:
-                    switch (timeStreamStateCode) {
+
+                int timeStreamStateCode = 0;
+
+                if (ts == null) return;
+
+                timeStreamStateCode = ts.getTimeStreamStateCode();
+
+                switch (timeStreamStateCode) {
 
                         case 1:
 

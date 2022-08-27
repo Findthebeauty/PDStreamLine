@@ -24,7 +24,6 @@ import androidx.customview.widget.ViewDragHelper;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
-import com.shepherdboy.pdstreamline.beans.Timestream;
 
 import java.util.Set;
 import java.util.Timer;
@@ -173,8 +172,9 @@ public class DraggableLinearLayout extends LinearLayout {
 
         viewDragHelper.settleCapturedViewAt(originalPoint.x, originalPoint.y);
 
-        Timestream ts = (Timestream) MyApplication.onShowTimeStreamsHashMap.get(view.getId());
-        MyApplication.setTimeStreamViewOriginalBackgroundColor(ts);
+//        Timestream ts = (Timestream) MyApplication.onShowTimeStreamsHashMap.get(view.getId());
+//        MyApplication.setTimeStreamViewOriginalBackgroundColor(ts);
+        MyApplication.setTimeStreamViewOriginalBackgroundColor((LinearLayout) view);
 
         draggableView.invalidate();
     }

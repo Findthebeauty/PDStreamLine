@@ -4,37 +4,41 @@ import static com.shepherdboy.pdstreamline.MyApplication.allProducts;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 
 import android.content.Context;
+import android.graphics.drawable.ColorDrawable;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Cell;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
 
-public class CellHeadView extends LinearLayout {
+public class CellHeadView extends LinearLayout implements BeanView{
+
+    private String productCode;
+
     public CellHeadView(Context context, Cell cell) {
         super(context);
 
+        this.setBackground(new ColorDrawable());
+
         this.setId(View.generateViewId());
-        LinearLayout.LayoutParams lp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        this.setGravity(Gravity.CENTER_VERTICAL);
 
         LayoutInflater inflater = LayoutInflater.from(context);
-        LinearLayout cellHead = inflater.inflate(R.layout.cell_head_layout, null).findViewById(R.id.cell_head);
-        TextView headNameTv = cellHead.findViewById(R.id.name);
-        TextView headCodeTv = cellHead.findViewById(R.id.code);
-        TextView expTv = cellHead.findViewById(R.id.exp);
+        inflater.inflate(R.layout.cell_head_layout, this,true);
+        TextView headNameTv = findViewById(R.id.name);
+        TextView headCodeTv = findViewById(R.id.code);
+        TextView expTv = findViewById(R.id.exp);
 
-        cellHead.setId(View.generateViewId());
         headNameTv.setId(View.generateViewId());
         headCodeTv.setId(View.generateViewId());
         expTv.setId(View.generateViewId());
 
-        if (MyApplication.allProducts == null) {
+        if (allProducts == null) {
             allProducts = PDInfoWrapper.getAllProduct();
         }
 
@@ -53,6 +57,10 @@ public class CellHeadView extends LinearLayout {
 
         expTv.setText(productEXP);
 
-        this.addView(cellHead, lp);
+        this.productCode = cell.getProductCode();
+    }
+
+    public String getProductCode() {
+        return productCode;
     }
 }

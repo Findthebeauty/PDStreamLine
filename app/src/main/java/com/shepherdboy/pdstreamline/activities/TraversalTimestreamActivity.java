@@ -3,6 +3,7 @@ package com.shepherdboy.pdstreamline.activities;
 import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_MODIFY_SHELF;
 import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
+import static com.shepherdboy.pdstreamline.MyApplication.allProducts;
 import static com.shepherdboy.pdstreamline.MyApplication.combinationHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 import static com.shepherdboy.pdstreamline.MyApplication.setTimeStreamViewOriginalBackgroundColor;
@@ -12,7 +13,7 @@ import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerSer
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -25,6 +26,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -36,6 +38,7 @@ import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.activities.transaction.Streamline;
 import com.shepherdboy.pdstreamline.beans.Cell;
+import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Row;
 import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
@@ -79,27 +82,28 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         int viewState = getViewState(changedView, horizontalDistance);
 
+        Log.d("positionChanged", "in");
+
         switch (viewState) {
 
             case DRAG_LEFT:
 
-                changedView.setBackgroundColor(Color.parseColor("#8BC34A"));
+                changedView.setBackground(new ColorDrawable(MyApplication.DRAG_RANGE_SECOND_LEVEL));
                 break;
 
             case DRAG_RIGHT:
 
-                changedView.setBackgroundColor(Color.parseColor("#FF0000"));
+                changedView.setBackground(new ColorDrawable(MyApplication.DRAG_RANGE_FIRST_LEVEL));
                 break;
 
             default:
 
                 setTimeStreamViewOriginalBackgroundColor((LinearLayout) changedView);
+                break;
         }
     }
 
     private static int getViewState(View changedView, float horizontalDistance) {
-
-        Log.d("getViewState", horizontalDistance + "");
 
         if (horizontalDistance < 0 && Math.abs(horizontalDistance) > dragThreshold)
             return DRAG_LEFT;
@@ -119,7 +123,11 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
             case DRAG_LEFT:
 
                 Timestream ts = MyApplication.unloadTimestream((LinearLayout) releasedChild);
-                if (ts == null) return;
+                if (ts == null) {
+
+                    draggableLinearLayout.putBack(releasedChild);
+                    return;
+                }
                 PDInfoWrapper.deleteTimestream(sqLiteDatabase, ts.getId());
                 ts.setInBasket(false);
                 basket.remove(ts);
@@ -129,7 +137,12 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
                 ts = MyApplication.unloadTimestream((LinearLayout) releasedChild);
 
-                if (ts == null) return;
+
+                if (ts == null) {
+
+                    draggableLinearLayout.putBack(releasedChild);
+                    return;
+                }
                 PDInfoWrapper.deleteTimestream(sqLiteDatabase, ts.getId());
 
                 if (ts.getSiblingPromotionId() != null) {
@@ -153,6 +166,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
                     Streamline.position(ts);
                 }
+                break;
 
             default:
                 draggableLinearLayout.putBack(releasedChild);
@@ -492,8 +506,54 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         for (Timestream timestream : timestreams.values()) {
 
-            view.addView(new TimestreamCombinationView(draggableLinearLayout.getContext(), timestream));
+            view.addView(new TimestreamCombinationView(view.getContext(), timestream));
         }
+
+        prepareNext(cell, view);
+    }
+
+    private void prepareNext(Cell cell, DraggableLinearLayout view) {
+
+        TimestreamCombinationView nextTrigger =
+                new TimestreamCombinationView(view.getContext());
+        view.addView(nextTrigger);
+
+        nextTrigger.setProductCode(cell.getProductCode());
+
+        TextView nameTv = nextTrigger.getBuyProductNameTv();
+        EditText inventoryEt = nextTrigger.getInventory();
+        nameTv.setText(allProducts.get(cell.getProductCode()).getProductName());
+        inventoryEt.setFocusable(false);
+        inventoryEt.setVisibility(View.INVISIBLE);
+
+
+        EditText e = nextTrigger.getBuyDOPEt();
+
+        e.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+
+                if (hasFocus && MyInfoChangeWatcher.isShouldWatch()) {
+
+                    String code = cell.getProductCode();
+                    Product p = allProducts.get(code);
+                    Timestream t = new Timestream();
+                    AIInputter.fillTheBlanks(p, t);
+
+                    TimestreamCombinationView next =
+                            new TimestreamCombinationView(view.getContext(), t);
+                    MyInfoChangeWatcher.setShouldWatch(false);
+                    view.addView(next,
+                            view.indexOfChild(nextTrigger));
+                    MyInfoChangeWatcher.setShouldWatch(true);
+                    MyApplication.clearOriginalInfo();
+                    MyApplication.recordDraggableView();
+                    DraggableLinearLayout.setFocus(next.getBuyDOPEt());
+                    DraggableLinearLayout.setLayoutChanged(true);
+                }
+
+            }
+        });
 
     }
 
