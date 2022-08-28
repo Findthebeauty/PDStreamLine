@@ -578,7 +578,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
                     nextTrigger.getLocationInWindow(location);
                     int dy = location[1];
                     Message msg = Message.obtain();
-                    msg.arg1 = dy;
+                    msg.arg1 = dy - nextTrigger.getHeight(); //顶部多留一个timestream控件
                     ClosableScrollView.getScrollHandler().sendMessage(msg);
 
                     String code = cell.getProductCode();
