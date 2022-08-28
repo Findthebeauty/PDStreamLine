@@ -8,6 +8,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Message;
@@ -49,9 +50,11 @@ import com.shepherdboy.pdstreamline.view.TouchEventDispatcher;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -96,6 +99,7 @@ public class MyApplication extends Application {
 
     public static final int ITEM_SELECTED = 100;
 
+    public static Set<Handler> handlers = new HashSet<>();
 
     public static DraggableLinearLayout draggableLinearLayout;
 
@@ -105,6 +109,9 @@ public class MyApplication extends Application {
 
     public static int DRAG_RANGE_FIRST_LEVEL = Color.parseColor("#8BC34A");
     public static int DRAG_RANGE_SECOND_LEVEL = Color.parseColor("#FF0000");
+
+    public static final ColorDrawable drawableSecondLevel = new ColorDrawable(MyApplication.DRAG_RANGE_SECOND_LEVEL);
+    public static final ColorDrawable drawableFirstLevel = new ColorDrawable(MyApplication.DRAG_RANGE_FIRST_LEVEL);
 
 //    public static ScrollView scrollView;
 
@@ -193,7 +200,6 @@ public class MyApplication extends Application {
         if (event.getActionMasked() ==  MotionEvent.ACTION_UP) {
 
             draggableLinearLayout.setLongClicking(false);
-            lastClickTime = System.currentTimeMillis();
             stopCountPressTime();
 
             switch (activityIndex) {
@@ -234,7 +240,6 @@ public class MyApplication extends Application {
                 BeanView beanView = (BeanView) draggableLinearLayout.getCapturedView();
 
                 String code = beanView.getProductCode();
-
                 PDInfoActivity.actionStart(code);
 
                 break;
@@ -290,6 +295,8 @@ public class MyApplication extends Application {
 
         handler.postDelayed(runnable, Long.parseLong(settingInstance.getLongClickDelay()));
         setScheduled(true);
+
+        handlers.add(handler);
     }
 
     private static boolean onLongClick() {
@@ -578,6 +585,8 @@ public class MyApplication extends Application {
 
                 case PD_INFO_ACTIVITY:
 
+                case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
+
                     for (int i = 0; i < draggableLinearLayout.getChildCount() - 1; i++) {
 
                         recordViewStateByChildIndex(draggableLinearLayout, i);
@@ -613,15 +622,6 @@ public class MyApplication extends Application {
                     }
                     break;
 
-                case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
-
-                    for (int i = 0; i < draggableLinearLayout.getChildCount(); i++) {
-
-                        recordViewStateByChildIndex(draggableLinearLayout, i);
-
-                    }
-
-                    break;
             }
 
 

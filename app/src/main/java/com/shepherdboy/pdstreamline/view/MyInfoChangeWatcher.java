@@ -42,7 +42,6 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
     private static Handler commitHandler;
     public static Handler selectHandler;
     private static Runnable commitRunnable;
-    private static Runnable selectRunnable;
     private static long timeMillis = 0;
     private static long lastInputTimeMillis = 0;
     private static MyInfoChangeWatcher currentWatcher;
@@ -55,7 +54,6 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
     private String preInf = "";
     private String currentInf = "";
     private Shelf shelf;
-
 
     static {
 
@@ -85,6 +83,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
             }
         };
 
+        MyApplication.handlers.add(selectHandler);
     }
 
     /**
@@ -262,10 +261,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
                     }
                 });
                 break;
-
         }
-
-
     }
 
     public static void clearWatchers() {
@@ -278,6 +274,19 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
         }
 
         myTextWatchers.clear();
+    }
+
+    public static void destroy() {
+
+        clearWatchers();
+
+        if (selectHandler != null) {
+
+            selectHandler.removeCallbacksAndMessages(null);
+            selectHandler = null;
+
+        }
+
     }
 
     public static void removeWatcher(View view) {
@@ -428,6 +437,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
         commitHandler.postDelayed(commitRunnable, 10);
         setScheduled(true);
+        MyApplication.handlers.add(commitHandler);
     }
 
     private void commit() {

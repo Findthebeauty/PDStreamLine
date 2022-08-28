@@ -71,7 +71,8 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
         buyDOPEt = combination.findViewById(R.id.buy_dop);
         inventory = combination.findViewById(R.id.inventory);
-        EditText inventoryMeasure = combination.findViewById(R.id.inventory_measure);
+        EditText inventoryMeasure;
+        inventoryMeasure = combination.findViewById(R.id.inventory_measure);
 
         unitTv = combination.findViewById(R.id.unit);
         giveawayDOPTv = combination.findViewById(R.id.give_away_dop);
@@ -245,6 +246,8 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
     public EditText getInventory() {
         return inventory;
     }
+
+
 
     public String getProductCode() {
         return productCode;

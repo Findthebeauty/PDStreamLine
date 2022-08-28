@@ -85,6 +85,7 @@ public class PDInfoActivity extends AppCompatActivity {
                 }
             };
 
+            MyApplication.handlers.add(showHandler);
         }
 
         if (productToShow != null) {
@@ -512,9 +513,10 @@ public class PDInfoActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        if (showHandler != null) {
+        for (Handler h : MyApplication.handlers) {
 
-            showHandler.removeCallbacksAndMessages(null);
+            if (h != null) h.removeCallbacksAndMessages(null);
+
         }
     }
 }

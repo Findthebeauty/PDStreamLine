@@ -1,14 +1,20 @@
 package com.shepherdboy.pdstreamline.view;
 
+import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
 
+import androidx.annotation.NonNull;
+
 import com.shepherdboy.pdstreamline.MyApplication;
+import com.shepherdboy.pdstreamline.activities.TraversalTimestreamActivity;
 
 public class ClosableScrollView extends ScrollView {
 
@@ -17,24 +23,48 @@ public class ClosableScrollView extends ScrollView {
     private static float oldY;
     private static float newX;
     private static float oldX;
+
+    private static int originalY = 0;
     //滚动结束标志
     private static boolean flingFinished = true;
+    int[] location = new int[2];
+
+    private static Handler scrollHandler;
 
     public ClosableScrollView(Context context) {
         super(context);
+        init();
     }
 
     public ClosableScrollView(Context context, AttributeSet attrs) {
         super(context, attrs);
-
+        init();
     }
 
-    public ClosableScrollView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-    }
+    private void init() {
 
-    public ClosableScrollView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
+        if (scrollHandler != null) {
+
+            MyApplication.handlers.remove(scrollHandler);
+            scrollHandler.removeCallbacksAndMessages(null);
+
+        }
+
+        scrollHandler = new Handler() {
+
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+
+                int dy = msg.arg1;
+
+                ScrollView view = ClosableScrollView.this;
+
+                view.smoothScrollBy(0, dy - originalY);
+            }
+        };
+
+        MyApplication.handlers.add(scrollHandler);
+
     }
 
     public static float getDeltaX() {
@@ -58,6 +88,25 @@ public class ClosableScrollView extends ScrollView {
             newX = oldX = ev.getRawX();
         }
         return super.onInterceptTouchEvent(ev);
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        super.onLayout(changed, l, t, r, b);
+
+
+        if (originalY != 0) return;
+
+        getLocationOnScreen(location);
+        originalY = location[1];
+        location = null;
+
+        if(MyApplication.activityIndex == TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF) {
+
+            Message msg = Message.obtain();
+            msg.what = TraversalTimestreamActivity.MSG_REFRESH_TAIL_HEIGHT;
+            TraversalTimestreamActivity.handler.sendMessage(msg);
+        }
     }
 
     @Override
@@ -95,6 +144,10 @@ public class ClosableScrollView extends ScrollView {
 
     public static boolean isFlingFinished() {
         return flingFinished;
+    }
+
+    public static int getOriginalY() {
+        return originalY;
     }
 
     @Override
@@ -145,4 +198,7 @@ public class ClosableScrollView extends ScrollView {
         ClosableScrollView.oldX = oldX;
     }
 
+    public static Handler getScrollHandler() {
+        return scrollHandler;
+    }
 }

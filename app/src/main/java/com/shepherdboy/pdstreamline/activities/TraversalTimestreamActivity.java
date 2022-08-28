@@ -13,10 +13,10 @@ import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerSer
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,6 +48,7 @@ import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
 import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.sql.ShelfDAO;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
+import com.shepherdboy.pdstreamline.view.ClosableScrollView;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 import com.shepherdboy.pdstreamline.view.ShelfAdapter;
@@ -70,6 +71,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
     public static final int MSG_MODIFY_SHELF = 0;
     public static final int MSG_SHOW_SHELF = 1;
+    public static final int MSG_REFRESH_TAIL_HEIGHT = 2;
 
     public static final int LAYOUT_SHELF_LIST = 100;
     public static final int LAYOUT_SHOW_SHELF_PRODUCT = 101;
@@ -77,6 +79,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     private static int layoutIndex;
 
     public static Handler handler;
+    int[] location = new int[2];
 
     public static void onViewPositionChanged(View changedView, float horizontalDistance, float verticalDistance) {
 
@@ -88,12 +91,12 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
             case DRAG_LEFT:
 
-                changedView.setBackground(new ColorDrawable(MyApplication.DRAG_RANGE_SECOND_LEVEL));
+                changedView.setBackground(MyApplication.drawableSecondLevel);
                 break;
 
             case DRAG_RIGHT:
 
-                changedView.setBackground(new ColorDrawable(MyApplication.DRAG_RANGE_FIRST_LEVEL));
+                changedView.setBackground(MyApplication.drawableFirstLevel);
                 break;
 
             default:
@@ -179,7 +182,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     private void initShowShelfList(Context context) {
@@ -225,18 +227,24 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
 
-                    Shelf shelf = (Shelf) msg.obj;
-                    currentShelf = shelf;
+                    if(msg.obj != null)
+                    currentShelf = (Shelf) msg.obj;
+
                     switch (msg.what) {
 
                         case MSG_MODIFY_SHELF:
 
-                            modifyShelf(shelf);
+                            modifyShelf(currentShelf);
                             break;
 
                         case MSG_SHOW_SHELF:
 
-                            showShelf(shelf);
+                            showShelf(currentShelf);
+                            break;
+
+                        case MSG_REFRESH_TAIL_HEIGHT:
+
+                            refreshTailHeight();
                             break;
 
                         default:
@@ -245,6 +253,8 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
                 }
             };
+
+            MyApplication.handlers.add(handler);
         }
 
     }
@@ -495,6 +505,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         }
 
+        addTail(draggableLinearLayout);
 
     }
 
@@ -512,6 +523,35 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         prepareNext(cell, view);
     }
 
+
+    private void addTail(DraggableLinearLayout draggableLinearLayout) {
+
+
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        TextView tail = new TextView(draggableLinearLayout.getContext());
+        tail.setId(View.generateViewId());
+        draggableLinearLayout.addView(tail, lp);
+        draggableLinearLayout.postInvalidate();
+        refreshTailHeight();
+    }
+
+    private void refreshTailHeight() {
+
+        DisplayMetrics dm = new DisplayMetrics();
+
+        this.getWindowManager().getDefaultDisplay().getMetrics(dm);//this指当前activity
+
+        int lastViewHeight = (draggableLinearLayout.getChildAt(
+                draggableLinearLayout.getChildCount() - 2)).getHeight();
+
+        int height = dm.heightPixels - ClosableScrollView.getOriginalY() - lastViewHeight * 2;
+        ((TextView)(draggableLinearLayout.getChildAt(
+                draggableLinearLayout.getChildCount() - 1
+        ))).setHeight(height);
+    }
+
     private void prepareNext(Cell cell, DraggableLinearLayout view) {
 
         TimestreamCombinationView nextTrigger =
@@ -526,7 +566,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         inventoryEt.setFocusable(false);
         inventoryEt.setVisibility(View.INVISIBLE);
 
-
         EditText e = nextTrigger.getBuyDOPEt();
 
         e.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -534,6 +573,13 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
             public void onFocusChange(View v, boolean hasFocus) {
 
                 if (hasFocus && MyInfoChangeWatcher.isShouldWatch()) {
+
+                    //将edittext所在view滚动到上方
+                    nextTrigger.getLocationInWindow(location);
+                    int dy = location[1];
+                    Message msg = Message.obtain();
+                    msg.arg1 = dy;
+                    ClosableScrollView.getScrollHandler().sendMessage(msg);
 
                     String code = cell.getProductCode();
                     Product p = allProducts.get(code);
@@ -550,6 +596,8 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
                     MyApplication.recordDraggableView();
                     DraggableLinearLayout.setFocus(next.getBuyDOPEt());
                     DraggableLinearLayout.setLayoutChanged(true);
+
+
                 }
 
             }
@@ -614,7 +662,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         }
 
-
     }
 
 
@@ -658,7 +705,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         finalizeActivity();
-
     }
 
     @Override

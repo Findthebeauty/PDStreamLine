@@ -18,6 +18,7 @@ import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService;
 import com.shepherdboy.pdstreamline.utils.ErrorInfoDisplayActivity;
 import com.shepherdboy.pdstreamline.utils.ScanEventReceiver;
+import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -210,6 +211,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+
+        MyInfoChangeWatcher.destroy();
 
         //注销广播接收器，退出时
         unregisterReceiver(scanEventReceiver);
