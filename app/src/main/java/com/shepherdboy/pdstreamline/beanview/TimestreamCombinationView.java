@@ -3,6 +3,7 @@ package com.shepherdboy.pdstreamline.beanview;
 import static com.shepherdboy.pdstreamline.MyApplication.allProducts;
 import static com.shepherdboy.pdstreamline.MyApplication.combinationHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowCombsHashMap;
+import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -155,7 +156,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
         String discountRate = timestream.getDiscountRate();
 
-        MyApplication.onShowTimeStreamsHashMap.put(this.getId(), timestream);
+        onShowTimeStreamsHashMap.put(this.getId(), timestream);
         timestream.setBoundLayoutId(String.valueOf(this.getId()));
 
         switch (discountRate) {
@@ -170,6 +171,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
                 int color = MyApplication.getColorByTimestreamStateCode(timestream.getTimeStreamStateCode());
 
                 buyBackground.setBackgroundColor(color);
+                onShowTimeStreamsHashMap.put(buyBackground.getId(), timestream); //一个combination有3个背景，整体的、商品和赠品的，3个背景都要记录
 
                 break;
 
@@ -193,8 +195,6 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
                 timestreamCombination = combinationHashMap.get(timestream.getSiblingPromotionId());
 
-
-                MyApplication.onShowTimeStreamsHashMap.put(this.getId(), timestreamCombination.getBuyTimestream());
                 timestreamCombination.getBuyTimestream().setBoundLayoutId(String.valueOf(this.getId()));
                 break;
 
@@ -224,6 +224,10 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
             color = MyApplication.getColorByTimestreamStateCode(timestreamCombination.getGiveawayTimestream().getTimeStreamStateCode());
             giveawayBackground.setBackgroundColor(color);
 
+            onShowTimeStreamsHashMap.put(this.getId(), timestreamCombination.getBuyTimestream()); //一个combination有3个背景，整体的、商品和赠品的，3个背景都要记录
+            onShowTimeStreamsHashMap.put(buyBackground.getId(), timestreamCombination.getBuyTimestream()); //一个combination有3个背景，整体的、商品和赠品的，3个背景都要记录
+            onShowTimeStreamsHashMap.put(giveawayBackground.getId(), timestreamCombination.getGiveawayTimestream()); //一个combination有3个背景，整体的、商品和赠品的，3个背景都要记录
+
             MyInfoChangeWatcher.watch(buyDOPEt,timestreamCombination.getBuyTimestream(),MyApplication.TIMESTREAM_DOP,true);
             MyInfoChangeWatcher.watch(inventory,timestreamCombination.getBuyTimestream(),MyApplication.TIMESTREAM_INVENTORY,true);
 
@@ -241,6 +245,14 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
     public TextView getBuyProductNameTv() {
         return buyProductNameTv;
+    }
+
+    public LinearLayout getBuyBackground() {
+        return buyBackground;
+    }
+
+    public LinearLayout getGiveawayBackground() {
+        return giveawayBackground;
     }
 
     public EditText getInventory() {

@@ -38,6 +38,7 @@ import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.beanview.BeanView;
+import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
 import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
@@ -929,7 +930,19 @@ public class MyApplication extends Application {
                 draggableLinearLayout.findViewById(Integer.parseInt(ts.getBoundLayoutId()
         ));
 
+
+        switch (activityIndex) {
+
+            case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
+
+                return;
+
+            default:
+                break;
+
+        }
         setTimeStreamViewOriginalBackgroundColor(timeStreamLinearLayout);
+
 
     }
 
@@ -940,7 +953,6 @@ public class MyApplication extends Application {
     public static void setTimeStreamViewOriginalBackgroundColor(LinearLayout timestreamLinearLayout) {
 
         Timestream ts = onShowTimeStreamsHashMap.get(timestreamLinearLayout.getId());
-
 
         switch (activityIndex) {
 
@@ -1045,11 +1057,10 @@ public class MyApplication extends Application {
 
             case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
 
-                timestream.setBuySpecs(null);
-                timestream.setGiveawaySpecs(null);
-                timestream.setSiblingPromotionId(null);
-                timestream.setDiscountRate("");
-                timestream.setPromoting(false);
+                Timestream.refresh(timestream);
+                TimestreamCombinationView combView = draggableLinearLayout.
+                        findViewById(Integer.parseInt(timestream.getBoundLayoutId()));
+                combView.bindData(timestream);
                 PDInfoWrapper.updateInfo(sqLiteDatabase, timestream, MyDatabaseHelper.FRESH_TIMESTREAM_TABLE_NAME);
                 break;
 

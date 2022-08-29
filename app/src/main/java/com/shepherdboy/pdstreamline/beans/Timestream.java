@@ -29,7 +29,6 @@ public class Timestream {
         t.setDiscountRate("");
         t.setGiveawaySpecs(null);
         t.setBuySpecs(null);
-        t.setProductPromotionDate(null);
         t.setUpdated(false);
         t.setSiblingPromotionId(null);
         t.setInBasket(true);
@@ -96,7 +95,6 @@ public class Timestream {
         }
 
         //如果业务员明天不来，则提前将明天到期的选出
-        assert next != null;
         if (!next.after(DateUtil.getStartPointToday())) {
 
             Calendar calendar = Calendar.getInstance();

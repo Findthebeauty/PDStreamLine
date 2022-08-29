@@ -17,7 +17,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -84,8 +83,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     public static void onViewPositionChanged(View changedView, float horizontalDistance, float verticalDistance) {
 
         int viewState = getViewState(changedView, horizontalDistance);
-
-        Log.d("positionChanged", "in");
 
         switch (viewState) {
 
