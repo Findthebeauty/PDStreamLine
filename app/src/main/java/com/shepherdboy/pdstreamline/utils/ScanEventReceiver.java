@@ -5,9 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.shepherdboy.pdstreamline.MyApplication;
-import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
+import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.activities.PDInfoActivity;
-import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
+import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 
 public class ScanEventReceiver extends BroadcastReceiver {
 

@@ -3,8 +3,8 @@ package com.shepherdboy.pdstreamline.activities.transaction;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 
 import com.shepherdboy.pdstreamline.beans.Timestream;
-import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
-import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
+import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
+import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 
 import java.util.List;
 

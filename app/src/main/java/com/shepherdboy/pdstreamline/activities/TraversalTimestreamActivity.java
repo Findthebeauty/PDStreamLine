@@ -3,7 +3,6 @@ package com.shepherdboy.pdstreamline.activities;
 import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_MODIFY_SHELF;
 import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
-import static com.shepherdboy.pdstreamline.MyApplication.allProducts;
 import static com.shepherdboy.pdstreamline.MyApplication.combinationHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 import static com.shepherdboy.pdstreamline.MyApplication.setTimeStreamViewOriginalBackgroundColor;
@@ -42,10 +41,11 @@ import com.shepherdboy.pdstreamline.beans.Row;
 import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
+import com.shepherdboy.pdstreamline.beanview.BeanView;
 import com.shepherdboy.pdstreamline.beanview.CellHeadView;
 import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
-import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
-import com.shepherdboy.pdstreamline.sql.ShelfDAO;
+import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
+import com.shepherdboy.pdstreamline.dao.ShelfDAO;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.view.ClosableScrollView;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
@@ -54,6 +54,7 @@ import com.shepherdboy.pdstreamline.view.ShelfAdapter;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 public class TraversalTimestreamActivity extends AppCompatActivity {
@@ -71,6 +72,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     public static final int MSG_MODIFY_SHELF = 0;
     public static final int MSG_SHOW_SHELF = 1;
     public static final int MSG_REFRESH_TAIL_HEIGHT = 2;
+    public static final int MSG_SYNC_PRODUCT = 3;
 
     public static final int LAYOUT_SHELF_LIST = 100;
     public static final int LAYOUT_SHOW_SHELF_PRODUCT = 101;
@@ -225,23 +227,30 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
                 public void handleMessage(@NonNull Message msg) {
 
                     if(msg.obj != null)
-                    currentShelf = (Shelf) msg.obj;
 
                     switch (msg.what) {
 
                         case MSG_MODIFY_SHELF:
 
+                            currentShelf = (Shelf) msg.obj;
                             modifyShelf(currentShelf);
                             break;
 
                         case MSG_SHOW_SHELF:
 
+                            currentShelf = (Shelf) msg.obj;
                             showShelf(currentShelf);
                             break;
 
                         case MSG_REFRESH_TAIL_HEIGHT:
 
                             refreshTailHeight();
+                            break;
+
+                        case MSG_SYNC_PRODUCT:
+
+                            String code = (String) msg.obj;
+                            syncProduct(code);
                             break;
 
                         default:
@@ -252,6 +261,29 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
             };
 
             MyApplication.handlers.add(handler);
+        }
+
+    }
+
+    /**
+     * 同步商品信息
+     * @param code
+     */
+    private void syncProduct(String code) {
+
+        List<BeanView> beanViews = MyApplication.productBeanViewsMap.get(code);
+
+        for (BeanView beanView : beanViews) {
+
+            if (beanView instanceof CellHeadView) {
+
+                beanView.bindData(code);
+            }
+
+            if (beanView instanceof TimestreamCombinationView) {
+
+                beanView.bindData(((TimestreamCombinationView) beanView).getTimestreamId());
+            }
         }
 
     }
@@ -498,6 +530,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         for (Cell cell : row.getCells()) {
 
+            MyApplication.productBeanViewsMap.put(cell.getProductCode(), new LinkedList<>());
             showCell(cell, draggableLinearLayout);
 
         }
@@ -510,11 +543,15 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         LinkedHashMap<String, Timestream> timestreams = cell.getTimestreams();
 
-        view.addView(new CellHeadView(view.getContext(), cell));
+        CellHeadView cellHead = new CellHeadView(view.getContext(), cell);
+
+        view.addView(cellHead);
 
         for (Timestream timestream : timestreams.values()) {
 
-            view.addView(new TimestreamCombinationView(view.getContext(), timestream));
+            MyApplication.timeStreams.put(timestream.getId(),timestream);
+            TimestreamCombinationView combView = new TimestreamCombinationView(view.getContext(), timestream);
+            view.addView(combView);
         }
 
         prepareNext(cell, view);
@@ -559,7 +596,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         TextView nameTv = nextTrigger.getBuyProductNameTv();
         EditText inventoryEt = nextTrigger.getInventory();
-        nameTv.setText(allProducts.get(cell.getProductCode()).getProductName());
+        nameTv.setText(MyApplication.getAllProducts().get(cell.getProductCode()).getProductName());
         inventoryEt.setFocusable(false);
         inventoryEt.setVisibility(View.INVISIBLE);
 
@@ -579,8 +616,9 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
                     ClosableScrollView.getScrollHandler().sendMessage(msg);
 
                     String code = cell.getProductCode();
-                    Product p = allProducts.get(code);
+                    Product p = MyApplication.getAllProducts().get(code);
                     Timestream t = new Timestream();
+                    MyApplication.timeStreams.put(t.getId(), t);
                     AIInputter.fillTheBlanks(p, t);
 
                     TimestreamCombinationView next =

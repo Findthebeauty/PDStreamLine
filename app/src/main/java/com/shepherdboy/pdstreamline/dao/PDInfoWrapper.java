@@ -1,4 +1,4 @@
-package com.shepherdboy.pdstreamline.sql;
+package com.shepherdboy.pdstreamline.dao;
 
 import android.annotation.SuppressLint;
 import android.database.Cursor;
@@ -59,7 +59,7 @@ public class PDInfoWrapper {
      */
     public static Product getProduct(String productCode, SQLiteDatabase sqLiteDatabase, int typeCode) {
 
-        Product product = new Product();
+        Product product;
 
         LinkedHashMap<String, Timestream> timeStreamHashMap = new LinkedHashMap<>();
 
@@ -68,8 +68,9 @@ public class PDInfoWrapper {
         Cursor cursor = MyDatabaseHelper.query(sqLiteDatabase, MyDatabaseHelper.PRODUCT_INFO_TABLE_NAME,
                 new String[]{"*"}, "product_code=?", new String[]{productCode});
 
+
+        product = new Product();
         product.setProductCode(productCode);
-        product.setLastCheckDate(DateUtil.typeMach(MyApplication.today));
 
         if (cursor.getCount() > 0) {
 
@@ -86,11 +87,14 @@ public class PDInfoWrapper {
                     product.getProductEXPTimeUnit())));
 
             product.setDefaultCoordinate(cursor.getString(9));
+
         } else {
 
+            HttpUtil.queryFromServer(productCode);
             AIInputter.fillTheBlanks(product);
-
         }
+
+        product.setLastCheckDate(DateUtil.typeMach(MyApplication.today));
 
         switch (typeCode) {
 

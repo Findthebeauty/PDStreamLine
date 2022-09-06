@@ -1,6 +1,5 @@
 package com.shepherdboy.pdstreamline.beanview;
 
-import static com.shepherdboy.pdstreamline.MyApplication.allProducts;
 import static com.shepherdboy.pdstreamline.MyApplication.combinationHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowCombsHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
@@ -24,6 +23,7 @@ import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
@@ -37,13 +37,13 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
     private TextView giveawayDOPTv;
     private TimestreamCombination timestreamCombination = null;
     private ArrayList<View> giveAwayViews;
-
     private String productCode;
+    private String timestreamId;
 
     public TimestreamCombinationView(Context context, Timestream timestream) {
         this(context);
 
-        bindData(timestream);
+        bindData(timestream.getId());
     }
 
     public TimestreamCombinationView(Context context) {
@@ -53,7 +53,10 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
     }
 
     private void initView(Context context) {
-        this.setId(View.generateViewId());
+
+        setId(View.generateViewId());
+        setFocusable(true);
+        setFocusableInTouchMode(true);
 
         LayoutInflater inflater = LayoutInflater.from(context);
         ConstraintLayout combination = inflater.inflate(R.layout.comb_layout, null).findViewById(R.id.combination);
@@ -150,9 +153,24 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
     }
 
-    public void bindData(Timestream timestream) {
+    /**
+     *
+     * @param o timestreamId
+     */
+    public void bindData(Object o) {
+
+        // 如果传入null，表示更新nextTrigger的信息，只需要更新商品名
+        if (o == null) {
+
+            buyProductNameTv.setText(MyApplication.getAllProducts().get(productCode).getProductName());
+            return;
+        }
+
+        String timestreamId = (String) o;
+        Timestream timestream = MyApplication.timeStreams.get(timestreamId);
 
         this.productCode = timestream.getProductCode();
+        this.timestreamId = timestreamId;
 
         String discountRate = timestream.getDiscountRate();
 
@@ -166,7 +184,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
                 buyProductNameTv.setText(timestream.getProductName());
                 buyDOPEt.setText(DateUtil.typeMach(timestream.getProductDOP()).substring(0,10));
                 inventory.setText(timestream.getProductInventory());
-                unitTv.setText(allProducts.get(timestream.getProductCode()).getProductSpec());
+                unitTv.setText(MyApplication.getAllProducts().get(timestream.getProductCode()).getProductSpec());
 
                 int color = MyApplication.getColorByTimestreamStateCode(timestream.getTimeStreamStateCode());
 
@@ -237,6 +255,9 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
             MyInfoChangeWatcher.watch(inventory,timestream,MyApplication.TIMESTREAM_INVENTORY,true);
         }
 
+        List<BeanView> beanViews = MyApplication.productBeanViewsMap.get(productCode);
+        if (beanViews != null && !beanViews.contains(this))
+            beanViews.add(this);
     }
 
     public EditText getBuyDOPEt() {
@@ -259,7 +280,9 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
         return inventory;
     }
 
-
+    public String getTimestreamId() {
+        return timestreamId;
+    }
 
     public String getProductCode() {
         return productCode;

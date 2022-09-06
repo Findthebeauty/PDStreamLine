@@ -6,6 +6,7 @@ import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.setTimeStreamViewOriginalBackgroundColor;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -33,7 +34,7 @@ import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Timestream;
-import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
+import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.utils.ScanEventReceiver;
@@ -61,6 +62,12 @@ public class PDInfoActivity extends AppCompatActivity {
             productEXPEditText,productSpecEditText;
     public static Button scanner,productEXPTimeUnitButton;
 
+    private static Activity activity;
+
+    /**
+     * 启动PDInfoActivity活动并加载传入条码对应的商品，如果传入空值，则尝试加载上次加载过的商品--currentProduct
+     * @param code
+     */
     public static void actionStart(String code) {
 
         Intent intent = new Intent(MyApplication.getContext(), PDInfoActivity.class);
@@ -142,12 +149,17 @@ public class PDInfoActivity extends AppCompatActivity {
         });
 
         MyInfoChangeWatcher.watch(productCodeEditText, null, MyApplication.PRODUCT_CODE, true);
+        activity = PDInfoActivity.this;
+    }
+
+    public static Activity getActivity() {
+        return activity;
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    public boolean dispatchKeyEvent(KeyEvent event) {
 
-        return MyApplication.tryCatchVolumeDown(this, keyCode) || super.onKeyDown(keyCode, event);
+        return MyApplication.tryCatchVolumeDown(this, event.getKeyCode()) || super.dispatchKeyEvent(event);
     }
 
     private void searchNext(String code) {
@@ -182,6 +194,8 @@ public class PDInfoActivity extends AppCompatActivity {
     public static void loadProduct(Product product) {
 
         MyInfoChangeWatcher.setShouldWatch(false);
+
+        currentProduct = product;
 
         LinkedHashMap<String, Timestream> timeStreams = product.getTimeStreams();
 

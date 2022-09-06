@@ -39,8 +39,8 @@ import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.beanview.BeanView;
 import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
-import com.shepherdboy.pdstreamline.sql.MyDatabaseHelper;
-import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
+import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
+import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.ClosableScrollView;
@@ -135,14 +135,16 @@ public class MyApplication extends Application {
     static LinearLayout temp;
 
     public static LinkedHashMap<Integer, Timestream> onShowTimeStreamsHashMap = new LinkedHashMap<>(); // hashMap存放当前展示的时光流，key为viewId
+    public static HashMap<String, Timestream> timeStreams = new LinkedHashMap<>(); // hashMap存放当前展示的时光流，key为timestreamId
     public static LinkedHashMap<Integer, TimestreamCombination> onShowCombsHashMap = new LinkedHashMap<>(); // hashMap存放当前展示的捆绑商品，key为viewId
 
-    public static  HashMap<Integer, Point> originalPositionHashMap = new HashMap<>(); // hashMap存放每个时光流的初始坐标，key为viewId
-    public static  HashMap<Integer, Drawable> originalBackgroundHashMap = new HashMap<>(); // hashMap存放每个view的初始背景，key为viewId
+    public static HashMap<Integer, Point> originalPositionHashMap = new HashMap<>(); // hashMap存放每个时光流的初始坐标，key为viewId
+    public static HashMap<Integer, Drawable> originalBackgroundHashMap = new HashMap<>(); // hashMap存放每个view的初始背景，key为viewId
+    public static HashMap<String, List<BeanView>> productBeanViewsMap = new HashMap<>(); // 存放每个商品对应的所有beanView
 
     public static LinkedList thingsToSaveList = new LinkedList();
 
-    public static HashMap<String, Product> allProducts; //无Timestream的Product
+    private static HashMap<String, Product> allProducts; //无Timestream的Product
 
     public static HashMap<String, TimestreamCombination> combinationHashMap; //已经捆绑的所有商品
 
@@ -181,7 +183,10 @@ public class MyApplication extends Application {
         MyApplication.scheduled = scheduled;
     }
 
-
+    public static HashMap<String, Product> getAllProducts() {
+        if (allProducts == null) allProducts = PDInfoWrapper.getAllProduct();
+        return allProducts;
+    }
 
     public static boolean tryCaptureClickEvent(MotionEvent event) {
 
@@ -242,7 +247,6 @@ public class MyApplication extends Application {
 
                 String code = beanView.getProductCode();
                 PDInfoActivity.actionStart(code);
-
                 break;
 
             case PD_INFO_ACTIVITY:
@@ -377,10 +381,8 @@ public class MyApplication extends Application {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
 
             ScanActivity.actionStart(activity);
-
             return true;
         }
-
 
         return false;
     }
@@ -530,6 +532,41 @@ public class MyApplication extends Application {
 
         return 0;
     }
+
+    /**
+     * 延迟加载从webserver中获取的信息
+     * @param product
+     */
+    public static void lazyLoad(Product product) {
+
+        switch (activityIndex) {
+
+            case PD_INFO_ACTIVITY:
+
+                if (product == null) {
+                    currentProduct.setProductName("新商品，请输入商品名");
+                    PDInfoActivity.loadProduct(currentProduct);
+                    break;
+                }
+
+                PDInfoActivity.loadProduct(product);
+                break;
+
+            case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
+
+                if (product == null) break;
+
+                Message msg = Message.obtain();
+                msg.obj = product.getProductCode();
+                TraversalTimestreamActivity.handler.sendMessage(msg);
+                break;
+
+            default:
+                break;
+
+        }
+
+    }
 //
 //    static {
 //
@@ -558,6 +595,7 @@ public class MyApplication extends Application {
             if (!MyApplication.currentProduct.isUpdated()) {
 
                 thingsToSaveList.add(MyApplication.currentProduct);
+                MyApplication.getAllProducts().put(currentProduct.getProductCode(), currentProduct);
 
             }
 
@@ -818,8 +856,7 @@ public class MyApplication extends Application {
 
                 case PRODUCT_CODE:
 
-                    if (allProducts == null) allProducts = PDInfoWrapper.getAllProduct();
-                    if (allProducts.containsKey(after)) {
+                    if (getAllProducts().containsKey(after)) {
 
                         Message msg = Message.obtain();
                         msg.obj = after;
@@ -1060,7 +1097,7 @@ public class MyApplication extends Application {
                 Timestream.refresh(timestream);
                 TimestreamCombinationView combView = draggableLinearLayout.
                         findViewById(Integer.parseInt(timestream.getBoundLayoutId()));
-                combView.bindData(timestream);
+                combView.bindData(timestream.getId());
                 PDInfoWrapper.updateInfo(sqLiteDatabase, timestream, MyDatabaseHelper.FRESH_TIMESTREAM_TABLE_NAME);
                 break;
 

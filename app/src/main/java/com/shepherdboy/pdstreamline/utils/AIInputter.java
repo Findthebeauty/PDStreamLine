@@ -174,7 +174,7 @@ public class AIInputter {
 
     public static void fillTheBlanks(Product product) {
 
-        product.setProductName("新商品，请输入商品名");
+        product.setProductName("正在从中心服务器查询。。。");
 
         DateScope scope = SettingActivity.mlScopeMap.get(SettingActivity.dateSettingIndex.get(SettingActivity.dateSettingIndex.size() - 1));
         product.setProductEXP(scope.getRangeValue());

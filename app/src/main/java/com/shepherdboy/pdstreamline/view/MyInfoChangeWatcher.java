@@ -19,6 +19,7 @@ import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.activities.PDInfoActivity;
 import com.shepherdboy.pdstreamline.activities.SettingActivity;
 import com.shepherdboy.pdstreamline.beans.DateScope;
+import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
@@ -37,10 +38,11 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
     private boolean autoCommitOnLostFocus = false;
 
     public static final int SELECT_ALL = 1;
+    public static final int LAZY_LOAD = 2;
 
     private static boolean scheduled = false;
     private static Handler commitHandler;
-    public static Handler selectHandler;
+    public static Handler infoHandler;
     private static Runnable commitRunnable;
     private static long timeMillis = 0;
     private static long lastInputTimeMillis = 0;
@@ -57,7 +59,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
     static {
 
-        selectHandler = new Handler() {
+        infoHandler = new Handler() {
 
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -75,6 +77,17 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
                             setShouldWatch(true);
                         }
                         break;
+
+                    case LAZY_LOAD:
+
+                        if (msg.obj == null) {
+                            MyApplication.lazyLoad(null);
+                        }
+
+                        Product p = (Product) msg.obj;
+                        MyApplication.lazyLoad(p);
+                        break;
+
                     default:
                         break;
 
@@ -83,7 +96,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
             }
         };
 
-        MyApplication.handlers.add(selectHandler);
+        MyApplication.handlers.add(infoHandler);
     }
 
     /**
@@ -274,16 +287,17 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
         }
 
         myTextWatchers.clear();
+        currentWatcher = null;
     }
 
     public static void destroy() {
 
         clearWatchers();
 
-        if (selectHandler != null) {
+        if (infoHandler != null) {
 
-            selectHandler.removeCallbacksAndMessages(null);
-            selectHandler = null;
+            infoHandler.removeCallbacksAndMessages(null);
+            infoHandler = null;
 
         }
 
@@ -458,7 +472,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
             default:
 
                 if (currentProduct == null && timestream != null)
-                    currentProduct = MyApplication.allProducts.get(timestream.getProductCode());
+                    currentProduct = MyApplication.getAllProducts().get(timestream.getProductCode());
 
                 MyApplication.afterInfoChanged(currentInf, currentWatcher.watchedEditText, currentWatcher.timestream,
                         currentWatcher.filedIndex);

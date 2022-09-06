@@ -1,10 +1,10 @@
-package com.shepherdboy.pdstreamline.sql;
+package com.shepherdboy.pdstreamline.dao;
 
-import static com.shepherdboy.pdstreamline.MyApplication.allProducts;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 
 import android.database.Cursor;
 
+import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.beans.Cell;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Row;
@@ -152,13 +152,12 @@ public class ShelfDAO {
 
         if ("默认".equals(shelf.getName())) { // todo 默认货架的商品排序，根据expire date和remain exp
 
-            allProducts = PDInfoWrapper.getAllProduct();
 
             Row row = new Row();
             row.setSortNumber(1);
             ArrayList<Cell> cells = row.getCells();
 
-            for (String code : allProducts.keySet()) {
+            for (String code : MyApplication.getAllProducts().keySet()) {
 
                 Product product = PDInfoWrapper.getProduct(code, sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
 

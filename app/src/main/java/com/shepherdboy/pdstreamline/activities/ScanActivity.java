@@ -40,7 +40,6 @@ public class ScanActivity extends Activity {
         intentIntegrator.setBarcodeImageEnabled(false);
         intentIntegrator.setOrientationLocked(true);
         intentIntegrator.initiateScan();
-
     }
 
     @Override

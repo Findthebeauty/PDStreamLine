@@ -1,7 +1,7 @@
 package com.shepherdboy.pdstreamline.beans;
 
 import com.shepherdboy.pdstreamline.MyApplication;
-import com.shepherdboy.pdstreamline.sql.PDInfoWrapper;
+import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 
 import java.util.LinkedList;
 
