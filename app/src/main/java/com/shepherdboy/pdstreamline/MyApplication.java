@@ -215,8 +215,10 @@ public class MyApplication extends Application {
 
                 case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
 
-                    draggableLinearLayout.getCapturedView().setBackground(
-                            originalBackgroundHashMap.get(draggableLinearLayout.getCapturedView().getId()));
+                    LinearLayout capturedView = draggableLinearLayout.getCapturedView();
+                    if (capturedView == null) return false;
+                    capturedView.setBackground(
+                            originalBackgroundHashMap.get(capturedView.getId()));
                     break;
                 default:
                     break;

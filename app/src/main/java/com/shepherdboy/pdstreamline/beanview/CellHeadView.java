@@ -60,6 +60,8 @@ public class CellHeadView extends LinearLayout implements BeanView{
 
         String productEXP = p.getProductEXP() + p.getProductEXPTimeUnit();
 
+        this.productCode = productCode;
+
         if (productCode.length() > 6)
             productCode = productCode.substring(productCode.length() - 6);
 
@@ -67,7 +69,6 @@ public class CellHeadView extends LinearLayout implements BeanView{
 
         expTv.setText(productEXP);
 
-        this.productCode = productCode;
 
         List<BeanView> beanViews = MyApplication.productBeanViewsMap.get(productCode);
         if (beanViews != null && !beanViews.contains(this))
