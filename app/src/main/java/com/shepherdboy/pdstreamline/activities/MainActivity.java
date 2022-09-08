@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
 
-        MyApplication.uploadData();
+//        MyApplication.uploadData();
 
         super.onStop();
     }

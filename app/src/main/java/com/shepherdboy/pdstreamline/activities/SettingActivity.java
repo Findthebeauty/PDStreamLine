@@ -805,7 +805,7 @@ public class SettingActivity extends AppCompatActivity {
 
     }
 
-    private static void saveSingletonSetting() {
+    public static void saveSingletonSetting() {
 
 
         SettingActivity.applyEXPSetting();
@@ -813,7 +813,6 @@ public class SettingActivity extends AppCompatActivity {
         String setting = JSON.toJSONString(settingInstance);
         MyDatabaseHelper.saveSetting(SETTING_SINGLETON_INDEX_NAME, setting, MyApplication.sqLiteDatabase);
         settingInstance.setUpdated(true);
-
     }
 
     private static void saveEXPSetting() {

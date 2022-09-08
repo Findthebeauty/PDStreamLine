@@ -44,6 +44,7 @@ import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.beanview.BeanView;
 import com.shepherdboy.pdstreamline.beanview.CellHeadView;
 import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
+import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.dao.ShelfDAO;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
@@ -621,6 +622,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
                     MyApplication.timeStreams.put(t.getId(), t);
                     AIInputter.fillTheBlanks(p, t);
 
+                    PDInfoWrapper.updateInfo(sqLiteDatabase, t, MyDatabaseHelper.NEW_TIMESTREAM);
                     TimestreamCombinationView next =
                             new TimestreamCombinationView(view.getContext(), t);
                     MyInfoChangeWatcher.setShouldWatch(false);

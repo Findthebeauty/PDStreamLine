@@ -3,6 +3,7 @@ package com.shepherdboy.pdstreamline.dao;
 import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.util.Log;
 
 import com.shepherdboy.pdstreamline.MyApplication;
@@ -767,33 +768,63 @@ public class PDInfoWrapper {
         String productEXPTimeUnit = p.getProductEXPTimeUnit();
         String productSpec = p.getProductSpec();
 
-        String sql = "insert into " + MyDatabaseHelper.PRODUCT_INFO_TABLE_NAME +
-                "(product_code,product_name,product_exp,product_exp_time_unit,product_spec) " +
-                "values('" + productCode + "','" + productName + "','" + productEXP +
-                "','" + productEXPTimeUnit + "','" + productSpec +
-                "') on conflict(product_code) do update set product_name='" +
-                productName + "'";
+        String sql;
 
-        sqlBuilder.append(sql);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
 
-        if (!productEXP.equals("1")) {
+            sql = "insert into " + MyDatabaseHelper.PRODUCT_INFO_TABLE_NAME +
+                    "(product_code,product_name,product_exp,product_exp_time_unit,product_spec) " +
+                    "values('" + productCode + "','" + productName + "','" + productEXP +
+                    "','" + productEXPTimeUnit + "','" + productSpec +
+                    "') on conflict(product_code) do update set product_name='" +
+                    productName + "'";
 
-            sqlBuilder.append(",product_exp='");
-            sqlBuilder.append(productEXP);
-            sqlBuilder.append("',product_exp_time_unit='");
-            sqlBuilder.append(productEXPTimeUnit);
-            sqlBuilder.append("'");
+            sqlBuilder.append(sql);
+
+            if (!productEXP.equals("1")) {
+
+                sqlBuilder.append(",product_exp='");
+                sqlBuilder.append(productEXP);
+                sqlBuilder.append("',product_exp_time_unit='");
+                sqlBuilder.append(productEXPTimeUnit);
+                sqlBuilder.append("'");
+            }
+
+            if (!(productSpec == null)) {
+
+                sqlBuilder.append(",product_spec='");
+                sqlBuilder.append(productSpec);
+                sqlBuilder.append("'");
+            }
+
+            Log.d("sqlBuilder", sqlBuilder.toString());
+
+            MyApplication.sqLiteDatabase.execSQL(sqlBuilder.toString());
+
+            sqlBuilder.delete(0, sqlBuilder.length());
+
+        } else {
+
+            Product old = MyApplication.getAllProducts().get(productCode);
+
+            if (old == null) {
+
+                updateInfo(MyApplication.sqLiteDatabase, p);
+                return;
+            }
+
+            old.setProductName(productName);
+            old.setUpdated(false);
+            if(productEXP != null) {
+                old.setProductEXP(productEXP);
+                old.setProductEXPTimeUnit(productEXPTimeUnit);
+            }
+            if(productSpec != null) old.setProductSpec(productSpec);
+
+            Log.d("sync", productName);
+
+            updateInfo(MyApplication.sqLiteDatabase, old);
         }
 
-        if (!(productSpec == null)) {
-
-            sqlBuilder.append(",product_spec='");
-            sqlBuilder.append(productSpec);
-            sqlBuilder.append("'");
-        }
-
-        MyApplication.sqLiteDatabase.execSQL(sqlBuilder.toString());
-
-        sqlBuilder.delete(0, sqlBuilder.length());
     }
 }

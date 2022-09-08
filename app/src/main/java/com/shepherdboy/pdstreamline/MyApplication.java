@@ -51,6 +51,7 @@ import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 import com.shepherdboy.pdstreamline.view.TouchEventDispatcher;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -607,13 +608,28 @@ public class MyApplication extends Application {
                     if (p == null) continue;
 
                     PDInfoWrapper.filterAndUpdateInfo(p);
+                    if (HttpDao.products.size() == 0) {
+
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
                     count++;
                 }
 
                 long endTime = System.currentTimeMillis();
                 long interval = endTime - HttpDao.getStartTime();
-                Toast.makeText(MyApplication.getContext(), "更新了" + count + "条商品信息，用时" +
-                        interval + "毫秒", Toast.LENGTH_LONG).show();
+
+                if (count > 0) {
+                    Toast.makeText(MyApplication.getContext(), "更新了" + count + "条商品信息，用时" +
+                            interval + "毫秒", Toast.LENGTH_LONG).show();
+                }
+                settingInstance.setLastSyncTime(String.valueOf(new Timestamp(System.currentTimeMillis())));
+                SettingActivity.saveSingletonSetting();
+                Looper.loop();
+                Looper.myLooper().quit();
             }
         }).start();
     }

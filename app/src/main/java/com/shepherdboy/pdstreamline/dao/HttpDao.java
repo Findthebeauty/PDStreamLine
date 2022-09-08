@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class HttpDao {
 
@@ -33,6 +34,7 @@ public class HttpDao {
     public static final ConcurrentLinkedQueue<Product> products = new ConcurrentLinkedQueue<>();
     static final Set<Integer> startIndexes = new HashSet<>();
     static final Set<Integer> indexesOnQuery = new HashSet<>();
+    static AtomicInteger successIndexCount = new AtomicInteger(0);
 
     private static int totalCount = -1;
     private static boolean transmitEnd = false;
@@ -103,8 +105,8 @@ public class HttpDao {
         HttpURLConnection connection;
         connection = (HttpURLConnection) new URL(url).openConnection();
         connection.setRequestMethod("GET");
-        connection.setConnectTimeout(3000);
-        connection.setReadTimeout(3000);
+        connection.setConnectTimeout(10000);
+        connection.setReadTimeout(10000);
 //                    connection.addRequestProperty("ACCEPT","application/json");
 
         InputStream in = connection.getInputStream();
@@ -124,40 +126,51 @@ public class HttpDao {
         startTime = System.currentTimeMillis();
 
         // 避免数据量过大，分页查询
-        final int count = 10000;
+        final int count = 1000;
         totalCount = -1;
         transmitEnd = false;
+
 
         new Thread(new Runnable() {
             @Override
             public void run() {
 
                 limitQuery(0, count, lastSyncTime);
-            }
-        }).start();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
 
-                while (!(startIndexes.isEmpty() && indexesOnQuery.isEmpty())) {
-                    for (int start : startIndexes) {
+                        while ((indexesOnQuery.size() < startIndexes.size()) ||
+                                (successIndexCount.get() < startIndexes.size())) {
 
-                        if (indexesOnQuery.contains(start)) continue;
-                        limitQuery(start, count, lastSyncTime);
+                            for (int start : startIndexes) {
+
+                                if (indexesOnQuery.contains(start)) continue;
+
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        limitQuery(start, count, lastSyncTime);
+                                    }
+                                }).start();
+                            }
+                        }
+
+                        transmitEnd = true;
                     }
-                }
-
-                transmitEnd = true;
+                }).start();
             }
         }).start();
+
+
 
     }
 
     private static void limitQuery(Integer start, int count, String lastSyncTime) {
 
-        startIndexes.remove(start);
         indexesOnQuery.add(start);
+
         String url = SERVER_ADDRESS + SYNC_PRODUCT_MAPPING_PREFIX +
                 "?start=" + start +
                 "&count=" + count +
@@ -173,14 +186,9 @@ public class HttpDao {
             JSONObject object = JSON.parseObject(response);
 
             JSONObject head = object.getObject("head", JSONObject.class);
-            if (head.getString("code").equals("0")) {
+            if (head.getString("code").equals("0")) return;
 
-                startIndexes.remove(start);
-                indexesOnQuery.remove(start);
-                return;
-            }
-
-            if (totalCount == -1) totalCount = Integer.parseInt(head.getString("totalCount"));
+            int totalCount = Integer.parseInt(head.getString("totalCount"));
 
             List<JSONObject> data = object.getObject("data", new TypeReference<List<JSONObject>>(){});
 
@@ -190,18 +198,25 @@ public class HttpDao {
                 products.add(p);
             }
 
-            startIndexes.remove(start);
-            indexesOnQuery.remove(start);
             Log.d("start", start + "");
 
-            while (start + count < totalCount) {
+            if (start == 0) {
 
-                start += count;
-                startIndexes.add(start);
+                startIndexes.add(0);
+
+                while (start + count < totalCount) {
+
+                    start += count;
+                    startIndexes.add(start);
+                }
+
+                HttpDao.totalCount = totalCount;
             }
 
-        } catch (IOException e) {
+            successIndexCount.incrementAndGet();
 
+        } catch (IOException e) {
+            Log.d("exception", e.toString());
             indexesOnQuery.remove(start);
             e.printStackTrace();
         }
