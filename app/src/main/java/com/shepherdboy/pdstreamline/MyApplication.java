@@ -932,11 +932,13 @@ public class MyApplication extends Application {
 
                     currentProduct.setProductEXPTimeUnit(after);
                     synchronize(null, filedIndex);
+                    break;
 
                 case PRODUCT_SPEC:
 
                     currentProduct.setProductSpec(after);
                     currentProduct.setUpdated(false);
+                    break;
 
 
                 case TIMESTREAM_DOP:
