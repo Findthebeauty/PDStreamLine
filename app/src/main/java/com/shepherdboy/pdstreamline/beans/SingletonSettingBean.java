@@ -23,6 +23,7 @@ public class SingletonSettingBean {
     private String autoCommitDelay;
     private String doubleClickDelay;
     private String longClickDelay;
+    private String lastSyncTime;
 
     private static SingletonSettingBean singletonSettingBean;
 
@@ -123,6 +124,15 @@ public class SingletonSettingBean {
 
     public void setDoubleClickDelay(String doubleClickDelay) {
         this.doubleClickDelay = doubleClickDelay;
+    }
+
+    public String getLastSyncTime() {
+        if (lastSyncTime == null) return "1970-1-1 0:0:0";
+        return lastSyncTime;
+    }
+
+    public void setLastSyncTime(String lastSyncTime) {
+        this.lastSyncTime = lastSyncTime;
     }
 
     public static void setSingletonSettingBean(SingletonSettingBean singletonSettingBean) {

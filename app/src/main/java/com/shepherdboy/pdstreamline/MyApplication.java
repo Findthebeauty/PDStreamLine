@@ -11,6 +11,7 @@ import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -39,6 +40,7 @@ import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.beanview.BeanView;
 import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
+import com.shepherdboy.pdstreamline.dao.HttpDao;
 import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
@@ -581,6 +583,39 @@ public class MyApplication extends Application {
         context = getApplicationContext();
         initDatabase(context);
         SettingActivity.initSetting();
+        syncProductInfoFromServer(settingInstance.getLastSyncTime());
+    }
+
+    /**
+     *
+     * @param lastSyncTime
+     */
+    private void syncProductInfoFromServer(String lastSyncTime) {
+
+        Toast.makeText(this, "正在同步商品信息", Toast.LENGTH_SHORT).show();
+        HttpDao.syncProductInfo(lastSyncTime);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Looper.prepare();
+                int count = 0;
+                while ((!HttpDao.isTransmitEnd()) || HttpDao.products.size() > 0) {
+
+                    Product p = HttpDao.products.poll();
+
+                    if (p == null) continue;
+
+                    PDInfoWrapper.filterAndUpdateInfo(p);
+                    count++;
+                }
+
+                long endTime = System.currentTimeMillis();
+                long interval = endTime - HttpDao.getStartTime();
+                Toast.makeText(MyApplication.getContext(), "更新了" + count + "条商品信息，用时" +
+                        interval + "毫秒", Toast.LENGTH_LONG).show();
+            }
+        }).start();
     }
 
     public static Context getContext() {
@@ -693,7 +728,6 @@ public class MyApplication extends Application {
     public static void initDatabase(Context context) {
 
         databasePath = context.getFilesDir().getPath().replaceAll("files", "databases/streamline.db");
-//        MyDatabaseHelper.copyDataBase(databasePath);
 
         if (MyApplication.databaseHelper == null) {
 

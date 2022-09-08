@@ -6,14 +6,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.shepherdboy.pdstreamline.MyApplication;
-import com.shepherdboy.pdstreamline.R;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 public class MyDatabaseHelper extends SQLiteOpenHelper {
 
     public static final int PLAIN_PRODUCT_WITH_NO_TIMESTREAM = -1;
@@ -278,39 +270,6 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
         
 
-    }
-
-    /**
-     * 拷贝数据库到sd卡
-     */
-    public static void copyDataBase(String dbPath) {
-
-        InputStream i = MyApplication.getContext().getResources().openRawResource(R.raw.v2);
-        File file = new File(dbPath);
-
-        if (file.exists()) return;
-
-        try {
-
-            FileOutputStream o = new FileOutputStream(file);
-
-            byte[] buffer = new byte[i.available()];
-
-            int length = 0;
-
-            while ((length = i.read(buffer)) != -1) {
-
-                o.write(buffer, 0, length);
-            }
-
-            o.flush();
-            o.close();
-            i.close();
-
-        } catch (IOException e) {
-
-            e.printStackTrace();
-        }
     }
 
     public static void saveSetting(String index, String value, SQLiteDatabase sqLiteDatabase) {

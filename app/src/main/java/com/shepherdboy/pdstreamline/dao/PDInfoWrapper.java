@@ -29,6 +29,8 @@ import java.util.Objects;
 public class PDInfoWrapper {
 
 
+    private static final StringBuilder sqlBuilder = new StringBuilder();
+
     @SuppressLint("Range")
     public static String getProductName(String productCode, SQLiteDatabase sqLiteDatabase) {
 
@@ -90,7 +92,7 @@ public class PDInfoWrapper {
 
         } else {
 
-            HttpUtil.queryFromServer(productCode);
+            HttpDao.queryFromServer(productCode);
             AIInputter.fillTheBlanks(product);
         }
 
@@ -752,4 +754,46 @@ public class PDInfoWrapper {
 
     }
 
+    /**
+     * 更新来自服务器中的商品中有效的信息，过滤空值(eg:unit=null)和无效信息(eg:exp=1),避免覆盖原始有用的信息
+     * 判断unit(spec)是否为空，exp是否为1,
+     * @param p {@link Product}
+     */
+    public static void filterAndUpdateInfo(Product p) {
+
+        String productCode = p.getProductCode();
+        String productName = p.getProductName();
+        String productEXP = p.getProductEXP();
+        String productEXPTimeUnit = p.getProductEXPTimeUnit();
+        String productSpec = p.getProductSpec();
+
+        String sql = "insert into " + MyDatabaseHelper.PRODUCT_INFO_TABLE_NAME +
+                "(product_code,product_name,product_exp,product_exp_time_unit,product_spec) " +
+                "values('" + productCode + "','" + productName + "','" + productEXP +
+                "','" + productEXPTimeUnit + "','" + productSpec +
+                "') on conflict(product_code) do update set product_name='" +
+                productName + "'";
+
+        sqlBuilder.append(sql);
+
+        if (!productEXP.equals("1")) {
+
+            sqlBuilder.append(",product_exp='");
+            sqlBuilder.append(productEXP);
+            sqlBuilder.append("',product_exp_time_unit='");
+            sqlBuilder.append(productEXPTimeUnit);
+            sqlBuilder.append("'");
+        }
+
+        if (!(productSpec == null)) {
+
+            sqlBuilder.append(",product_spec='");
+            sqlBuilder.append(productSpec);
+            sqlBuilder.append("'");
+        }
+
+        MyApplication.sqLiteDatabase.execSQL(sqlBuilder.toString());
+
+        sqlBuilder.delete(0, sqlBuilder.length());
+    }
 }
