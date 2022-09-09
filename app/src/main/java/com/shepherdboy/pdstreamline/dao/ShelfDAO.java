@@ -13,6 +13,7 @@ import com.shepherdboy.pdstreamline.utils.AscOrderNumberComparator;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 /**
  *货架商品加载类，将货架对应的所有商品加载到货架对象中
@@ -129,14 +130,14 @@ public class ShelfDAO {
             shelf.setMaxRowCount(cursor.getInt(3));
         }
 
-        shelf.setRows(getRows(shelf));
+        shelf.setRows(ShelfCacheDaoAgent.getRows(shelf));
 
         return shelf;
     }
 
     public static Row getRow(Shelf shelf, int rowNumber) {
 
-        ArrayList<Row> rows = getRows(shelf);
+        ArrayList<Row> rows = ShelfCacheDaoAgent.getRows(shelf);
 
         for (Row row : rows) {
 
@@ -146,7 +147,7 @@ public class ShelfDAO {
         return null;
     }
 
-    public static ArrayList<Row> getRows(Shelf shelf) {
+    private static ArrayList<Row> getRows(Shelf shelf) {
 
         ArrayList<Row> rows = new ArrayList<>();
 
@@ -158,7 +159,6 @@ public class ShelfDAO {
             ArrayList<Cell> cells = row.getCells();
 
             for (String code : MyApplication.getAllProducts().keySet()) {
-
                 Product product = PDInfoWrapper.getProduct(code, sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
 
                 Cell cell = new Cell(product);
@@ -273,5 +273,36 @@ public class ShelfDAO {
         }
 
         return arrayList;
+    }
+
+
+    static class ShelfCacheDaoAgent{
+
+        static ShelfCacheDaoAgent instance;
+        private ShelfCacheDaoAgent() {
+        }
+
+        static {
+            instance = new ShelfCacheDaoAgent();
+        }
+
+        public static ShelfCacheDaoAgent getInstance() {
+            return instance;
+        }
+
+        private HashMap<String, ArrayList<Row>> shelves = new HashMap<>();
+
+        public static ArrayList<Row> getRows(Shelf shelf) {
+
+            ArrayList<Row> rows = instance.shelves.get(shelf.getId());
+
+            if( rows == null) {
+
+                rows = ShelfDAO.getRows(shelf);
+                instance.shelves.put(shelf.getId(), rows);
+            }
+
+            return rows;
+        }
     }
 }

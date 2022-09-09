@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -501,6 +502,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
      */
     private void showShelf(Shelf shelf) {
 
+
         //todo 展示货架
         currentShelf = shelf;
         setContentView(R.layout.shelf);
@@ -512,6 +514,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         DraggableLinearLayout.setLayoutChanged(true);
         MyInfoChangeWatcher.setShouldWatch(true);
+
 
     }
 
@@ -527,6 +530,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         Row row = ShelfDAO.getRow(ShelfAdapter.getCurrentShelf(), rowNumber);
 
+        if (combinationHashMap == null)
         combinationHashMap = PDInfoWrapper.getTimestreamCombinations(sqLiteDatabase);
 
         for (Cell cell : row.getCells()) {
@@ -538,6 +542,13 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         addTail(draggableLinearLayout);
 
+
+    }
+
+    public static long log(long start, String s) {
+        Log.d("showRow", s + (System.currentTimeMillis() - start) + "毫秒" + "");
+        start = System.currentTimeMillis();
+        return start;
     }
 
     private void showCell(Cell cell, DraggableLinearLayout view) {
@@ -545,7 +556,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         LinkedHashMap<String, Timestream> timestreams = cell.getTimestreams();
 
         CellHeadView cellHead = new CellHeadView(view.getContext(), cell);
-
         view.addView(cellHead);
 
         for (Timestream timestream : timestreams.values()) {
@@ -553,6 +563,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
             MyApplication.timeStreams.put(timestream.getId(),timestream);
             TimestreamCombinationView combView = new TimestreamCombinationView(view.getContext(), timestream);
             view.addView(combView);
+
         }
 
         prepareNext(cell, view);
@@ -589,6 +600,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
     private void prepareNext(Cell cell, DraggableLinearLayout view) {
 
+
         TimestreamCombinationView nextTrigger =
                 new TimestreamCombinationView(view.getContext());
         view.addView(nextTrigger);
@@ -602,7 +614,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         inventoryEt.setVisibility(View.INVISIBLE);
 
         EditText e = nextTrigger.getBuyDOPEt();
-
         e.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -639,7 +650,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
             }
         });
-
     }
 
 
