@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class TraversalTimestreamActivity extends AppCompatActivity {
 
@@ -68,6 +69,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     private Shelf tempShelf;//货架信息改变时临时保存改变后的信息，用于回滚操作
     private Shelf defaultShelf;
     private static Shelf currentShelf;
+    private static Row currentRow;
     private static ArrayList<Shelf> shelfList;
     private static ArrayList<String> classifyList;
 
@@ -75,6 +77,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     public static final int MSG_SHOW_SHELF = 1;
     public static final int MSG_REFRESH_TAIL_HEIGHT = 2;
     public static final int MSG_SYNC_PRODUCT = 3;
+    private static final int MSG_LOAD_VIEWS = 4;
 
     public static final int LAYOUT_SHELF_LIST = 100;
     public static final int LAYOUT_SHOW_SHELF_PRODUCT = 101;
@@ -82,9 +85,17 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     private static int layoutIndex;
 
     public static Handler handler;
-    int[] location = new int[2];
+    static int[] location = new int[2];
+
+    public static ConcurrentLinkedQueue<View> newViews = new ConcurrentLinkedQueue<>();
+    private static final boolean[] continueProcess = new boolean[]{true};
+    private static boolean loadFinished = false;
+    private static boolean prepareFinished = false;
+    private static TextView tail;
 
     public static void onViewPositionChanged(View changedView, float horizontalDistance, float verticalDistance) {
+
+        continueProcess[0] = false;
 
         int viewState = getViewState(changedView, horizontalDistance);
 
@@ -174,10 +185,15 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
             default:
                 draggableLinearLayout.putBack(releasedChild);
-
                 break;
         }
 
+        if (!loadFinished) {
+
+            Message msg = handler.obtainMessage();
+            msg.what = MSG_LOAD_VIEWS;
+            handler.sendMessage(msg);
+        }
     }
 
     @Override
@@ -222,48 +238,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
             }
         });
 
-        if (handler == null) {
-
-            handler = new Handler() {
-                @Override
-                public void handleMessage(@NonNull Message msg) {
-
-                    if(msg.obj != null)
-
-                    switch (msg.what) {
-
-                        case MSG_MODIFY_SHELF:
-
-                            currentShelf = (Shelf) msg.obj;
-                            modifyShelf(currentShelf);
-                            break;
-
-                        case MSG_SHOW_SHELF:
-
-                            currentShelf = (Shelf) msg.obj;
-                            showShelf(currentShelf);
-                            break;
-
-                        case MSG_REFRESH_TAIL_HEIGHT:
-
-                            refreshTailHeight();
-                            break;
-
-                        case MSG_SYNC_PRODUCT:
-
-                            String code = (String) msg.obj;
-                            syncProduct(code);
-                            break;
-
-                        default:
-                            break;
-                    }
-
-                }
-            };
-
-            MyApplication.handlers.add(handler);
-        }
 
     }
 
@@ -470,6 +444,9 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         MyApplication.initActionBar(getSupportActionBar());
 
+        loadFinished = false;
+        prepareFinished = true;
+
         if (layoutIndex == LAYOUT_SHOW_SHELF_PRODUCT) {
 
             showShelf(currentShelf);
@@ -484,6 +461,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         layoutIndex = LAYOUT_SHELF_LIST;
         initShowShelfList(TraversalTimestreamActivity.this);
+        newViews.clear();
     }
 
     private void cancelModify(Shelf shelf) {
@@ -502,7 +480,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
      */
     private void showShelf(Shelf shelf) {
 
-
         //todo 展示货架
         currentShelf = shelf;
         setContentView(R.layout.shelf);
@@ -514,7 +491,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         DraggableLinearLayout.setLayoutChanged(true);
         MyInfoChangeWatcher.setShouldWatch(true);
-
 
     }
 
@@ -530,19 +506,56 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         Row row = ShelfDAO.getRow(ShelfAdapter.getCurrentShelf(), rowNumber);
 
+        currentRow = row;
         if (combinationHashMap == null)
         combinationHashMap = PDInfoWrapper.getTimestreamCombinations(sqLiteDatabase);
 
-        for (Cell cell : row.getCells()) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                prepareViews(draggableLinearLayout, currentRow);
+            }
+        }).start();
+    }
 
-            MyApplication.productBeanViewsMap.put(cell.getProductCode(), new LinkedList<>());
-            showCell(cell, draggableLinearLayout);
+    private void loadViews(DraggableLinearLayout draggableLinearLayout) {
 
+        while (!newViews.isEmpty()) {
+
+            draggableLinearLayout.addView(newViews.poll());
         }
 
-        addTail(draggableLinearLayout);
+        loadFinished = true;
 
+        if (prepareFinished)
+        refreshTailHeight();
 
+        DraggableLinearLayout.setLayoutChanged(true);
+    }
+
+    private static void prepareViews(DraggableLinearLayout draggableLinearLayout, Row row) {
+
+        continueProcess[0] = true;
+        prepareFinished = false;
+        synchronized (continueProcess) {
+            while (row.getCells().size() > 0) {
+
+                loadFinished = false;
+                Cell cell = row.getCells().poll();
+                MyApplication.productBeanViewsMap.put(cell.getProductCode(), new LinkedList<>());
+                prepareCellView(cell, draggableLinearLayout);
+
+                if (!continueProcess[0]) {
+                    continue;
+                }
+                Message msg = handler.obtainMessage();
+                msg.what = MSG_LOAD_VIEWS;
+                handler.sendMessage(msg);
+            }
+
+            prepareTailView(draggableLinearLayout);
+            prepareFinished = true;
+        }
     }
 
     public static long log(long start, String s) {
@@ -551,36 +564,30 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         return start;
     }
 
-    private void showCell(Cell cell, DraggableLinearLayout view) {
+    private static void prepareCellView(Cell cell, DraggableLinearLayout view) {
 
         LinkedHashMap<String, Timestream> timestreams = cell.getTimestreams();
 
         CellHeadView cellHead = new CellHeadView(view.getContext(), cell);
-        view.addView(cellHead);
-
+        newViews.add(cellHead);
         for (Timestream timestream : timestreams.values()) {
 
             MyApplication.timeStreams.put(timestream.getId(),timestream);
             TimestreamCombinationView combView = new TimestreamCombinationView(view.getContext(), timestream);
-            view.addView(combView);
-
+            newViews.add(combView);
         }
 
         prepareNext(cell, view);
     }
 
-
-    private void addTail(DraggableLinearLayout draggableLinearLayout) {
-
-
+    private static void prepareTailView(DraggableLinearLayout draggableLinearLayout) {
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        TextView tail = new TextView(draggableLinearLayout.getContext());
+        tail = new TextView(draggableLinearLayout.getContext());
         tail.setId(View.generateViewId());
-        draggableLinearLayout.addView(tail, lp);
-        draggableLinearLayout.postInvalidate();
-        refreshTailHeight();
+        tail.setLayoutParams(lp);
+        newViews.add(tail);
     }
 
     private void refreshTailHeight() {
@@ -589,21 +596,17 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         this.getWindowManager().getDefaultDisplay().getMetrics(dm);//this指当前activity
 
-        int lastViewHeight = (draggableLinearLayout.getChildAt(
-                draggableLinearLayout.getChildCount() - 2)).getHeight();
+        int lastViewHeight = (draggableLinearLayout.getChildAt(0)).getHeight();
 
         int height = dm.heightPixels - ClosableScrollView.getOriginalY() - lastViewHeight * 2;
-        ((TextView)(draggableLinearLayout.getChildAt(
-                draggableLinearLayout.getChildCount() - 1
-        ))).setHeight(height);
+        tail.setHeight(height);
     }
 
-    private void prepareNext(Cell cell, DraggableLinearLayout view) {
+    private static void prepareNext(Cell cell, DraggableLinearLayout view) {
 
 
         TimestreamCombinationView nextTrigger =
                 new TimestreamCombinationView(view.getContext());
-        view.addView(nextTrigger);
 
         nextTrigger.setProductCode(cell.getProductCode());
 
@@ -650,6 +653,9 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
             }
         });
+
+//        view.addView(nextTrigger);
+        newViews.add(nextTrigger);
     }
 
 
@@ -745,7 +751,64 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        MyApplication.init();
+        initHandler();
         initTransaction();
+    }
+
+    public static void setContinueProcess(boolean continueProcess) {
+        TraversalTimestreamActivity.continueProcess[0] = continueProcess;
+    }
+
+    private void initHandler() {
+
+        if (handler == null) {
+
+            handler = new Handler() {
+                @Override
+                public void handleMessage(@NonNull Message msg) {
+
+//                    if(msg.obj != null)
+
+                        switch (msg.what) {
+
+                            case MSG_MODIFY_SHELF:
+
+                                currentShelf = (Shelf) msg.obj;
+                                modifyShelf(currentShelf);
+                                break;
+
+                            case MSG_SHOW_SHELF:
+
+                                currentShelf = (Shelf) msg.obj;
+                                showShelf(currentShelf);
+                                break;
+
+                            case MSG_LOAD_VIEWS:
+
+                                loadViews(draggableLinearLayout);
+                                break;
+
+                            case MSG_REFRESH_TAIL_HEIGHT:
+
+                                refreshTailHeight();
+                                break;
+
+                            case MSG_SYNC_PRODUCT:
+
+                                String code = (String) msg.obj;
+                                syncProduct(code);
+                                break;
+
+                            default:
+                                break;
+                        }
+
+                }
+            };
+
+            MyApplication.handlers.add(handler);
+        }
     }
 
     @Override

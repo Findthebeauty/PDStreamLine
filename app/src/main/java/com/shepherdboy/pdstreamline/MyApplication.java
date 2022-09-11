@@ -248,8 +248,10 @@ public class MyApplication extends Application {
 
             case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
 
+                TraversalTimestreamActivity.setContinueProcess(false);
                 BeanView beanView = (BeanView) draggableLinearLayout.getCapturedView();
 
+                if (beanView == null) return false;
                 String code = beanView.getProductCode();
                 PDInfoActivity.actionStart(code);
                 break;
@@ -713,16 +715,15 @@ public class MyApplication extends Application {
                         }
                     }
                     break;
-
             }
-
-
         }
         DraggableLinearLayout.setLayoutChanged(false);
     }
 
     private static void recordViewStateByChildIndex(ViewGroup parent, int childIndex) {
 
+        View v = parent.getChildAt(childIndex);
+        if (!(v instanceof LinearLayout)) return;
         temp = (LinearLayout) parent.getChildAt(childIndex);
 
         originalPosition = new Point(temp.getLeft(), temp.getTop());

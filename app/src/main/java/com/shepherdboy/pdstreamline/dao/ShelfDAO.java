@@ -13,7 +13,7 @@ import com.shepherdboy.pdstreamline.utils.AscOrderNumberComparator;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedList;
 
 /**
  *货架商品加载类，将货架对应的所有商品加载到货架对象中
@@ -130,14 +130,14 @@ public class ShelfDAO {
             shelf.setMaxRowCount(cursor.getInt(3));
         }
 
-        shelf.setRows(ShelfCacheDaoAgent.getRows(shelf));
+        shelf.setRows(getRows(shelf));
 
         return shelf;
     }
 
     public static Row getRow(Shelf shelf, int rowNumber) {
 
-        ArrayList<Row> rows = ShelfCacheDaoAgent.getRows(shelf);
+        ArrayList<Row> rows = getRows(shelf);
 
         for (Row row : rows) {
 
@@ -153,10 +153,9 @@ public class ShelfDAO {
 
         if ("默认".equals(shelf.getName())) { // todo 默认货架的商品排序，根据expire date和remain exp
 
-
             Row row = new Row();
             row.setSortNumber(1);
-            ArrayList<Cell> cells = row.getCells();
+            LinkedList<Cell> cells = row.getCells();
 
             for (String code : MyApplication.getAllProducts().keySet()) {
                 Product product = PDInfoWrapper.getProduct(code, sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
@@ -193,9 +192,9 @@ public class ShelfDAO {
         return rows;
     }
 
-    public static ArrayList<Cell> getCells(String rowId) {
+    public static LinkedList<Cell> getCells(String rowId) {
 
-        ArrayList<Cell> arrayList = new ArrayList<>();
+        LinkedList<Cell> arrayList = new LinkedList<>();
 
         Cursor cursor = MyDatabaseHelper.query(sqLiteDatabase, MyDatabaseHelper.CELL_TABLE_NAME,
                 new String[]{"*"}, "row_id=?", new String[]{rowId});
@@ -275,34 +274,4 @@ public class ShelfDAO {
         return arrayList;
     }
 
-
-    static class ShelfCacheDaoAgent{
-
-        static ShelfCacheDaoAgent instance;
-        private ShelfCacheDaoAgent() {
-        }
-
-        static {
-            instance = new ShelfCacheDaoAgent();
-        }
-
-        public static ShelfCacheDaoAgent getInstance() {
-            return instance;
-        }
-
-        private HashMap<String, ArrayList<Row>> shelves = new HashMap<>();
-
-        public static ArrayList<Row> getRows(Shelf shelf) {
-
-            ArrayList<Row> rows = instance.shelves.get(shelf.getId());
-
-            if( rows == null) {
-
-                rows = ShelfDAO.getRows(shelf);
-                instance.shelves.put(shelf.getId(), rows);
-            }
-
-            return rows;
-        }
-    }
 }

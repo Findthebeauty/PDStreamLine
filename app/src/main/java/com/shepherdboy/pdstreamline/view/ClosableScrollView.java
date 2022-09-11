@@ -1,6 +1,5 @@
 package com.shepherdboy.pdstreamline.view;
 
-import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 
 import android.content.Context;
@@ -14,7 +13,6 @@ import android.widget.ScrollView;
 import androidx.annotation.NonNull;
 
 import com.shepherdboy.pdstreamline.MyApplication;
-import com.shepherdboy.pdstreamline.activities.TraversalTimestreamActivity;
 
 public class ClosableScrollView extends ScrollView {
 
@@ -42,6 +40,8 @@ public class ClosableScrollView extends ScrollView {
     }
 
     private void init() {
+
+        this.setScrollbarFadingEnabled(false);
 
         if (scrollHandler != null) {
 
@@ -101,12 +101,6 @@ public class ClosableScrollView extends ScrollView {
         originalY = location[1];
         location = null;
 
-        if(MyApplication.activityIndex == TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF) {
-
-            Message msg = Message.obtain();
-            msg.what = TraversalTimestreamActivity.MSG_REFRESH_TAIL_HEIGHT;
-            TraversalTimestreamActivity.handler.sendMessage(msg);
-        }
     }
 
     @Override

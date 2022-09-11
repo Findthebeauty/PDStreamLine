@@ -1,6 +1,6 @@
 package com.shepherdboy.pdstreamline.beans;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.UUID;
 
 /**
@@ -16,7 +16,7 @@ public class Row {
 
     private String shelfId; //货架号
 
-    private ArrayList<Cell> cells; //该行所有的商品位，一般只加载有货的商品位
+    private LinkedList<Cell> cells; //该行所有的商品位，一般只加载有货的商品位
 
     private boolean updated;
 
@@ -67,14 +67,14 @@ public class Row {
         this.shelfId = shelfId;
     }
 
-    public ArrayList<Cell> getCells() {
+    public LinkedList<Cell> getCells() {
 
-        if (cells == null) cells = new ArrayList<>();
+        if (cells == null) cells = new LinkedList<>();
 
         return cells;
     }
 
-    public void setCells(ArrayList<Cell> cells) {
+    public void setCells(LinkedList<Cell> cells) {
         this.cells = cells;
     }
 }

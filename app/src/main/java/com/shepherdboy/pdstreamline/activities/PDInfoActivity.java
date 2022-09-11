@@ -71,7 +71,9 @@ public class PDInfoActivity extends AppCompatActivity {
     public static void actionStart(String code) {
 
         Intent intent = new Intent(MyApplication.getContext(), PDInfoActivity.class);
+        MyApplication.init();
         MyApplication.getContext().startActivity(intent);
+
 
         productToShow = code;
     }
