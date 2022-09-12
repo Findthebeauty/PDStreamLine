@@ -101,7 +101,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
     public static void onViewPositionChanged(View changedView, float horizontalDistance, float verticalDistance) {
 
-        Log.d("positionChange", "on");
         continueProcess[0] = false;
 
         int viewState = getViewState(changedView, horizontalDistance);
@@ -213,7 +212,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         if (beanView instanceof LinearLayout) {
             MyApplication.intentProductCode = ((BeanView)beanView).getProductCode();
-            Log.d("recordTopProduct", MyApplication.intentProductCode);
         }
     }
 
@@ -648,7 +646,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         Rect outRect = new Rect();
         getWindow().getDecorView().getWindowVisibleDisplayFrame(outRect);
 
-        Log.d("prepareTailView", outRect.height() + "");
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 outRect.height());
 
@@ -722,8 +719,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     }
 
     private static void locateView(View view, int intent) {
-
-        Log.d("locateView", intent + "");
 
         Message msg = Message.obtain();
         msg.what = intent;
@@ -902,12 +897,12 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        finalizeActivity();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        finalizeActivity();
     }
 
     private void finalizeActivity() {

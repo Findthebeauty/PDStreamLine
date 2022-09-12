@@ -6,7 +6,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
@@ -120,10 +119,6 @@ public class ClosableScrollView extends ScrollView {
 
         getLocationOnScreen(location);
         originalY = location[1];
-        Log.d("originalY", "getLocationOnScreen" + originalY + "");
-        getLocationInWindow(location);
-        Log.d("originalY", "getLocationInWindow" + location[1] + "");
-
     }
 
     @Override

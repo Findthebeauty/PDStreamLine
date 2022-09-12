@@ -593,8 +593,7 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        context = getApplicationContext();
-        initDatabase(context);
+        initDatabase(getApplicationContext());
         SettingActivity.initSetting();
         syncProductInfoFromServer(settingInstance.getLastSyncTime());
     }
@@ -681,51 +680,56 @@ public class MyApplication extends Application {
 
     public static void recordDraggableView() {
 
-        if (DraggableLinearLayout.isLayoutChanged()) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (DraggableLinearLayout.isLayoutChanged()) {
 
-            switch (activityIndex) {
+                    switch (activityIndex) {
 
-                case PD_INFO_ACTIVITY:
+                        case PD_INFO_ACTIVITY:
 
-                case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
+                        case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
 
-                    for (int i = 0; i < draggableLinearLayout.getChildCount() - 1; i++) {
+                            for (int i = 0; i < draggableLinearLayout.getChildCount() - 1; i++) {
 
-                        recordViewStateByChildIndex(draggableLinearLayout, i);
-                    }
-                    break;
-
-                case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
-
-                case SETTING_ACTIVITY:
-
-                    for (int i = 0; i < draggableLinearLayout.getChildCount() - 1; i++) {
-
-                        recordViewStateByChildIndex(draggableLinearLayout, i + 1);
-
-                    }
-                    break;
-
-                case PROMOTION_TIMESTREAM_ACTIVITY:
-
-                    for (int i = 0; i < draggableLinearLayout.getChildCount(); i++) {
-
-                        recordViewStateByChildIndex(draggableLinearLayout, i);
-
-                        temp = (LinearLayout) draggableLinearLayout.getChildAt(i);
-
-                        if (temp instanceof DraggableLinearLayout) {
-
-                            for (int j = 0; j < temp.getChildCount(); j++) {
-
-                                recordViewStateByChildIndex(temp, j);
+                                recordViewStateByChildIndex(draggableLinearLayout, i);
                             }
-                        }
+                            break;
+
+                        case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
+
+                        case SETTING_ACTIVITY:
+
+                            for (int i = 0; i < draggableLinearLayout.getChildCount() - 1; i++) {
+
+                                recordViewStateByChildIndex(draggableLinearLayout, i + 1);
+
+                            }
+                            break;
+
+                        case PROMOTION_TIMESTREAM_ACTIVITY:
+
+                            for (int i = 0; i < draggableLinearLayout.getChildCount(); i++) {
+
+                                recordViewStateByChildIndex(draggableLinearLayout, i);
+
+                                temp = (LinearLayout) draggableLinearLayout.getChildAt(i);
+
+                                if (temp instanceof DraggableLinearLayout) {
+
+                                    for (int j = 0; j < temp.getChildCount(); j++) {
+
+                                        recordViewStateByChildIndex(temp, j);
+                                    }
+                                }
+                            }
+                            break;
                     }
-                    break;
+                }
+                DraggableLinearLayout.setLayoutChanged(false);
             }
-        }
-        DraggableLinearLayout.setLayoutChanged(false);
+        }).start();
     }
 
     private static void recordViewStateByChildIndex(ViewGroup parent, int childIndex) {

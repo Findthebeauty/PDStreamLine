@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.InputType;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -263,7 +262,6 @@ public class PDInfoActivity extends AppCompatActivity {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.d("ontouch", MyInfoChangeWatcher.myTextWatchers.size() + "");
         return super.onTouchEvent(event);
     }
 
@@ -398,8 +396,6 @@ public class PDInfoActivity extends AppCompatActivity {
 
         int viewState = getViewState(releasedChild, dragRadius);
 
-        int viewId;
-
         switch (viewState) {
 
             case ADD_TIMESTREAM_LAYOUT:
@@ -415,15 +411,6 @@ public class PDInfoActivity extends AppCompatActivity {
                 PDInfoWrapper.deleteTimestream(MyApplication.sqLiteDatabase, rmTs.getId());
 
                 currentProduct.getTimeStreams().remove(rmTs.getId());
-
-//                if (originalPositionHashMap.size() < 1) {
-//
-//                    viewId = addTimestreamView(draggableLinearLayout);
-//                    Timestream ts = new Timestream(currentProduct.getProductCode());
-//                    currentProduct.getTimeStreams().put(ts.getId(), ts);
-//                    ts.setUpdated(true);
-//                    loadTimestream(ts, viewId);
-//                }
 
                 break;
 
