@@ -14,8 +14,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -71,16 +73,13 @@ public class PDInfoActivity extends AppCompatActivity {
     public static void actionStart(String code) {
 
         Intent intent = new Intent(MyApplication.getContext(), PDInfoActivity.class);
-        MyApplication.init();
         MyApplication.getContext().startActivity(intent);
-
-
         productToShow = code;
     }
 
     @Override
     protected void onStart() {
-
+        MyApplication.init();
         initActivity();
 
         if (showHandler == null) {
@@ -117,6 +116,7 @@ public class PDInfoActivity extends AppCompatActivity {
 
     private void initActivity() {
 
+        MyInfoChangeWatcher.init();
         MyApplication.activityIndex = PD_INFO_ACTIVITY;
         draggableLinearLayout = findViewById(R.id.parent);
         productCodeEditText = findViewById(R.id.product_code);
@@ -176,8 +176,6 @@ public class PDInfoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pdinfo);
         MyApplication.initActionBar(getSupportActionBar());
-
-        initActivity();
     }
 
     @Override
@@ -241,7 +239,6 @@ public class PDInfoActivity extends AppCompatActivity {
 
     private static void prepareNext() {
 
-
         int tsViewId = ((LinearLayout) draggableLinearLayout.getChildAt(draggableLinearLayout.getChildCount() - 1)).getId();
 
         EditText e = (EditText) ((LinearLayout) draggableLinearLayout.findViewById(tsViewId)).getChildAt(1);
@@ -262,6 +259,12 @@ public class PDInfoActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        Log.d("ontouch", MyInfoChangeWatcher.myTextWatchers.size() + "");
+        return super.onTouchEvent(event);
     }
 
     public static void loadTimestream(Timestream timestream, int timestreamViewId) {
@@ -525,14 +528,4 @@ public class PDInfoActivity extends AppCompatActivity {
     }
 
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        for (Handler h : MyApplication.handlers) {
-
-            if (h != null) h.removeCallbacksAndMessages(null);
-
-        }
-    }
 }

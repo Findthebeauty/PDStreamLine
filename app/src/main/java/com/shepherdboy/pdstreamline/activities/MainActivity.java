@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -118,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
 
         MyApplication.init();
         MyApplication.currentProduct = null;
+        MyApplication.activityIndex = MyApplication.MAIN_ACTIVITY;
 
         //开始信息录入模式
         Button startTraversalTimestreamBT = findViewById(R.id.traversal_timestream_activity);
@@ -128,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
         startTraversalTimestreamBT.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                TraversalTimestreamActivity.actionStart();
+                TraversalTimestreamActivity.actionStart(MyApplication.intentProductCode);
             }
         });
 
@@ -222,6 +224,12 @@ public class MainActivity extends AppCompatActivity {
 //        MyDatabaseHelper.copyDataBase(databasePath,
 //                tempDataBasePath);
         super.onDestroy();
+
+        for (Handler h : MyApplication.handlers) {
+
+            if (h != null) h.removeCallbacksAndMessages(null);
+
+        }
     }
 
     public static void actionStart() {

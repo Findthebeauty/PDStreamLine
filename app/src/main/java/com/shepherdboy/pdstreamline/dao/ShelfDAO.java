@@ -215,12 +215,10 @@ public class ShelfDAO {
 
         for (Cell cell : arrayList) {
 
-
             Product product = PDInfoWrapper.getProduct(cell.getProductCode(),
                     sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
 
             cell.setTimestreams(product.getTimeStreams());
-
         }
 
         Collections.sort(arrayList, AscOrderNumberComparator.getInstance());

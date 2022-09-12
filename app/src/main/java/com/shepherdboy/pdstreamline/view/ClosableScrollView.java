@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
@@ -13,9 +14,12 @@ import android.widget.ScrollView;
 import androidx.annotation.NonNull;
 
 import com.shepherdboy.pdstreamline.MyApplication;
+import com.shepherdboy.pdstreamline.activities.TraversalTimestreamActivity;
 
 public class ClosableScrollView extends ScrollView {
 
+    public static final int SCROLL_FROM_TOUCH = 100;
+    public static final int SCROLL_FROM_RELOCATE = 101;
     //记录触摸位置的变化，用于判断是滑动还是长按
     private static float newY;
     private static float oldY;
@@ -55,11 +59,28 @@ public class ClosableScrollView extends ScrollView {
             @Override
             public void handleMessage(@NonNull Message msg) {
 
-                int dy = msg.arg1;
+                View view = (View) msg.obj;
+                switch (msg.what) {
 
-                ScrollView view = ClosableScrollView.this;
+                    case SCROLL_FROM_TOUCH:
+                        view.getLocationOnScreen(location);
+                        int dy = location[1];
+                        ClosableScrollView.this.smoothScrollBy(0,
+                                dy - view.getHeight() - originalY);
+                        break;
 
-                view.smoothScrollBy(0, dy - originalY);
+                    case SCROLL_FROM_RELOCATE:
+                        ScrollView scrollView = ClosableScrollView.this;
+                        view.getLocationOnScreen(location);
+                        scrollView.smoothScrollBy(0,
+                                view.getTop());
+                        break;
+
+                    default:
+                        break;
+
+                }
+
             }
         };
 
@@ -99,8 +120,20 @@ public class ClosableScrollView extends ScrollView {
 
         getLocationOnScreen(location);
         originalY = location[1];
-        location = null;
+        Log.d("originalY", "getLocationOnScreen" + originalY + "");
+        getLocationInWindow(location);
+        Log.d("originalY", "getLocationInWindow" + location[1] + "");
 
+    }
+
+    @Override
+    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+
+        if (MyApplication.activityIndex == MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF) {
+
+            TraversalTimestreamActivity.recordTopProduct();
+        }
+        super.onScrollChanged(l, t, oldl, oldt);
     }
 
     @Override
@@ -148,6 +181,7 @@ public class ClosableScrollView extends ScrollView {
     public void fling(int velocityY) {
         super.fling(velocityY);
 
+        if (draggableLinearLayout == null) return;
         flingFinished = false;
 
         new Thread(new Runnable() {

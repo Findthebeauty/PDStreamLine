@@ -334,6 +334,7 @@ public class SettingActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
 
+        MyInfoChangeWatcher.clearWatchers();
         if (isExpSettingChanged()) {
             saveSetting();
         }
@@ -790,6 +791,7 @@ public class SettingActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
+        draggableLinearLayout = null;
 
         if (isExpSettingChanged()) {
             saveSetting();

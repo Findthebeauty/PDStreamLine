@@ -7,6 +7,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Message;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -234,7 +235,7 @@ public class DraggableLinearLayout extends LinearLayout {
 
                 InputMethodManager m = (InputMethodManager) editText.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 m.showSoftInput(editText, 0);
-                
+                Log.d("selectAll", "infoHandler：" + MyInfoChangeWatcher.infoHandler);
                 if (MyInfoChangeWatcher.infoHandler != null) {
 
                     Message msg = Message.obtain();
@@ -373,7 +374,6 @@ public class DraggableLinearLayout extends LinearLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
 
         //更新触控坐标
         ViewParent p =  getParent();

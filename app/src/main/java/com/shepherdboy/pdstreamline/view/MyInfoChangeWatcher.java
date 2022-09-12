@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -59,15 +60,20 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
     static {
 
-        infoHandler = new Handler() {
+        initHandler();
+    }
 
+    private static void initHandler() {
+        infoHandler = new Handler() {
             @Override
             public void handleMessage(@NonNull Message msg) {
 
+                Log.d("msg", msg.what + "");
                 switch (msg.what) {
 
                     case SELECT_ALL:
 
+                        Log.d("selectAll", "true");
                         EditText editText = (EditText) msg.obj;
                         Editable text = editText.getText();
                         if (text.length() > 0) {
@@ -97,6 +103,11 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
         };
 
         MyApplication.handlers.add(infoHandler);
+    }
+
+    public static void init() {
+        destroy();
+        initHandler();
     }
 
     /**
@@ -298,7 +309,6 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
             infoHandler.removeCallbacksAndMessages(null);
             infoHandler = null;
-
         }
 
     }

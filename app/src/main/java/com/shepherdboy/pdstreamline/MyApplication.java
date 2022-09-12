@@ -116,6 +116,7 @@ public class MyApplication extends Application {
 
     public static final ColorDrawable drawableSecondLevel = new ColorDrawable(MyApplication.DRAG_RANGE_SECOND_LEVEL);
     public static final ColorDrawable drawableFirstLevel = new ColorDrawable(MyApplication.DRAG_RANGE_FIRST_LEVEL);
+    public static String intentProductCode;
 
 //    public static ScrollView scrollView;
 
@@ -248,7 +249,6 @@ public class MyApplication extends Application {
 
             case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
 
-                TraversalTimestreamActivity.setContinueProcess(false);
                 BeanView beanView = (BeanView) draggableLinearLayout.getCapturedView();
 
                 if (beanView == null) return false;
@@ -258,7 +258,8 @@ public class MyApplication extends Application {
 
             case PD_INFO_ACTIVITY:
                 serialize();
-                TraversalTimestreamActivity.actionStart();
+                code = currentProduct.getProductCode();
+                TraversalTimestreamActivity.actionStart(code);
                 break;
 
             default:
@@ -574,6 +575,13 @@ public class MyApplication extends Application {
         }
 
     }
+
+    public static void deleteTimestream(String id) {
+
+        PDInfoWrapper.deleteTimestream(sqLiteDatabase, id);
+
+
+    }
 //
 //    static {
 //
@@ -734,7 +742,7 @@ public class MyApplication extends Application {
     public static void init() {
 
         onShowTimeStreamsHashMap.clear();
-
+        MyInfoChangeWatcher.clearWatchers();
         clearOriginalInfo();
     }
 
