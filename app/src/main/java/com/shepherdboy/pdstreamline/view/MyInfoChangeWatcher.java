@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -68,12 +67,10 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
             @Override
             public void handleMessage(@NonNull Message msg) {
 
-                Log.d("msg", msg.what + "");
                 switch (msg.what) {
 
                     case SELECT_ALL:
 
-                        Log.d("selectAll", "true");
                         EditText editText = (EditText) msg.obj;
                         Editable text = editText.getText();
                         if (text.length() > 0) {
@@ -118,6 +115,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
      */
     public static void watch(EditText editText, Shelf shelf, int filedIndex) {
 
+        editText.removeTextChangedListener(myTextWatchers.remove(editText));
 
         MyInfoChangeWatcher myInfoChangeWatcher = new MyInfoChangeWatcher();
         editText.addTextChangedListener(myInfoChangeWatcher);
@@ -134,6 +132,8 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
     public static void watch(EditText editText, @Nullable Timestream timestream, int filedIndex, boolean autoCommitOnLastFocus) {
 
+        editText.removeTextChangedListener(myTextWatchers.remove(editText));
+
         MyInfoChangeWatcher myInfoChangeWatcher = new MyInfoChangeWatcher();
         editText.addTextChangedListener(myInfoChangeWatcher);
         myInfoChangeWatcher.autoCommitOnLostFocus = autoCommitOnLastFocus;
@@ -149,7 +149,8 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
     public static void watch(DateScope scope, EditText editText, int index) {
 
-        if (myTextWatchers.containsKey(editText)) return;
+        editText.removeTextChangedListener(myTextWatchers.remove(editText));
+
         MyInfoChangeWatcher myInfoChangeWatcher = new MyInfoChangeWatcher();
         editText.addTextChangedListener(myInfoChangeWatcher);
 
@@ -201,8 +202,8 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
                 return true;
             }
         });
-
     }
+
     public static void watch(Button button) {
 
         switch (MyApplication.activityIndex) {

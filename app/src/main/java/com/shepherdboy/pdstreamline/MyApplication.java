@@ -144,8 +144,6 @@ public class MyApplication extends Application {
 
     public static HashMap<Integer, Point> originalPositionHashMap = new HashMap<>(); // hashMap存放每个时光流的初始坐标，key为viewId
     public static HashMap<Integer, Drawable> originalBackgroundHashMap = new HashMap<>(); // hashMap存放每个view的初始背景，key为viewId
-    public static HashMap<String, List<BeanView>> productBeanViewsMap = new HashMap<>(); // 存放每个商品对应的所有beanView
-
     public static LinkedList thingsToSaveList = new LinkedList();
 
     private static HashMap<String, Product> allProducts; //无Timestream的Product
@@ -209,6 +207,7 @@ public class MyApplication extends Application {
 
         if (event.getActionMasked() ==  MotionEvent.ACTION_UP) {
 
+            if(draggableLinearLayout == null) return false;
             draggableLinearLayout.setLongClicking(false);
             stopCountPressTime();
 
@@ -257,7 +256,7 @@ public class MyApplication extends Application {
                 break;
 
             case PD_INFO_ACTIVITY:
-                serialize();
+//                serialize();
                 code = currentProduct.getProductCode();
                 TraversalTimestreamActivity.actionStart(code);
                 break;
@@ -380,7 +379,7 @@ public class MyApplication extends Application {
     }
 
     public static void serialize() {
-
+        TraversalTimestreamActivity.postSyncProduct(currentProduct);
         saveChanges();
     }
 
@@ -592,8 +591,8 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        initDatabase(getApplicationContext());
+        context = getApplicationContext();
+        initDatabase(context);
         SettingActivity.initSetting();
         syncProductInfoFromServer(settingInstance.getLastSyncTime());
     }
@@ -691,6 +690,7 @@ public class MyApplication extends Application {
 
                         case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
 
+                            if (draggableLinearLayout == null ) return;
                             for (int i = 0; i < draggableLinearLayout.getChildCount() - 1; i++) {
 
                                 recordViewStateByChildIndex(draggableLinearLayout, i);
@@ -1034,6 +1034,8 @@ public class MyApplication extends Application {
                 draggableLinearLayout.findViewById(Integer.parseInt(ts.getBoundLayoutId()
         ));
 
+        if (timeStreamLinearLayout == null) return;
+
 
         switch (activityIndex) {
 
@@ -1164,7 +1166,7 @@ public class MyApplication extends Application {
                 Timestream.refresh(timestream);
                 TimestreamCombinationView combView = draggableLinearLayout.
                         findViewById(Integer.parseInt(timestream.getBoundLayoutId()));
-                combView.bindData(timestream.getId());
+                combView.bindData(timestream);
                 PDInfoWrapper.updateInfo(sqLiteDatabase, timestream, MyDatabaseHelper.FRESH_TIMESTREAM_TABLE_NAME);
                 break;
 

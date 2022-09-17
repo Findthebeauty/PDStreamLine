@@ -4,15 +4,17 @@ import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
+import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
-import com.shepherdboy.pdstreamline.beans.Cell;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 
@@ -21,11 +23,15 @@ import java.util.List;
 public class CellHeadView extends LinearLayout implements BeanView{
 
     private String productCode;
-    private final TextView headNameTv;
-    private final TextView headCodeTv;
-    private final TextView expTv;
+    private TextView headNameTv;
+    private TextView headCodeTv;
+    private TextView expTv;
 
-    public CellHeadView(Context context, Cell cell) {
+    public CellHeadView(Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+    }
+
+    public CellHeadView(Context context, String productCode) {
         super(context);
 
         this.setBackground(new ColorDrawable());
@@ -43,7 +49,7 @@ public class CellHeadView extends LinearLayout implements BeanView{
         headCodeTv.setId(View.generateViewId());
         expTv.setId(View.generateViewId());
 
-        bindData(cell.getProductCode());
+        bindData(productCode);
     }
 
     /**
@@ -68,11 +74,6 @@ public class CellHeadView extends LinearLayout implements BeanView{
         headCodeTv.setText(productCode);
 
         expTv.setText(productEXP);
-
-
-        List<BeanView> beanViews = MyApplication.productBeanViewsMap.get(productCode);
-        if (beanViews != null && !beanViews.contains(this))
-            beanViews.add(this);
     }
 
     public String getProductCode() {

@@ -35,6 +35,8 @@ import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Timestream;
+import com.shepherdboy.pdstreamline.beanview.ProductLoader;
+import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
@@ -78,7 +80,7 @@ public class PDInfoActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
-        MyApplication.init();
+//        MyApplication.init();
         initActivity();
 
         if (showHandler == null) {
@@ -115,7 +117,7 @@ public class PDInfoActivity extends AppCompatActivity {
 
     private void initActivity() {
 
-        MyInfoChangeWatcher.init();
+//        MyInfoChangeWatcher.init();
         MyApplication.activityIndex = PD_INFO_ACTIVITY;
         draggableLinearLayout = findViewById(R.id.parent);
         productCodeEditText = findViewById(R.id.product_code);
@@ -221,19 +223,22 @@ public class PDInfoActivity extends AppCompatActivity {
 
     private static void loadTimestreams(LinkedHashMap<String, Timestream> timeStreams) {
 
-        LinearLayout timestreamView;
-        int timestreamViewIndex = 0;
+//        LinearLayout timestreamView;
+//        int timestreamViewIndex = 0;
+//
+//        for (Timestream timestream : timeStreams.values()) {
+//
+//            timestreamView = (LinearLayout) draggableLinearLayout.getChildAt(timestreamViewIndex);
+//
+//            loadTimestream(timestream, timestreamView.getId());
+//
+//            timestreamViewIndex++;
+//        }
 
-        for (Timestream timestream : timeStreams.values()) {
+        ProductLoader.loadTimestreams(draggableLinearLayout, timeStreams, 0);
 
-            timestreamView = (LinearLayout) draggableLinearLayout.getChildAt(timestreamViewIndex);
+//        prepareNext();
 
-            loadTimestream(timestream, timestreamView.getId());
-
-            timestreamViewIndex++;
-        }
-
-        prepareNext();
     }
 
     private static void prepareNext() {
@@ -306,40 +311,40 @@ public class PDInfoActivity extends AppCompatActivity {
 
     private static void initTimestreamView(LinkedHashMap<String, Timestream> timestreams) {
 
-        MyApplication.init();
-        MyInfoChangeWatcher.clearWatchers();
         DraggableLinearLayout.setLayoutChanged(true);
 
         topTimestreamView = null;
         topDOPEditText = null;
 
-        // 根据根view的childCount计算timestreamView的数量
-        int timestreamViewCount = draggableLinearLayout.getChildCount() - 1;
-
-
-        while (timestreamViewCount > timestreams.size()) {
-
-            // 删除从上往下第一个timestream
-            draggableLinearLayout.removeView(draggableLinearLayout.getChildAt(0));
-
-            timestreamViewCount--;
-        }
-
-        while (timestreamViewCount < timestreams.size()) {
-
-            addTimestreamView(draggableLinearLayout, 0);
-
-            timestreamViewCount++;
-        }
+        draggableLinearLayout.addView(ProductLoader.prepareNext(
+                currentProduct.getProductCode(), draggableLinearLayout));
+        ProductLoader.initCellBody(draggableLinearLayout,timestreams,0,currentProduct.getProductCode());
+//        // 根据根view的childCount计算timestreamView的数量
+//        int timestreamViewCount = draggableLinearLayout.getChildCount() - 1;
+//
+//
+//        while (timestreamViewCount > timestreams.size()) {
+//
+//            // 删除从上往下第一个timestream
+//            draggableLinearLayout.removeView(draggableLinearLayout.getChildAt(0));
+//
+//            timestreamViewCount--;
+//        }
+//
+//        while (timestreamViewCount < timestreams.size()) {
+//
+//            addTimestreamView(draggableLinearLayout, 0);
+//
+//            timestreamViewCount++;
+//        }
 
         if (timestreams.size() > 0) {
 
             topTimestreamView = (LinearLayout) draggableLinearLayout.getChildAt(0);
-            topDOPEditText = (EditText) topTimestreamView.getChildAt(1);
+            topDOPEditText = ((TimestreamCombinationView)topTimestreamView).getBuyDOPEt();
 
         }
 
-//        MyApplication.init();
     }
 
     public static int getViewState(View draggedView, double draggedRadius) {
@@ -398,11 +403,6 @@ public class PDInfoActivity extends AppCompatActivity {
 
         switch (viewState) {
 
-            case ADD_TIMESTREAM_LAYOUT:
-//todo bug 空timestreamView复制时时间不为0点
-                addTimestream();
-                setTimeStreamViewOriginalBackgroundColor((LinearLayout) releasedChild);
-                break;
 
             case REMOVE_TIMESTREAM_LAYOUT:
 
@@ -414,6 +414,10 @@ public class PDInfoActivity extends AppCompatActivity {
 
                 break;
 
+            case ADD_TIMESTREAM_LAYOUT:
+//todo bug 空timestreamView复制时时间不为0点
+//                addTimestream();
+//                setTimeStreamViewOriginalBackgroundColor((LinearLayout) releasedChild);
             default:
                 draggableLinearLayout.putBack(releasedChild);
                 setTimeStreamViewOriginalBackgroundColor((LinearLayout) releasedChild);

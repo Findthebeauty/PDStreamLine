@@ -6,6 +6,7 @@ import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_AC
 import static com.shepherdboy.pdstreamline.MyApplication.activityIndex;
 import static com.shepherdboy.pdstreamline.MyApplication.combinationHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
+import static com.shepherdboy.pdstreamline.MyApplication.intentProductCode;
 import static com.shepherdboy.pdstreamline.MyApplication.setTimeStreamViewOriginalBackgroundColor;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.basket;
@@ -48,6 +49,7 @@ import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.beanview.BeanView;
 import com.shepherdboy.pdstreamline.beanview.CellHeadView;
+import com.shepherdboy.pdstreamline.beanview.ProductLoader;
 import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
 import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
@@ -60,7 +62,6 @@ import com.shepherdboy.pdstreamline.view.ShelfAdapter;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -70,6 +71,9 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     private static int dragThreshold = 105;
     private static final int DRAG_LEFT = 200;
     private static final int DRAG_RIGHT = 201;
+
+    private static ClosableScrollView container;
+    private static DraggableLinearLayout shelfLayout;
 
     private Shelf tempShelf;//货架信息改变时临时保存改变后的信息，用于回滚操作
     private Shelf defaultShelf;
@@ -93,7 +97,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     public static Handler handler;
 
     public static ConcurrentLinkedQueue<View> newViews = new ConcurrentLinkedQueue<>();
-    public static ConcurrentHashMap<String, View> headViews = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<String, CellHeadView> headViews = new ConcurrentHashMap<>();
     private static final boolean[] continueProcess = new boolean[]{true};
     private static boolean loadFinished = false;
     private static boolean prepareFinished = false;
@@ -197,10 +201,19 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         if (!loadFinished) {
 
-            Message msg = handler.obtainMessage();
-            msg.what = MSG_LOAD_VIEWS;
-            handler.sendMessage(msg);
+            postLoadViews();
         }
+    }
+
+    public static void postSyncProduct(Product product) {
+        if(product == null) return;
+        if(layoutIndex != LAYOUT_SHOW_SHELF_PRODUCT) return;
+        postMessage(MSG_SYNC_PRODUCT, product);
+    }
+
+    public static void postLoadViews() {
+
+        postMessage(MSG_LOAD_VIEWS, null);
     }
 
     public static void recordTopProduct() {
@@ -211,7 +224,14 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
                  scr.getScrollY() + offsetY);
 
         if (beanView instanceof LinearLayout) {
-            MyApplication.intentProductCode = ((BeanView)beanView).getProductCode();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    MyApplication.intentProductCode = ((BeanView)beanView).getProductCode();
+                    MyApplication.currentProduct = PDInfoWrapper.getProduct(intentProductCode,
+                            sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
+                }
+            }).start();
         }
     }
 
@@ -225,6 +245,9 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        MyApplication.init();
+        MyInfoChangeWatcher.init();
     }
 
     private void initShowShelfList(Context context) {
@@ -269,25 +292,18 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
     /**
      * 同步商品信息
-     * @param code
+     * @param product
      */
-    private void syncProduct(String code) {
+    private void syncProduct(Product product) {
 
-        List<BeanView> beanViews = MyApplication.productBeanViewsMap.get(code);
+        String code = product.getProductCode();
 
-        for (BeanView beanView : beanViews) {
+        CellHeadView headView = headViews.get(code);
+        headView.bindData(code);
 
-            if (beanView instanceof CellHeadView) {
+        int index = shelfLayout.indexOfChild(headView);
 
-                beanView.bindData(code);
-            }
-
-            if (beanView instanceof TimestreamCombinationView) {
-
-                beanView.bindData(((TimestreamCombinationView) beanView).getTimestreamId());
-            }
-        }
-
+        ProductLoader.loadCellBody(shelfLayout, index + 1, product);
     }
 
     private void modifyShelf(Shelf shelf) {
@@ -507,15 +523,24 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         //todo 展示货架
         currentShelf = shelf;
-        setContentView(R.layout.shelf);
 
-        initShowShelf();
+        if (layoutIndex == LAYOUT_SHOW_SHELF_PRODUCT) {
 
-        MyInfoChangeWatcher.setShouldWatch(false);
-        showRow(draggableLinearLayout, 1); //todo 货架行的遍历方式
+            MyApplication.activityIndex = TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
+            draggableLinearLayout = shelfLayout;
+            postLoadViews();
+            postLocate();
 
+        } else {
+
+            setContentView(R.layout.shelf);
+            initShowShelf();
+            MyInfoChangeWatcher.setShouldWatch(false);
+            showRow(draggableLinearLayout, 1); //todo 货架行的遍历方式
+        }
         DraggableLinearLayout.setLayoutChanged(true);
         MyInfoChangeWatcher.setShouldWatch(true);
+
 
     }
 
@@ -523,7 +548,9 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         layoutIndex = LAYOUT_SHOW_SHELF_PRODUCT;
         MyApplication.activityIndex = TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
 
-        draggableLinearLayout = TraversalTimestreamActivity.this.findViewById(R.id.row);
+        shelfLayout = TraversalTimestreamActivity.this.findViewById(R.id.row);
+        draggableLinearLayout = shelfLayout;
+        container = (ClosableScrollView) shelfLayout.getParent();
         newViews.clear();
         headViews.clear();
     }
@@ -531,9 +558,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     private void showRow(DraggableLinearLayout draggableLinearLayout, int rowNumber) {
 
 
-        Row row = ShelfDAO.getRow(ShelfAdapter.getCurrentShelf(), rowNumber);
-
-        currentRow = row;
+        currentRow = ShelfDAO.getRow(ShelfAdapter.getCurrentShelf(), rowNumber);
         if (combinationHashMap == null)
         combinationHashMap = PDInfoWrapper.getTimestreamCombinations(sqLiteDatabase);
 
@@ -547,6 +572,10 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
             }
         }).start();
 
+        postLocate();
+    }
+
+    private void postLocate() {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -561,13 +590,18 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
                         }
                     }
 
-                    Message msg = handler.obtainMessage();
-                    msg.obj = headViews.get(MyApplication.intentProductCode);
-                    msg.what = MSG_LOCATE_PRODUCT;
-                    handler.sendMessage(msg);
+                    postMessage(MSG_LOCATE_PRODUCT, headViews.get(MyApplication.intentProductCode));
                 }
             }
         }).start();
+    }
+
+    public static void postMessage(int what, Object obj) {
+        if(handler == null) return;
+        Message msg = handler.obtainMessage();
+        msg.obj = obj;
+        msg.what = what;
+        handler.sendMessage(msg);
     }
 
     private void loadViews(DraggableLinearLayout draggableLinearLayout) {
@@ -580,7 +614,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
             if (view instanceof CellHeadView) {
 
-                headViews.put(((CellHeadView) view).getProductCode(), view);
+                headViews.put(((CellHeadView) view).getProductCode(), (CellHeadView) view);
             }
         }
 
@@ -599,19 +633,15 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         synchronized (continueProcess) {
             while (row.getCells().size() > 0) {
 
-                if(MyApplication.activityIndex != TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF) return;
                 loadFinished = false;
                 Cell cell = row.getCells().poll();
-                MyApplication.productBeanViewsMap.put(cell.getProductCode(), new LinkedList<>());
                 prepareCellView(cell, draggableLinearLayout);
 
                 if (!continueProcess[0]) {
                     continue;
                 }
-                if(handler == null) return;
-                Message msg = handler.obtainMessage();
-                msg.what = MSG_LOAD_VIEWS;
-                handler.sendMessage(msg);
+
+                postMessage(MSG_LOAD_VIEWS,null);
             }
 
 
@@ -629,7 +659,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         LinkedHashMap<String, Timestream> timestreams = cell.getTimestreams();
 
-        CellHeadView cellHead = new CellHeadView(view.getContext(), cell);
+        CellHeadView cellHead = new CellHeadView(view.getContext(), cell.getProductCode());
         newViews.add(cellHead);
         for (Timestream timestream : timestreams.values()) {
 
@@ -638,7 +668,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
             newViews.add(combView);
         }
 
-        prepareNext(cell, view);
+        newViews.add(ProductLoader.prepareNext(cell.getProductCode(), view));
     }
 
     private void prepareTailView(DraggableLinearLayout draggableLinearLayout) {
@@ -666,67 +696,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         int height = dm.heightPixels - ClosableScrollView.getOriginalY() - lastViewHeight * 2;
         tail.setHeight(height);
     }
-
-    private static void prepareNext(Cell cell, DraggableLinearLayout view) {
-
-
-        TimestreamCombinationView nextTrigger =
-                new TimestreamCombinationView(view.getContext());
-
-        nextTrigger.setProductCode(cell.getProductCode());
-
-        TextView nameTv = nextTrigger.getBuyProductNameTv();
-        EditText inventoryEt = nextTrigger.getInventory();
-        nameTv.setText(MyApplication.getAllProducts().get(cell.getProductCode()).getProductName());
-        inventoryEt.setFocusable(false);
-        inventoryEt.setVisibility(View.INVISIBLE);
-
-        EditText e = nextTrigger.getBuyDOPEt();
-        e.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-
-                if (hasFocus && MyInfoChangeWatcher.isShouldWatch()) {
-
-                    //将edittext所在view滚动到上方
-                    locateView(nextTrigger, ClosableScrollView.SCROLL_FROM_TOUCH);
-
-                    String code = cell.getProductCode();
-                    Product p = MyApplication.getAllProducts().get(code);
-                    Timestream t = new Timestream();
-                    MyApplication.timeStreams.put(t.getId(), t);
-                    AIInputter.fillTheBlanks(p, t);
-
-                    PDInfoWrapper.updateInfo(sqLiteDatabase, t, MyDatabaseHelper.NEW_TIMESTREAM);
-                    TimestreamCombinationView next =
-                            new TimestreamCombinationView(view.getContext(), t);
-                    MyInfoChangeWatcher.setShouldWatch(false);
-                    view.addView(next,
-                            view.indexOfChild(nextTrigger));
-                    MyInfoChangeWatcher.setShouldWatch(true);
-                    MyApplication.clearOriginalInfo();
-                    MyApplication.recordDraggableView();
-                    DraggableLinearLayout.setFocus(next.getBuyDOPEt());
-                    DraggableLinearLayout.setLayoutChanged(true);
-
-                }
-
-            }
-        });
-
-//        view.addView(nextTrigger);
-        newViews.add(nextTrigger);
-    }
-
-    private static void locateView(View view, int intent) {
-
-        Message msg = Message.obtain();
-        msg.what = intent;
-        msg.obj = view;
-
-        ClosableScrollView.getScrollHandler().sendMessage(msg);
-    }
-
 
     /**
      * 重设模板中view的id为随机值，避免id冲突
@@ -821,8 +790,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        MyApplication.init();
-        MyInfoChangeWatcher.init();
         initTransaction();
         initHandler();
     }
@@ -857,13 +824,13 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
                             case MSG_LOAD_VIEWS:
 
-                                loadViews(draggableLinearLayout);
+                                loadViews(shelfLayout);
                                 break;
 
                             case MSG_LOCATE_PRODUCT:
 
-                                View view = (View) msg.obj;
-                                locateView(view, ClosableScrollView.SCROLL_FROM_RELOCATE);
+                                ClosableScrollView.postLocate(
+                                        ClosableScrollView.SCROLL_FROM_RELOCATE, msg.obj);
                                 break;
 
                             case MSG_REFRESH_TAIL_HEIGHT:
@@ -873,10 +840,9 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
                             case MSG_SYNC_PRODUCT:
 
-                                String code = (String) msg.obj;
-                                syncProduct(code);
+                                Product product = (Product) msg.obj;
+                                syncProduct(product);
                                 break;
-
                             default:
                                 break;
                         }
@@ -889,14 +855,30 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+//        if (layoutIndex == LAYOUT_SHOW_SHELF_PRODUCT) {
+//            container.addView(shelfLayout);
+//        }
+    }
+
+    @Override
     protected void onPause() {
         setContinueProcess(false);
+//        if (layoutIndex == LAYOUT_SHOW_SHELF_PRODUCT) {
+//            container.removeView(shelfLayout);
+//        }
         super.onPause();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+
+//        if(layoutIndex == LAYOUT_SHOW_SHELF_PRODUCT) {
+//            container.removeView(shelfLayout);
+//        }
     }
 
     @Override
@@ -913,6 +895,8 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         newViews.clear();
         headViews.clear();
         tail = null;
+        draggableLinearLayout = null;
+        layoutIndex = LAYOUT_SHELF_LIST;
         MyInfoChangeWatcher.clearWatchers();
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);

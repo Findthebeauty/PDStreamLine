@@ -1,5 +1,7 @@
 package com.shepherdboy.pdstreamline.view;
 
+import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
+import static com.shepherdboy.pdstreamline.MyApplication.activityIndex;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 
 import android.content.Context;
@@ -72,7 +74,7 @@ public class ClosableScrollView extends ScrollView {
                         ScrollView scrollView = ClosableScrollView.this;
                         view.getLocationOnScreen(location);
                         scrollView.smoothScrollBy(0,
-                                view.getTop());
+                                view.getTop() - scrollView.getScrollY());
                         break;
 
                     default:
@@ -84,7 +86,15 @@ public class ClosableScrollView extends ScrollView {
         };
 
         MyApplication.handlers.add(scrollHandler);
+    }
 
+    public static void postLocate(int what, Object obj) {
+
+        if (activityIndex != TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF) return;
+        Message msg = scrollHandler.obtainMessage();
+        msg.what = what;
+        msg.obj = obj;
+        scrollHandler.sendMessage(msg);
     }
 
     public static float getDeltaX() {
@@ -138,7 +148,6 @@ public class ClosableScrollView extends ScrollView {
 
             newY = oldY = ev.getRawY();
             newX = oldX = ev.getRawX();
-
 
         }
 

@@ -23,7 +23,6 @@ import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
@@ -43,7 +42,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
     public TimestreamCombinationView(Context context, Timestream timestream) {
         this(context);
 
-        bindData(timestream.getId());
+        bindData(timestream);
     }
 
     public TimestreamCombinationView(Context context) {
@@ -166,11 +165,11 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
             return;
         }
 
-        String timestreamId = (String) o;
-        Timestream timestream = MyApplication.timeStreams.get(timestreamId);
+
+        Timestream timestream = (Timestream) o;
 
         this.productCode = timestream.getProductCode();
-        this.timestreamId = timestreamId;
+        this.timestreamId = timestream.getId();
 
         String discountRate = timestream.getDiscountRate();
 
@@ -255,9 +254,6 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
             MyInfoChangeWatcher.watch(inventory,timestream,MyApplication.TIMESTREAM_INVENTORY,true);
         }
 
-        List<BeanView> beanViews = MyApplication.productBeanViewsMap.get(productCode);
-        if (beanViews != null && !beanViews.contains(this))
-            beanViews.add(this);
     }
 
     public EditText getBuyDOPEt() {
