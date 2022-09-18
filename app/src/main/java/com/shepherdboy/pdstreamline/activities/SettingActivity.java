@@ -1,5 +1,6 @@
 package com.shepherdboy.pdstreamline.activities;
 
+import static com.shepherdboy.pdstreamline.MyApplication.SETTING_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.activityIndex;
 import static com.shepherdboy.pdstreamline.MyApplication.currentProduct;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
@@ -334,7 +335,7 @@ public class SettingActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
 
-        MyInfoChangeWatcher.clearWatchers();
+        MyInfoChangeWatcher.clearWatchers(SETTING_ACTIVITY);
         if (isExpSettingChanged()) {
             saveSetting();
         }
@@ -370,6 +371,7 @@ public class SettingActivity extends AppCompatActivity {
         draggableLinearLayout = findViewById(R.id.date_offset_setting_table);
         activityIndex = MyApplication.SETTING_ACTIVITY;
 
+        MyInfoChangeWatcher.init(activityIndex);
         initDateSettingView();
 
         if (dateSettingMap.isEmpty() || dateSettingIndex == null || settingInstance == null)
@@ -388,7 +390,7 @@ public class SettingActivity extends AppCompatActivity {
                 saveSetting();
                 SettingActivity.this.finish();
                 MyInfoChangeWatcher.commitAll();
-                MyInfoChangeWatcher.clearWatchers();
+                MyInfoChangeWatcher.clearWatchers(SETTING_ACTIVITY);
             }
         });
 
@@ -414,7 +416,7 @@ public class SettingActivity extends AppCompatActivity {
 
     private void loadSetting() {
 
-        MyInfoChangeWatcher.clearWatchers();
+        MyInfoChangeWatcher.clearWatchers(SETTING_ACTIVITY);
         loadEXPSetting();
         loadSingletonSetting();
     }
@@ -609,7 +611,7 @@ public class SettingActivity extends AppCompatActivity {
         int scopesCount = scopeList.size();
 
         MyApplication.init();
-        MyInfoChangeWatcher.clearWatchers();
+        MyInfoChangeWatcher.clearWatchers(SETTING_ACTIVITY);
 
         int scopesViewCount = draggableLinearLayout.getChildCount() - 1;
 

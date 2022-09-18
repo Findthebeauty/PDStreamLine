@@ -163,7 +163,8 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "product_discount_rate text," +
             "product_buy_specs text," +
             "product_giveaway_specs text," +
-            "sibling_promotion_id text)";
+            "sibling_promotion_id text," +
+            "in_basket text default 'false')";
 
     public static final String CREATE_TABLE_PROMOTION_HISTORY = "create table " +
             PROMOTION_HISTORY_TABLE_NAME +

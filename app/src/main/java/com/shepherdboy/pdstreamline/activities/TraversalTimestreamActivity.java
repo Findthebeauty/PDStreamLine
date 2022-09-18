@@ -7,7 +7,7 @@ import static com.shepherdboy.pdstreamline.MyApplication.activityIndex;
 import static com.shepherdboy.pdstreamline.MyApplication.combinationHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 import static com.shepherdboy.pdstreamline.MyApplication.intentProductCode;
-import static com.shepherdboy.pdstreamline.MyApplication.setTimeStreamViewOriginalBackgroundColor;
+import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.basket;
 
@@ -123,7 +123,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
             default:
 
-                setTimeStreamViewOriginalBackgroundColor((LinearLayout) changedView);
+                MyApplication.setTimeStreamViewOriginalBackground((LinearLayout) changedView);
                 break;
         }
     }
@@ -156,19 +156,16 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
                 MyApplication.deleteTimestream(ts.getId());
                 ts.setInBasket(false);
-                basket.remove(ts);
+                basket.remove(ts.getId());
                 break;
 
             case DRAG_RIGHT:
 
-                ts = MyApplication.unloadTimestream((LinearLayout) releasedChild);
+//                ts = MyApplication.unloadTimestream((LinearLayout) releasedChild);
+                ts = onShowTimeStreamsHashMap.get(releasedChild.getId());
 
-
-                if (ts == null) {
-
-                    draggableLinearLayout.putBack(releasedChild);
-                    return;
-                }
+                draggableLinearLayout.putBack(releasedChild);
+                if (ts == null) return;
                 PDInfoWrapper.deleteTimestream(sqLiteDatabase, ts.getId());
 
                 if (ts.getSiblingPromotionId() != null) {
@@ -178,20 +175,24 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
                     for (Timestream t : unpackedTimestreams) {
 
-                        basket.add(t);
+                        basket.put(t.getId(), t);
                         t.setInBasket(true);
-
                     }
 
                     Streamline.reposition(unpackedTimestreams);
 
                 } else {
 
-                    basket.add(ts);
+                    basket.put(ts.getId(), ts);
                     ts.setInBasket(true);
 
                     Streamline.position(ts);
                 }
+
+                Product product = PDInfoWrapper.getProduct(ts.getProductCode(),
+                        sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
+
+                postSyncProduct(product);
                 break;
 
             default:
@@ -247,7 +248,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         MyApplication.init();
-        MyInfoChangeWatcher.init();
     }
 
     private void initShowShelfList(Context context) {
@@ -790,6 +790,8 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        MyInfoChangeWatcher.init(activityIndex);
+
         initTransaction();
         initHandler();
     }
@@ -897,7 +899,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         tail = null;
         draggableLinearLayout = null;
         layoutIndex = LAYOUT_SHELF_LIST;
-        MyInfoChangeWatcher.clearWatchers();
+        MyInfoChangeWatcher.clearWatchers(TRAVERSAL_TIMESTREAM_ACTIVITY);
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
             handler = null;

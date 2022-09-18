@@ -13,6 +13,7 @@ import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 
 public class PromotionActivity extends AppCompatActivity {
@@ -40,9 +41,6 @@ public class PromotionActivity extends AppCompatActivity {
 
         if (SettingActivity.settingInstance.isAutoCombine())
             autoCombine(MidnightTimestreamManagerService.basket);
-
-
-
     }
 
     /**
@@ -64,13 +62,13 @@ public class PromotionActivity extends AppCompatActivity {
 
 
     }
-    public void autoCombine(LinkedList<Timestream> basket) {
+    public void autoCombine(HashMap<String, Timestream> basket) {
 
-        for (Timestream t : basket) {
+        for (Timestream t : basket.values()) {
 
             combinations.add(combine(t));
 
-            basket.remove(t);
+            basket.remove(t.getId());
         }
     }
 

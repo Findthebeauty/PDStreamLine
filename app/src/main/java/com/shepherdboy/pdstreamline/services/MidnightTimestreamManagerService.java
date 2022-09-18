@@ -13,14 +13,14 @@ import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.activities.PossiblePromotionTimestreamActivity;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class MidnightTimestreamManagerService extends Service {
 
     public static Timer midnightTimer;
-    public static LinkedList<Timestream> basket = new LinkedList<>();
+    public static HashMap<String, Timestream> basket = new HashMap<>();
 
     public static Timer timestreamRestoreTimer;
     public static TimerTask timestreamRestoreTask;

@@ -199,6 +199,7 @@ public class PDInfoWrapper {
                         tempTs.setBuySpecs(cursor.getString(8));
                         tempTs.setGiveawaySpecs(cursor.getString(9));
                         tempTs.setSiblingPromotionId(cursor.getString(10));
+                        tempTs.setInBasket(Boolean.parseBoolean(cursor.getString(11)));
                         break;
                 }
 
@@ -353,7 +354,8 @@ public class PDInfoWrapper {
         sqLiteDatabase.execSQL(sql);
         sqLiteDatabase.execSQL(deleteSql);
 
-        sql = "replace into " + MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME + " select " +
+        sql = "replace into " + MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME + "(" +
+                MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_COLUMNS + ") select " +
                 MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_COLUMNS + " from " +
                 MyDatabaseHelper.PROMOTION_TIMESTREAM_TABLE_NAME + " where " + MyDatabaseHelper.EXPIRE_DATE_SELECTION + "<'" + date + "'";
         deleteSql = "delete from " + MyDatabaseHelper.PROMOTION_TIMESTREAM_TABLE_NAME + " where " + MyDatabaseHelper.EXPIRE_DATE_SELECTION + "<'" + date + "'";
@@ -427,6 +429,14 @@ public class PDInfoWrapper {
                 if (tableName.equals(MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME)) {
 
                     temp.setInBasket(Boolean.parseBoolean(cursor.getString(7)));
+                }
+
+                if (tableName.equals(MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME)) {
+                    temp.setDiscountRate(cursor.getString(7));
+                    temp.setBuySpecs(cursor.getString(8));
+                    temp.setGiveawaySpecs(cursor.getString(9));
+                    temp.setSiblingPromotionId(cursor.getString(10));
+                    temp.setInBasket(Boolean.parseBoolean(cursor.getString(11)));
                 }
 
                 temp.setUpdated(true);

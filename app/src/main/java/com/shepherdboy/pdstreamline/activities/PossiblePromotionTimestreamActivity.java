@@ -3,7 +3,6 @@ package com.shepherdboy.pdstreamline.activities;
 import static com.shepherdboy.pdstreamline.MyApplication.POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
-import static com.shepherdboy.pdstreamline.MyApplication.setTimeStreamViewOriginalBackgroundColor;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.basket;
 import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.timestreamRestoreHandler;
@@ -16,7 +15,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Message;
 import android.text.InputType;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -112,7 +110,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
             case PICK_OUT:
 
                 rmTs = MyApplication.unloadTimestream((LinearLayout) releasedChild);
-                basket.add(rmTs);
+                basket.put(rmTs.getId(), rmTs);
                 rmTs.setInBasket(true);
                 PDInfoWrapper.updateInfo(MyApplication.sqLiteDatabase, rmTs,
                         MyDatabaseHelper.UPDATE_BASKET);
@@ -133,9 +131,8 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
         if (onShowTimeStreamsHashMap.size() == 0) {
 
-            for(Timestream t : basket) {
+            for(Timestream t : basket.values()) {
 
-                Log.d("I'm in!", t.toString());
             }
 
             Toast.makeText(draggableLinearLayout.getContext(), "新增临期商品已全部捡出!", Toast.LENGTH_LONG).show();
@@ -179,7 +176,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
             default:
 
-                setTimeStreamViewOriginalBackgroundColor((LinearLayout) changedView);
+                MyApplication.setTimeStreamViewOriginalBackground((LinearLayout) changedView);
 
 
         }
@@ -241,7 +238,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
         for (Timestream t : possiblePromotionTimestreams) {
 
-            if (t.isInBasket()) basket.add(t);
+            if (t.isInBasket()) basket.put(t.getId(), t);
         }
 
         return possiblePromotionTimestreams.size() - basket.size();
@@ -264,7 +261,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
             MyApplication.onShowTimeStreamsHashMap.put(tsView.getId(), timestream);
 
-            MyApplication.setTimeStreamViewOriginalBackgroundColor(timestream);
+            MyApplication.setTimeStreamViewOriginalBackground(timestream);
 
             MyInfoChangeWatcher.watch((EditText) (tsView.getChildAt(2)), timestream, MyApplication.TIMESTREAM_INVENTORY, true);
             childViewIndex++;
@@ -301,7 +298,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
     private static void initTimestreamsView(int timestreamsCount) {
 
         MyApplication.init();
-        MyInfoChangeWatcher.clearWatchers();
+        MyInfoChangeWatcher.clearWatchers(POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY);
         DraggableLinearLayout.setLayoutChanged(true);
 
         int tsViewCount = draggableLinearLayout.getChildCount() - 1;

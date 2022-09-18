@@ -4,7 +4,6 @@ import static com.shepherdboy.pdstreamline.MyApplication.PD_INFO_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.currentProduct;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
-import static com.shepherdboy.pdstreamline.MyApplication.setTimeStreamViewOriginalBackgroundColor;
 
 import android.app.Activity;
 import android.content.Context;
@@ -150,6 +149,8 @@ public class PDInfoActivity extends AppCompatActivity {
                 return true;
             }
         });
+
+        MyInfoChangeWatcher.init(PD_INFO_ACTIVITY);
 
         MyInfoChangeWatcher.watch(productCodeEditText, null, MyApplication.PRODUCT_CODE, true);
         activity = PDInfoActivity.this;
@@ -299,7 +300,7 @@ public class PDInfoActivity extends AppCompatActivity {
 
         onShowTimeStreamsHashMap.put(tView.getId(), timestream);
 
-        MyApplication.setTimeStreamViewOriginalBackgroundColor(timestream);
+        MyApplication.setTimeStreamViewOriginalBackground(timestream);
 
         MyInfoChangeWatcher.watch(timestreamDOPEditText, timestream, MyApplication.TIMESTREAM_DOP, true);
         MyInfoChangeWatcher.watch(timestreamCoordinateEditText, timestream, MyApplication.TIMESTREAM_COORDINATE, true);
@@ -391,7 +392,7 @@ public class PDInfoActivity extends AppCompatActivity {
 
             default:
 
-                setTimeStreamViewOriginalBackgroundColor((LinearLayout) changedView);
+                MyApplication.setTimeStreamViewOriginalBackground((LinearLayout) changedView);
         }
     }
 
@@ -420,7 +421,7 @@ public class PDInfoActivity extends AppCompatActivity {
 //                setTimeStreamViewOriginalBackgroundColor((LinearLayout) releasedChild);
             default:
                 draggableLinearLayout.putBack(releasedChild);
-                setTimeStreamViewOriginalBackgroundColor((LinearLayout) releasedChild);
+                MyApplication.setTimeStreamViewOriginalBackground((LinearLayout) releasedChild);
 
                 break;
         }

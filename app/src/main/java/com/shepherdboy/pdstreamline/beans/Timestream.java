@@ -3,6 +3,7 @@ package com.shepherdboy.pdstreamline.beans;
 import androidx.annotation.Nullable;
 
 import com.shepherdboy.pdstreamline.activities.SettingActivity;
+import com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 
 import java.text.ParseException;
@@ -31,7 +32,7 @@ public class Timestream {
         t.setBuySpecs(null);
         t.setUpdated(false);
         t.setSiblingPromotionId(null);
-        t.setInBasket(true);
+        t.setInBasket(MidnightTimestreamManagerService.basket.containsKey(t.getId()));
     }
 
     public String getId() {
@@ -146,7 +147,7 @@ public class Timestream {
     }
 
     public void setSiblingPromotionId(String siblingPromotionId) {
-        this.siblingPromotionId = siblingPromotionId;
+        this.siblingPromotionId = "null".equals(siblingPromotionId) ? null : siblingPromotionId;
     }
 
     public String getDiscountRate() {

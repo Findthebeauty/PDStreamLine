@@ -325,14 +325,15 @@ public class MyApplication extends Application {
         return false;
     }
 
-    public static void restoreTimestreams(LinkedList linkedList) {
+    public static void restoreTimestreams(HashMap<String, Timestream> basket) {
 
-        while (!linkedList.isEmpty()) {
+        for (Timestream t : basket.values()) {
 
-            Timestream t = (Timestream) linkedList.remove();
             t.setInBasket(false);
             PDInfoWrapper.updateInfo(sqLiteDatabase, t, MyDatabaseHelper.UPDATE_BASKET);
         }
+
+        basket.clear();
     }
 
 
@@ -679,57 +680,53 @@ public class MyApplication extends Application {
 
     public static void recordDraggableView() {
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (DraggableLinearLayout.isLayoutChanged()) {
+        if (DraggableLinearLayout.isLayoutChanged()) {
 
-                    switch (activityIndex) {
+            switch (activityIndex) {
 
-                        case PD_INFO_ACTIVITY:
+                case PD_INFO_ACTIVITY:
 
-                        case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
+                case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
 
-                            if (draggableLinearLayout == null ) return;
-                            for (int i = 0; i < draggableLinearLayout.getChildCount() - 1; i++) {
+                    if (draggableLinearLayout == null ) return;
+                    for (int i = 0; i < draggableLinearLayout.getChildCount() - 1; i++) {
 
-                                recordViewStateByChildIndex(draggableLinearLayout, i);
-                            }
-                            break;
-
-                        case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
-
-                        case SETTING_ACTIVITY:
-
-                            for (int i = 0; i < draggableLinearLayout.getChildCount() - 1; i++) {
-
-                                recordViewStateByChildIndex(draggableLinearLayout, i + 1);
-
-                            }
-                            break;
-
-                        case PROMOTION_TIMESTREAM_ACTIVITY:
-
-                            for (int i = 0; i < draggableLinearLayout.getChildCount(); i++) {
-
-                                recordViewStateByChildIndex(draggableLinearLayout, i);
-
-                                temp = (LinearLayout) draggableLinearLayout.getChildAt(i);
-
-                                if (temp instanceof DraggableLinearLayout) {
-
-                                    for (int j = 0; j < temp.getChildCount(); j++) {
-
-                                        recordViewStateByChildIndex(temp, j);
-                                    }
-                                }
-                            }
-                            break;
+                        recordViewStateByChildIndex(draggableLinearLayout, i);
                     }
-                }
-                DraggableLinearLayout.setLayoutChanged(false);
+                    break;
+
+                case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
+
+                case SETTING_ACTIVITY:
+
+                    for (int i = 0; i < draggableLinearLayout.getChildCount() - 1; i++) {
+
+                        recordViewStateByChildIndex(draggableLinearLayout, i + 1);
+
+                    }
+                    break;
+
+                case PROMOTION_TIMESTREAM_ACTIVITY:
+
+                    for (int i = 0; i < draggableLinearLayout.getChildCount(); i++) {
+
+                        recordViewStateByChildIndex(draggableLinearLayout, i);
+
+                        temp = (LinearLayout) draggableLinearLayout.getChildAt(i);
+
+                        if (temp instanceof DraggableLinearLayout) {
+
+                            for (int j = 0; j < temp.getChildCount(); j++) {
+
+                                recordViewStateByChildIndex(temp, j);
+                            }
+                        }
+                    }
+                    break;
             }
-        }).start();
+        }
+        DraggableLinearLayout.setLayoutChanged(false);
+
     }
 
     private static void recordViewStateByChildIndex(ViewGroup parent, int childIndex) {
@@ -740,13 +737,14 @@ public class MyApplication extends Application {
 
         originalPosition = new Point(temp.getLeft(), temp.getTop());
         MyApplication.originalPositionHashMap.put(temp.getId(), originalPosition);
+        if (!MyApplication.originalBackgroundHashMap.containsKey(temp.getId()))
         MyApplication.originalBackgroundHashMap.put(temp.getId(),temp.getBackground());
     }
 
     public static void init() {
 
         onShowTimeStreamsHashMap.clear();
-        MyInfoChangeWatcher.clearWatchers();
+        MyInfoChangeWatcher.destroy();
         clearOriginalInfo();
     }
 
@@ -1026,7 +1024,7 @@ public class MyApplication extends Application {
      * 根据timeStream日期状态设置linearLayout颜色，针对单个timestream
      */
 
-    public static void setTimeStreamViewOriginalBackgroundColor(Timestream ts) {
+    public static void setTimeStreamViewOriginalBackground(Timestream ts) {
 
         if (ts == null) return;
 
@@ -1047,23 +1045,27 @@ public class MyApplication extends Application {
                 break;
 
         }
-        setTimeStreamViewOriginalBackgroundColor(timeStreamLinearLayout);
+        setTimeStreamViewOriginalBackground(timeStreamLinearLayout);
 
 
     }
 
     /**
-     * 根据timeStream日期状态设置linearLayout颜色，针对单个timestream
+     * 根据timeStream日期状态设置linearLayout颜色，针对单个timestreamView
      */
 
-    public static void setTimeStreamViewOriginalBackgroundColor(LinearLayout timestreamLinearLayout) {
+    public static void setTimeStreamViewOriginalBackground(LinearLayout timestreamLinearLayout) {
 
         Timestream ts = onShowTimeStreamsHashMap.get(timestreamLinearLayout.getId());
+
 
         switch (activityIndex) {
 
             case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
+
                 Drawable drawable = originalBackgroundHashMap.get(draggableLinearLayout.getCapturedView().getId());
+                Drawable currentDrawable = draggableLinearLayout.getCapturedView().getBackground();
+                if (currentDrawable != null && !currentDrawable.equals(drawable))
                 draggableLinearLayout.getCapturedView().setBackground(drawable);
                 break;
 
@@ -1073,25 +1075,29 @@ public class MyApplication extends Application {
 
                 if (ts == null) return;
 
-                timeStreamStateCode = ts.getTimeStreamStateCode();
+                timestreamLinearLayout.setBackground(
+                        originalBackgroundHashMap.get(timestreamLinearLayout.getId()));
+//                timeStreamStateCode = ts.getTimeStreamStateCode();
+//                int color = getColorByTimestreamStateCode(timeStreamStateCode);
+//                timestreamLinearLayout.setBackgroundColor(color);
 
-                switch (timeStreamStateCode) {
-
-                        case 1:
-
-                            timestreamLinearLayout.setBackgroundColor(Color.YELLOW);
-                            break;
-
-                        case -1:
-
-                            timestreamLinearLayout.setBackgroundColor(Color.GRAY);
-                            break;
-
-                        default:
-                            timestreamLinearLayout.setBackgroundColor(Color.GREEN);
-                            break;
-
-                    }
+//                switch (timeStreamStateCode) {
+//
+//                        case 1:
+//
+//                            timestreamLinearLayout.setBackgroundColor(Color.YELLOW);
+//                            break;
+//
+//                        case -1:
+//
+//                            timestreamLinearLayout.setBackgroundColor(Color.GRAY);
+//                            break;
+//
+//                        default:
+//                            timestreamLinearLayout.setBackgroundColor(Color.GREEN);
+//                            break;
+//
+//                    }
                 break;
         }
 
@@ -1155,7 +1161,7 @@ public class MyApplication extends Application {
 
         ));
 
-        setTimeStreamViewOriginalBackgroundColor(timestream);
+        setTimeStreamViewOriginalBackground(timestream);
 
         timestream.setUpdated(false);
 

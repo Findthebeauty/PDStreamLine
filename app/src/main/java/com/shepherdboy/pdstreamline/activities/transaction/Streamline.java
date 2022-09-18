@@ -43,14 +43,20 @@ public class Streamline {
 
             case Timestream.CLOSE_TO_EXPIRE:
 
-                PDInfoWrapper.updateInfo(sqLiteDatabase,t,
+                PDInfoWrapper.updateInfo(sqLiteDatabase, t,
                         MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME);
+
+                PDInfoWrapper.updateInfo(sqLiteDatabase, t,
+                        MyDatabaseHelper.UPDATE_BASKET);
                 break;
 
             case Timestream.EXPIRED:
 
                 PDInfoWrapper.updateInfo(sqLiteDatabase, t,
                         MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME);
+
+                PDInfoWrapper.updateInfo(sqLiteDatabase, t,
+                        MyDatabaseHelper.UPDATE_BASKET);
                 break;
 
             default:

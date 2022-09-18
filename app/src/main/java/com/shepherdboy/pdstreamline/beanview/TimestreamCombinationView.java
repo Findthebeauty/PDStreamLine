@@ -5,6 +5,7 @@ import static com.shepherdboy.pdstreamline.MyApplication.onShowCombsHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -185,9 +186,17 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
                 inventory.setText(timestream.getProductInventory());
                 unitTv.setText(MyApplication.getAllProducts().get(timestream.getProductCode()).getProductSpec());
 
-                int color = MyApplication.getColorByTimestreamStateCode(timestream.getTimeStreamStateCode());
+                if (timestream.isInBasket()) {
+                    Log.d("bindData", "inBasket");
 
-                buyBackground.setBackgroundColor(color);
+                    buyBackground.setBackground(getResources().getDrawable(R.drawable.item_selected));
+
+                } else {
+
+                    Log.d("bindData", "notInBasket");
+                    int color = MyApplication.getColorByTimestreamStateCode(timestream.getTimeStreamStateCode());
+                    buyBackground.setBackgroundColor(color);
+                }
                 onShowTimeStreamsHashMap.put(buyBackground.getId(), timestream); //一个combination有3个背景，整体的、商品和赠品的，3个背景都要记录
 
                 break;

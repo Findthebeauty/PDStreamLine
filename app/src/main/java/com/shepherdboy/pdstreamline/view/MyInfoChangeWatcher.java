@@ -33,7 +33,8 @@ import java.util.Map;
 
 public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListener {
 
-    public static HashMap<EditText, MyInfoChangeWatcher> myTextWatchers = new HashMap<>();
+    public static HashMap<EditText, MyInfoChangeWatcher> myTextWatchers;
+    public static HashMap<Integer, HashMap<EditText, MyInfoChangeWatcher>> activityWatchers = new HashMap<>();
 
     private boolean autoCommitOnLostFocus = false;
 
@@ -102,8 +103,12 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
         MyApplication.handlers.add(infoHandler);
     }
 
-    public static void init() {
-        destroy();
+    public static void init(int activityIndex) {
+
+        if (!activityWatchers.containsKey(activityIndex))
+            activityWatchers.put(activityIndex, new HashMap<>());
+        myTextWatchers = activityWatchers.get(activityIndex);
+
         initHandler();
     }
 
@@ -289,22 +294,40 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
         }
     }
 
-    public static void clearWatchers() {
+    private static void clearAllWatchers() {
+        for (HashMap<EditText, MyInfoChangeWatcher> watcherHashMap : activityWatchers.values()) {
+            for (Map.Entry<EditText, MyInfoChangeWatcher> entry : watcherHashMap.entrySet()) {
 
-        for (Map.Entry<EditText, MyInfoChangeWatcher> entry : myTextWatchers.entrySet()) {
+                entry.getKey().removeTextChangedListener(entry.getValue());
+                entry.getKey().setOnFocusChangeListener(null);
+                entry.getValue().stopAutoCommit();
+            }
+
+            watcherHashMap.clear();
+        }
+        currentWatcher = null;
+    }
+
+    public static void clearWatchers(int activityIndex) {
+
+        HashMap<EditText, MyInfoChangeWatcher> watcherHashMap = activityWatchers.get(activityIndex);
+
+        if (watcherHashMap == null) return;
+        for (Map.Entry<EditText, MyInfoChangeWatcher> entry : watcherHashMap.entrySet()) {
 
             entry.getKey().removeTextChangedListener(entry.getValue());
             entry.getKey().setOnFocusChangeListener(null);
             entry.getValue().stopAutoCommit();
         }
 
-        myTextWatchers.clear();
+        watcherHashMap.clear();
+
         currentWatcher = null;
     }
 
     public static void destroy() {
 
-        clearWatchers();
+        clearAllWatchers();
 
         if (infoHandler != null) {
 

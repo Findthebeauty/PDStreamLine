@@ -170,9 +170,9 @@ public class DraggableLinearLayout extends LinearLayout {
         Point originalPoint = MyApplication.originalPositionHashMap.get(view.getId());
         viewDragHelper.settleCapturedViewAt(originalPoint.x, originalPoint.y);
 
-//        Timestream ts = (Timestream) MyApplication.onShowTimeStreamsHashMap.get(view.getId());
+//        Timestream ts = MyApplication.onShowTimeStreamsHashMap.get(view.getId());
 //        MyApplication.setTimeStreamViewOriginalBackgroundColor(ts);
-        MyApplication.setTimeStreamViewOriginalBackgroundColor((LinearLayout) view);
+        MyApplication.setTimeStreamViewOriginalBackground((LinearLayout) view);
 
         draggableView.invalidate();
     }
