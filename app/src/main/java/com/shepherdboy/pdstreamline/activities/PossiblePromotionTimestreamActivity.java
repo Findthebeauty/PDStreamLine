@@ -2,6 +2,8 @@ package com.shepherdboy.pdstreamline.activities;
 
 import static com.shepherdboy.pdstreamline.MyApplication.POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
+import static com.shepherdboy.pdstreamline.MyApplication.drawableFirstLevel;
+import static com.shepherdboy.pdstreamline.MyApplication.drawableSecondLevel;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.basket;
@@ -9,12 +11,12 @@ import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerSer
 import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.timestreamRestoreTask;
 import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.timestreamRestoreTimer;
 
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Message;
 import android.text.InputType;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -29,11 +31,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Timestream;
+import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
 import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
+import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
-import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 
 import java.util.LinkedList;
 import java.util.Timer;
@@ -49,6 +52,8 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
     private static TextView[] textViews = new TextView[4]; //用于临时存放创建新timestream view时的textview的引用
 
     private static LinkedList<Timestream> possiblePromotionTimestreams;
+
+    private static ActivityInfoChangeWatcher watcher;
 
     private void cancelTimerTask() {
 
@@ -114,7 +119,6 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
                 rmTs.setInBasket(true);
                 PDInfoWrapper.updateInfo(MyApplication.sqLiteDatabase, rmTs,
                         MyDatabaseHelper.UPDATE_BASKET);
-
                 break;
 
             case DELETE:
@@ -134,7 +138,6 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
             for(Timestream t : basket.values()) {
 
             }
-
             Toast.makeText(draggableLinearLayout.getContext(), "新增临期商品已全部捡出!", Toast.LENGTH_LONG).show();
         }
     }
@@ -142,15 +145,17 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
     /** 根据左右拖动的距离返回int值*/
     public static int getViewState(View draggedView, double horizontalDraggedDistance) {
 
-        boolean isDragToPickOut = horizontalDraggedDistance > 0 && horizontalDraggedDistance >= 160;
+        boolean isDragToPickOut = horizontalDraggedDistance >= 160;
         boolean isDragToDelete = horizontalDraggedDistance < 0 && -horizontalDraggedDistance >= 160;
 
         if (isDragToPickOut) {
 
             return PICK_OUT;
+
         } else if (isDragToDelete) {
 
             return DELETE;
+
         } else {
 
             return 0;
@@ -166,19 +171,20 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
 
             case PICK_OUT:
 
-                changedView.setBackgroundColor(Color.parseColor("#8BC34A"));
+                changedView.setBackground(drawableFirstLevel);
+
                 break;
 
             case DELETE:
 
-                changedView.setBackgroundColor(Color.parseColor("#FF0000"));
+                changedView.setBackground(drawableSecondLevel);
+
                 break;
 
             default:
 
                 MyApplication.setTimeStreamViewOriginalBackground((LinearLayout) changedView);
-
-
+                break;
         }
     }
 
@@ -198,21 +204,22 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
         MyApplication.init();
         MyApplication.initDatabase(this);
 
-        initActivity();
-
+        watcher = ActivityInfoChangeWatcher.getActivityWatcher(POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY);
+        if(watcher == null) watcher = new ActivityInfoChangeWatcher(POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY);
     }
 
     private void initActivity() {
 
         MyApplication.activityIndex = POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY;
+
         draggableLinearLayout = findViewById(R.id.parent);
 
         possiblePromotionTimestreams = PDInfoWrapper.getStaleTimestreams(sqLiteDatabase,
                 MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM);
 
-        int notInBasket = sortTimestream(possiblePromotionTimestreams);
+        LinkedList<Timestream> uncheckedTimestreams = filterTimestream(possiblePromotionTimestreams);
 
-        if (notInBasket == 0) {
+        if (uncheckedTimestreams.size() == 0) {
 
             Toast.makeText(this,"所有临期商品已捡出!", Toast.LENGTH_LONG).show();
 //            this.startActivity(new Intent(this, MainActivity.class));
@@ -220,9 +227,10 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
             return;
         }
 
-        initTimestreamsView(notInBasket);
+        Log.d("unchecked", uncheckedTimestreams.size() + ": " + uncheckedTimestreams);
+        initTimestreamsView(uncheckedTimestreams.size());
 
-        loadTimestreams(possiblePromotionTimestreams);
+        loadTimestreams(uncheckedTimestreams);
 
         cancelTimerTask();
     }
@@ -232,16 +240,24 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
      * @param possiblePromotionTimestreams 所有可能临期的timestream，包括已经放入篮子中的和货架上的
      * @return 未放入篮子即还在货架上的timestream
      */
-    private int sortTimestream(LinkedList<Timestream> possiblePromotionTimestreams) {
+    private LinkedList<Timestream> filterTimestream(LinkedList<Timestream> possiblePromotionTimestreams) {
 
-        basket.clear();
+//        basket.clear();
 
+        LinkedList<Timestream> temp = new LinkedList<>();
         for (Timestream t : possiblePromotionTimestreams) {
 
-            if (t.isInBasket()) basket.put(t.getId(), t);
+            if (t.isInBasket()) {
+
+                basket.put(t.getId(), t);
+
+            } else {
+
+                temp.add(t);
+            }
         }
 
-        return possiblePromotionTimestreams.size() - basket.size();
+        return temp;
     }
 
 
@@ -250,20 +266,21 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
     private void loadTimestreams(LinkedList<Timestream> timestreams) {
 
         int childViewIndex = 1;
-        LinearLayout tsView;
+        TimestreamCombinationView combView;
 
         for (Timestream timestream : timestreams) {
 
             if (timestream.isInBasket()) continue;
 
-            tsView = (LinearLayout) draggableLinearLayout.getChildAt(childViewIndex);
-            loadTimestream(timestream, tsView);
+            combView = (TimestreamCombinationView) draggableLinearLayout.getChildAt(childViewIndex);
+            combView.bindData(POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY, timestream);
+//            loadTimestream(timestream, combView);
 
-            MyApplication.onShowTimeStreamsHashMap.put(tsView.getId(), timestream);
-
-            MyApplication.setTimeStreamViewOriginalBackground(timestream);
-
-            MyInfoChangeWatcher.watch((EditText) (tsView.getChildAt(2)), timestream, MyApplication.TIMESTREAM_INVENTORY, true);
+//            MyApplication.onShowTimeStreamsHashMap.put(combView.getId(), timestream);
+//
+//            MyApplication.setTimeStreamViewOriginalBackground(timestream);
+//
+//            watcher.watch((EditText) (combView.getChildAt(2)), timestream, MyApplication.TIMESTREAM_INVENTORY, true);
             childViewIndex++;
         }
     }
@@ -298,7 +315,6 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
     private static void initTimestreamsView(int timestreamsCount) {
 
         MyApplication.init();
-        MyInfoChangeWatcher.clearWatchers(POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY);
         DraggableLinearLayout.setLayoutChanged(true);
 
         int tsViewCount = draggableLinearLayout.getChildCount() - 1;
@@ -314,26 +330,27 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
     /**添加单一timestreamView到父布局中*/
     private static void addTimestreamView(LinearLayout rootView) {
 
-        Context context = rootView.getContext();
-        LinearLayout childView = new LinearLayout(context);
-        rootView.addView(childView, 1 + MyApplication.originalPositionHashMap.size());
-
-        for (int i = 0; i < 4; i++) {
-
-            textViews[i] = new TextView(context);
-        }
-
-        LinearLayout box = new LinearLayout(context);
-        EditText et = new EditText(context);
-
-        childView.addView(textViews[0]);
-        childView.addView(textViews[1]);
-        childView.addView(et);
-        childView.addView(box);
-        box.addView(textViews[2]);
-        box.addView(textViews[3]);
-
-        decorate(childView);
+        rootView.addView(new TimestreamCombinationView(rootView.getContext()));
+//        Context context = rootView.getContext();
+//        LinearLayout childView = new LinearLayout(context);
+//        rootView.addView(childView, 1 + MyApplication.originalPositionHashMap.size());
+//
+//        for (int i = 0; i < 4; i++) {
+//
+//            textViews[i] = new TextView(context);
+//        }
+//
+//        LinearLayout box = new LinearLayout(context);
+//        EditText et = new EditText(context);
+//
+//        childView.addView(textViews[0]);
+//        childView.addView(textViews[1]);
+//        childView.addView(et);
+//        childView.addView(box);
+//        box.addView(textViews[2]);
+//        box.addView(textViews[3]);
+//
+//        decorate(childView);
     }
 
     /**生成的timestreamView参数初始化*/
@@ -349,7 +366,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
         lParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         childView.setLayoutParams(lParams);
-        childView.setBackground(childView.getResources().getDrawable(R.drawable.underline));
+        childView.setBackground(new ColorDrawable());
         childView.setAlpha(0.8f);
         childView.setOrientation(LinearLayout.HORIZONTAL);
         childView.setGravity(Gravity.CENTER_VERTICAL);

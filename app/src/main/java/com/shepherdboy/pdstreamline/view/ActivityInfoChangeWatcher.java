@@ -1,6 +1,5 @@
 package com.shepherdboy.pdstreamline.view;
 
-import static com.shepherdboy.pdstreamline.MyApplication.activityIndex;
 import static com.shepherdboy.pdstreamline.MyApplication.currentProduct;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 
@@ -36,39 +35,125 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListener {
+public class ActivityInfoChangeWatcher {
 
-    public static HashMap<EditText, MyInfoChangeWatcher> myTextWatchers;
-    public static HashMap<Integer, HashMap<EditText, MyInfoChangeWatcher>> activityWatchers = new HashMap<>();
-
-    private boolean autoCommitOnLostFocus = false;
+    private static final HashMap<Integer, ActivityInfoChangeWatcher> activityInfoChangeWatchers = new HashMap<>();
+    private final HashMap<EditText, Watcher> myWatchers = new HashMap<>();
 
     public static final int SELECT_ALL = 1;
     public static final int LAZY_LOAD = 2;
 
-    private static boolean scheduled = false;
-    private static Handler commitHandler;
-    public static Handler infoHandler;
-    private static Runnable commitRunnable;
-    private static long timeMillis = 0;
-    private static long lastInputTimeMillis = 0;
-    private static MyInfoChangeWatcher currentWatcher;
+    private boolean scheduled = false;
+    private Handler commitHandler;
+    public Handler infoHandler;
+    private Runnable commitRunnable;
+    private long timeMillis = 0;
+    private long lastInputTimeMillis = 0;
+    private int activityIndex;
 
-    private EditText watchedEditText;
-    private Timestream timestream;
-    private DateScope scope;
-    private int filedIndex;
-    private static boolean shouldWatch = true;
-    private String preInf = "";
-    private String currentInf = "";
-    private Shelf shelf;
+    private boolean shouldWatch = true;
 
-    static {
+    public static ActivityInfoChangeWatcher getActivityWatcher(int activityIndex) {
 
-        initHandler();
+        return activityInfoChangeWatchers.get(activityIndex);
     }
 
-    private static void initHandler() {
+    public HashMap<EditText, Watcher> getMyWatchers() {
+        return myWatchers;
+    }
+
+    class Watcher implements TextWatcher, View.OnFocusChangeListener {
+
+        private boolean autoCommitOnLostFocus = false;
+
+        private EditText watchedEditText;
+        private Timestream timestream;
+        private DateScope scope;
+        private int filedIndex;
+        private String preInf = "";
+        private String currentInf = "";
+        private Shelf shelf;
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+
+            long currentTimeMillis = System.currentTimeMillis();
+
+            long inputInterval = currentTimeMillis - lastInputTimeMillis;
+
+            lastInputTimeMillis = currentTimeMillis;
+
+            if (inputInterval > 500 && inputInterval < 2000) {
+
+                AIInputter.recordInputTimeInterval(inputInterval);
+            }
+
+            if (shouldWatch) {
+
+                currentInf = DateUtil.getShortKey(s.toString().trim());
+
+                if (!preInf.equals(currentInf)) {
+
+                    timeMillis = System.currentTimeMillis();
+                    startAutoCommit(this);
+                }
+            }
+
+        }
+
+        @Override
+        public void onFocusChange(View v, boolean hasFocus) {
+
+            if (v instanceof EditText && hasFocus) {
+
+                DraggableLinearLayout.selectAllAfter(activityIndex, (EditText) v, 5);
+                Watcher watcher = myWatchers.get(v);
+                Timestream timestream;
+
+                if (watcher != null && ((timestream = watcher.timestream) != null)) {
+
+                    if (currentProduct != null &&
+                            !currentProduct.getProductCode().equals(timestream.getProductCode())) {
+
+                        currentProduct = PDInfoWrapper.getProduct(timestream.getProductCode(),
+                                sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
+                    }
+                }
+            }
+
+            if (v instanceof EditText && (!hasFocus) && (!preInf.equals(currentInf)) && autoCommitOnLostFocus) {
+
+                stopAutoCommit();
+                commit(this);
+            }
+
+            if (activityIndex == MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF && hasFocus) {
+
+                BeanView beanView = (BeanView) v.getParent().getParent();
+
+                currentProduct = PDInfoWrapper.getProduct(beanView.getProductCode(), sqLiteDatabase,
+                        MyDatabaseHelper.ENTIRE_TIMESTREAM);
+            }
+
+        }
+    }
+
+    public ActivityInfoChangeWatcher(Integer activityIndex) {
+        initHandler();
+        activityInfoChangeWatchers.put(activityIndex, this);
+        this.activityIndex = activityIndex;
+    }
+
+    private void initHandler() {
         infoHandler = new Handler() {
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -108,65 +193,61 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
         MyApplication.handlers.add(infoHandler);
     }
 
-    public static void init(int activityIndex) {
-        initHandler();
-    }
-
     /**
      * 监听货架基本信息修改
      * @param editText
      * @param shelf
      * @param filedIndex
      */
-    public static void watch(EditText editText, Shelf shelf, int filedIndex) {
+    public void watch(EditText editText, Shelf shelf, int filedIndex) {
 
-        editText.removeTextChangedListener(myTextWatchers.remove(editText));
+        editText.removeTextChangedListener(myWatchers.remove(editText));
 
-        MyInfoChangeWatcher myInfoChangeWatcher = new MyInfoChangeWatcher();
-        editText.addTextChangedListener(myInfoChangeWatcher);
-        editText.setOnFocusChangeListener(myInfoChangeWatcher);
+        Watcher watcher = new Watcher();
+        editText.addTextChangedListener(watcher);
+        editText.setOnFocusChangeListener(watcher);
 
-        myInfoChangeWatcher.autoCommitOnLostFocus = true;
+        watcher.autoCommitOnLostFocus = true;
 
-        myInfoChangeWatcher.watchedEditText = editText;
-        myInfoChangeWatcher.filedIndex = filedIndex;
-        myInfoChangeWatcher.shelf = shelf;
-        myTextWatchers.put(editText, myInfoChangeWatcher);
+        watcher.watchedEditText = editText;
+        watcher.filedIndex = filedIndex;
+        watcher.shelf = shelf;
+        myWatchers.put(editText, watcher);
 
     }
 
-    public static void watch(EditText editText, @Nullable Timestream timestream, int filedIndex, boolean autoCommitOnLastFocus) {
+    public void watch(EditText editText, @Nullable Timestream timestream, int filedIndex, boolean autoCommitOnLastFocus) {
 
-        editText.removeTextChangedListener(myTextWatchers.remove(editText));
+        editText.removeTextChangedListener(myWatchers.remove(editText));
 
-        MyInfoChangeWatcher myInfoChangeWatcher = new MyInfoChangeWatcher();
-        editText.addTextChangedListener(myInfoChangeWatcher);
-        myInfoChangeWatcher.autoCommitOnLostFocus = autoCommitOnLastFocus;
+        Watcher watcher = new Watcher();
+        editText.addTextChangedListener(watcher);
+        watcher.autoCommitOnLostFocus = autoCommitOnLastFocus;
 
-        if (autoCommitOnLastFocus) editText.setOnFocusChangeListener(myInfoChangeWatcher);
+        if (autoCommitOnLastFocus) editText.setOnFocusChangeListener(watcher);
 
-        myInfoChangeWatcher.timestream = timestream;
-        myInfoChangeWatcher.watchedEditText = editText;
-        myInfoChangeWatcher.filedIndex = filedIndex;
+        watcher.timestream = timestream;
+        watcher.watchedEditText = editText;
+        watcher.filedIndex = filedIndex;
 
-        myTextWatchers.put(editText, myInfoChangeWatcher);
+        myWatchers.put(editText, watcher);
     }
 
-    public static void watch(DateScope scope, EditText editText, int index) {
+    public void watch(DateScope scope, EditText editText, int index) {
 
-        editText.removeTextChangedListener(myTextWatchers.remove(editText));
+        editText.removeTextChangedListener(myWatchers.remove(editText));
 
-        MyInfoChangeWatcher myInfoChangeWatcher = new MyInfoChangeWatcher();
-        editText.addTextChangedListener(myInfoChangeWatcher);
+        Watcher watcher = new Watcher();
+        editText.addTextChangedListener(watcher);
 
-        myInfoChangeWatcher.scope = scope;
-        myInfoChangeWatcher.watchedEditText = editText;
-        myInfoChangeWatcher.filedIndex = index;
+        watcher.scope = scope;
+        watcher.watchedEditText = editText;
+        watcher.filedIndex = index;
 
-        myTextWatchers.put(editText, myInfoChangeWatcher);
+        myWatchers.put(editText, watcher);
     }
 
-    public static void watch(DateScope scope, TextView t, int index) {
+    public void watch(DateScope scope, TextView t, int index) {
 
         t.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -209,7 +290,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
         });
     }
 
-    public static void watch(Button button) {
+    public void watch(Button button) {
 
         switch (MyApplication.activityIndex) {
 
@@ -249,7 +330,9 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
                         PDInfoActivity.productEXPTimeUnitButton.setText(newTimeUnit);
 
-                        MyApplication.afterInfoChanged(newTimeUnit, null, null, MyApplication.PRODUCT_EXP_TIME_UNIT);
+                        MyApplication.afterInfoChanged(newTimeUnit, null, null,
+                                MyApplication.PRODUCT_EXP_TIME_UNIT,
+                                ActivityInfoChangeWatcher.this.activityIndex);
 
                         return true;
                     }
@@ -294,21 +377,29 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
         }
     }
 
-    public static void clearWatchers(int activityIndex) {
+    public void clearWatchers(int activityIndex) {
 
-        for (Map.Entry<EditText, MyInfoChangeWatcher> entry : myTextWatchers.entrySet()) {
+        stopAutoCommit();
+
+        for (Map.Entry<EditText, Watcher> entry : myWatchers.entrySet()) {
 
             entry.getKey().removeTextChangedListener(entry.getValue());
             entry.getKey().setOnFocusChangeListener(null);
-            entry.getValue().stopAutoCommit();
         }
 
-        myTextWatchers.clear();
+        myWatchers.clear();
 
-        currentWatcher = null;
     }
 
-    public static void destroy() {
+    public static void destroyAll() {
+
+        for(ActivityInfoChangeWatcher watcher : activityInfoChangeWatchers.values()) {
+            watcher.destroy();
+        }
+        activityInfoChangeWatchers.clear();
+    }
+
+    public void destroy() {
 
         if (infoHandler != null) {
 
@@ -316,9 +407,10 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
             infoHandler = null;
         }
 
+        clearWatchers(this.activityIndex);
     }
 
-    public static void removeWatcher(View view) {
+    public void removeWatcher(View view) {
 
         if (view instanceof EditText) {
 
@@ -336,27 +428,27 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
         }
     }
 
-    public static void removeWatcher(EditText editText) {
+    public void removeWatcher(EditText editText) {
 
-        MyInfoChangeWatcher myInfoChangeWatcher;
+        Watcher myInfoChangeWatcher;
 
-        if (myTextWatchers.containsKey(editText)) {
+        if (myWatchers.containsKey(editText)) {
 
-            myInfoChangeWatcher = myTextWatchers.remove(editText);
+            myInfoChangeWatcher = myWatchers.remove(editText);
             myInfoChangeWatcher.watchedEditText.removeTextChangedListener(myInfoChangeWatcher);
             myInfoChangeWatcher = null;
             editText.setOnFocusChangeListener(null);
         }
     }
 
-    public static boolean isShouldWatch() {
+    public boolean isShouldWatch() {
         return shouldWatch;
     }
 
-    public static void setShouldWatch(boolean shouldWatch) {
+    public void setShouldWatch(boolean shouldWatch) {
         if (shouldWatch) {
 
-            for(MyInfoChangeWatcher w : myTextWatchers.values()) {
+            for(Watcher w : myWatchers.values()) {
 
                 w.preInf = w.watchedEditText.getText().toString().trim();
 
@@ -368,75 +460,10 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
                 w.currentInf = w.preInf;
             }
         }
-        MyInfoChangeWatcher.shouldWatch = shouldWatch;
+        this.shouldWatch = shouldWatch;
     }
 
-    @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-    }
-
-    @Override
-    public void onTextChanged(CharSequence s, int start, int before, int count) {
-    }
-
-    @Override
-    public void afterTextChanged(Editable s) {
-
-        long currentTimeMillis = System.currentTimeMillis();
-
-        long inputInterval = currentTimeMillis - lastInputTimeMillis;
-
-        lastInputTimeMillis = currentTimeMillis;
-
-        if (inputInterval > 500 && inputInterval < 2000) {
-
-            AIInputter.recordInputTimeInterval(inputInterval);
-        }
-
-        if (shouldWatch) {
-
-            currentInf = DateUtil.getShortKey(s.toString().trim());
-
-            if (!preInf.equals(currentInf)) {
-
-                currentWatcher = this;
-                timeMillis = System.currentTimeMillis();
-                startAutoCommit();
-            }
-        }
-
-    }
-
-    public static void setScheduled(boolean scheduled) {
-        MyInfoChangeWatcher.scheduled = scheduled;
-    }
-
-    @Override
-    public void onFocusChange(View v, boolean hasFocus) {
-
-        if (v instanceof EditText && hasFocus) {
-
-            DraggableLinearLayout.selectAllAfter((EditText) v, 5);
-        }
-
-        if (v instanceof EditText && (!hasFocus) && (!preInf.equals(currentInf)) && this.autoCommitOnLostFocus) {
-
-            stopAutoCommit();
-            commit();
-        }
-
-        if (activityIndex == MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF && hasFocus) {
-
-            BeanView beanView = (BeanView) v.getParent().getParent();
-
-            currentProduct = PDInfoWrapper.getProduct(beanView.getProductCode(), sqLiteDatabase,
-                    MyDatabaseHelper.ENTIRE_TIMESTREAM);
-        }
-
-    }
-
-    public void startAutoCommit() {
+    public void startAutoCommit(Watcher watcher) {
 
         if (scheduled) return;
 
@@ -449,10 +476,10 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
                 long averageInterval = AIInputter.getAutoCommitInterval();
 
 
-                if (filedIndex == MyApplication.TIMESTREAM_DOP && currentInf.length() == 8) {
+                if (watcher.filedIndex == MyApplication.TIMESTREAM_DOP && watcher.currentInf.length() == 8) {
 
-                    MyApplication.afterInfoChanged(currentInf, watchedEditText, timestream,
-                            filedIndex);
+                    MyApplication.afterInfoChanged(watcher.currentInf, watcher.watchedEditText, watcher.timestream,
+                            watcher.filedIndex, ActivityInfoChangeWatcher.this.activityIndex);
 
                     stopAutoCommit();
                     return;
@@ -461,7 +488,7 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
                 if (interval >= averageInterval) {
 
-                    commit();
+                    commit(watcher);
 
 //                    handler.postDelayed(this, 10000);
                     stopAutoCommit();
@@ -473,32 +500,37 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
         };
 
         commitHandler.postDelayed(commitRunnable, 10);
-        setScheduled(true);
+        scheduled = true;
         MyApplication.handlers.add(commitHandler);
     }
 
-    private void commit() {
+    private void commit(Watcher watcher) {
 
         switch (MyApplication.activityIndex) {
 
             case MyApplication.SETTING_ACTIVITY:
 
-                MyApplication.afterInfoChanged(watchedEditText,scope,filedIndex,currentInf);
+                MyApplication.afterInfoChanged(watcher.watchedEditText,watcher.scope,watcher.filedIndex,watcher.currentInf);
                 break;
 
             case MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_MODIFY_SHELF:
 
-                MyApplication.afterInfoChanged(shelf, currentInf, watchedEditText, filedIndex);
-                preInf = currentInf;
+                MyApplication.afterInfoChanged(watcher.shelf, watcher.currentInf, watcher.watchedEditText, watcher.filedIndex);
+                watcher.preInf = watcher.currentInf;
                 break;
 
             default:
 
-                if (currentProduct == null && timestream != null)
-                    currentProduct = MyApplication.getAllProducts().get(timestream.getProductCode());
+                if (currentProduct == null && watcher.timestream != null)
+                    currentProduct = MyApplication.getAllProducts().get(watcher.timestream.getProductCode());
 
-                MyApplication.afterInfoChanged(currentInf, currentWatcher.watchedEditText, currentWatcher.timestream,
-                        currentWatcher.filedIndex);
+                MyApplication.afterInfoChanged(watcher.currentInf, watcher.watchedEditText, watcher.timestream,
+                        watcher.filedIndex, ActivityInfoChangeWatcher.this.activityIndex);
+                if (watcher.watchedEditText != null && watcher.watchedEditText.hasFocus()) {
+
+                    DraggableLinearLayout.selectAll(watcher.watchedEditText);
+                }
+                break;
 
         }
     }
@@ -510,21 +542,21 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
             commitHandler.removeCallbacks(commitRunnable);
             commitHandler = null;
             commitRunnable = null;
-            setScheduled(false);
+            scheduled = false;
         }
     }
 
     /**
      * 停止倒计时自动提交，将发生变更的信息全部提交
      */
-    public static void commitAll() {
+    public void commitAll() {
 
-        for (MyInfoChangeWatcher w : myTextWatchers.values()) {
+        for (Watcher w : myWatchers.values()) {
 
             if (!w.currentInf.equals(w.preInf)) {
 
-                w.stopAutoCommit();
-                w.commit();
+                stopAutoCommit();
+                commit(w);
             }
 
         }

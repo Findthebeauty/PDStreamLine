@@ -22,7 +22,7 @@ public class Streamline {
 
         for(Timestream t : unpackedTimestreams) {
 
-            position(t);
+            update(t);
         }
     }
 
@@ -30,37 +30,35 @@ public class Streamline {
      * 根据Timestream所处的生命周期，放入对应的数据库
      * @param t
      */
-    public static void position(Timestream t) {
-        int stateCode = t.getTimeStreamStateCode();
+    public static void update(Timestream t) {
+        if(t.getSiblingPromotionId() == null) {
 
-        switch (stateCode) {
+            int state = t.getTimeStreamStateCode();
 
-            case Timestream.FRESH:
+            switch (state) {
 
-                PDInfoWrapper.updateInfo(sqLiteDatabase,
-                        t, MyDatabaseHelper.FRESH_TIMESTREAM_TABLE_NAME);
-                break;
+                case Timestream.FRESH:
 
-            case Timestream.CLOSE_TO_EXPIRE:
+                    PDInfoWrapper.updateInfo(sqLiteDatabase, t, MyDatabaseHelper.FRESH_TIMESTREAM_TABLE_NAME);
+                    break;
 
-                PDInfoWrapper.updateInfo(sqLiteDatabase, t,
-                        MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME);
+                case Timestream.CLOSE_TO_EXPIRE:
 
-                PDInfoWrapper.updateInfo(sqLiteDatabase, t,
-                        MyDatabaseHelper.UPDATE_BASKET);
-                break;
+                    PDInfoWrapper.updateInfo(sqLiteDatabase, t, MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME);
+                    PDInfoWrapper.updateInfo(sqLiteDatabase, t, MyDatabaseHelper.UPDATE_BASKET);
+                    break;
 
-            case Timestream.EXPIRED:
+                case Timestream.EXPIRED:
 
-                PDInfoWrapper.updateInfo(sqLiteDatabase, t,
-                        MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME);
+                    PDInfoWrapper.updateInfo(sqLiteDatabase, t, MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME);
+                    PDInfoWrapper.updateInfo(sqLiteDatabase, t, MyDatabaseHelper.UPDATE_BASKET);
 
-                PDInfoWrapper.updateInfo(sqLiteDatabase, t,
-                        MyDatabaseHelper.UPDATE_BASKET);
-                break;
+                    break;
+            }
 
-            default:
-                break;
+        } else {
+
+            PDInfoWrapper.updateInfo(sqLiteDatabase, t, MyDatabaseHelper.PROMOTION_TIMESTREAM_TABLE_NAME);
         }
     }
 }

@@ -33,6 +33,7 @@ import com.shepherdboy.pdstreamline.activities.PossiblePromotionTimestreamActivi
 import com.shepherdboy.pdstreamline.activities.ScanActivity;
 import com.shepherdboy.pdstreamline.activities.SettingActivity;
 import com.shepherdboy.pdstreamline.activities.TraversalTimestreamActivity;
+import com.shepherdboy.pdstreamline.activities.transaction.Streamline;
 import com.shepherdboy.pdstreamline.beans.DateScope;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Shelf;
@@ -44,9 +45,9 @@ import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
+import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
 import com.shepherdboy.pdstreamline.view.ClosableScrollView;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
-import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 import com.shepherdboy.pdstreamline.view.TouchEventDispatcher;
 
 import java.io.IOException;
@@ -318,7 +319,6 @@ public class MyApplication extends Application {
             case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
 
                 draggableLinearLayout.setVerticalDraggable(true);
-                draggableLinearLayout.setBackgroundToPointedView(ITEM_SELECTED);
 
         }
 
@@ -353,27 +353,9 @@ public class MyApplication extends Application {
 
             if (bean instanceof Timestream) {
 
-                int state = ((Timestream) bean).getTimeStreamStateCode();
+                Timestream t = (Timestream) bean;
 
-                switch (state) {
-
-                    case Timestream.FRESH:
-
-                        PDInfoWrapper.updateInfo(sqLiteDatabase, (Timestream) bean, MyDatabaseHelper.FRESH_TIMESTREAM_TABLE_NAME);
-                        break;
-
-                    case Timestream.CLOSE_TO_EXPIRE:
-
-                        PDInfoWrapper.updateInfo(sqLiteDatabase, (Timestream) bean, MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME);
-                        break;
-
-                    case Timestream.EXPIRED:
-
-                        PDInfoWrapper.updateInfo(sqLiteDatabase, (Timestream) bean, MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME);
-                        break;
-                }
-
-
+                Streamline.update(t);
             }
 
         }
@@ -491,9 +473,9 @@ public class MyApplication extends Application {
 
                 } else {
 
-                    MyInfoChangeWatcher.setShouldWatch(false);
+                    ActivityInfoChangeWatcher.getActivityWatcher(activityIndex).setShouldWatch(false);
                     watchedEditText.setText(shelf.getName());
-                    MyInfoChangeWatcher.setShouldWatch(true);
+                    ActivityInfoChangeWatcher.getActivityWatcher(activityIndex).setShouldWatch(true);
 
                 }
                 break;
@@ -507,9 +489,9 @@ public class MyApplication extends Application {
                 } else {
 
                     Toast.makeText(getContext(), "货架行数不合法", Toast.LENGTH_SHORT).show();
-                    MyInfoChangeWatcher.setShouldWatch(false);
+                    ActivityInfoChangeWatcher.getActivityWatcher(activityIndex).setShouldWatch(false);
                     watchedEditText.setText(String.valueOf(shelf.getMaxRowCount()));
-                    MyInfoChangeWatcher.setShouldWatch(true);
+                    ActivityInfoChangeWatcher.getActivityWatcher(activityIndex).setShouldWatch(true);
                 }
 
             default:
@@ -749,7 +731,6 @@ public class MyApplication extends Application {
     public static void init() {
 
         onShowTimeStreamsHashMap.clear();
-        MyInfoChangeWatcher.destroy();
         clearOriginalInfo();
     }
 
@@ -914,7 +895,11 @@ public class MyApplication extends Application {
         SettingActivity.setExpSettingChanged(true);
     }
 
-    public static void afterInfoChanged(String after, EditText watchedEditText, Timestream timestream, int filedIndex) {
+    public static void afterInfoChanged(String after,
+                                        EditText watchedEditText,
+                                        Timestream timestream,
+                                        int filedIndex,
+                                        int activityIndex) {
 
         boolean infoValidated = AIInputter.validate(after, timestream, filedIndex);
 
@@ -942,14 +927,14 @@ public class MyApplication extends Application {
                 case PRODUCT_EXP:
 
                     currentProduct.setProductEXP(after);
-                    synchronize(null, filedIndex);
+                    synchronize(null, filedIndex, activityIndex);
 
                     break;
 
                 case PRODUCT_EXP_TIME_UNIT:
 
                     currentProduct.setProductEXPTimeUnit(after);
-                    synchronize(null, filedIndex);
+                    synchronize(null, filedIndex, activityIndex);
                     break;
 
                 case PRODUCT_SPEC:
@@ -967,7 +952,7 @@ public class MyApplication extends Application {
 
                             after = AIInputter.translate(currentProduct, timestream.getProductDOP(), after);
 
-                            MyInfoChangeWatcher.setShouldWatch(false);
+                            ActivityInfoChangeWatcher.getActivityWatcher(activityIndex).setShouldWatch(false);
 
                             watchedEditText.setText(after);
 
@@ -976,7 +961,7 @@ public class MyApplication extends Application {
                                 DraggableLinearLayout.selectAll(watchedEditText);
                             }
 
-                            MyInfoChangeWatcher.setShouldWatch(true);
+                            ActivityInfoChangeWatcher.getActivityWatcher(activityIndex).setShouldWatch(true);
 
                         } catch (Exception e) {
 
@@ -994,33 +979,39 @@ public class MyApplication extends Application {
                         }
 
                     }
-                    synchronize(timestream, filedIndex);
-
+                    synchronize(timestream, filedIndex, activityIndex);
                     break;
 
                 case TIMESTREAM_COORDINATE:
 
                     timestream.setProductCoordinate(after);
                     timestream.setUpdated(false);
+                    synchronize(timestream, filedIndex, activityIndex);
                     break;
 
                 case TIMESTREAM_INVENTORY:
 
                     timestream.setProductInventory(after);
                     timestream.setUpdated(false);
+                    synchronize(timestream, filedIndex, activityIndex);
                     break;
 
                 case TIMESTREAM_BUY_SPECS:
                     timestream.setBuySpecs(after);
                     timestream.setUpdated(false);
+                    synchronize(timestream, filedIndex, activityIndex);
                     break;
 
                 case TIMESTREAM_PRESENT_SPECS:
                     timestream.setGiveawaySpecs(after);
                     timestream.setUpdated(false);
+                    synchronize(timestream, filedIndex, activityIndex);
                     break;
                 }
 
+                if (timestream != null && !timestream.isUpdated()) {
+                    Streamline.update(timestream);
+                }
         }
 
     }
@@ -1051,7 +1042,6 @@ public class MyApplication extends Application {
         }
         setTimeStreamViewOriginalBackground(timeStreamLinearLayout);
 
-
     }
 
     /**
@@ -1075,7 +1065,7 @@ public class MyApplication extends Application {
 
             default:
 
-                int timeStreamStateCode = 0;
+//                int timeStreamStateCode = 0;
 
                 if (ts == null) return;
 
@@ -1085,23 +1075,6 @@ public class MyApplication extends Application {
 //                int color = getColorByTimestreamStateCode(timeStreamStateCode);
 //                timestreamLinearLayout.setBackgroundColor(color);
 
-//                switch (timeStreamStateCode) {
-//
-//                        case 1:
-//
-//                            timestreamLinearLayout.setBackgroundColor(Color.YELLOW);
-//                            break;
-//
-//                        case -1:
-//
-//                            timestreamLinearLayout.setBackgroundColor(Color.GRAY);
-//                            break;
-//
-//                        default:
-//                            timestreamLinearLayout.setBackgroundColor(Color.GREEN);
-//                            break;
-//
-//                    }
                 break;
         }
 
@@ -1127,7 +1100,7 @@ public class MyApplication extends Application {
         }
     }
 
-    private static void synchronize(@Nullable Timestream timestream, int filedIndex) {
+    private static void synchronize(@Nullable Timestream timestream, int filedIndex, int activityIndex) {
 
         switch (filedIndex) {
 
@@ -1138,19 +1111,26 @@ public class MyApplication extends Application {
 
                 for (Timestream ts : currentProduct.getTimeStreams().values()) {
 
-                    synchronizeSingleTimestream(ts);
+                    synchronizeSingleTimestream(activityIndex, ts);
                 }
                 break;
 
             case TIMESTREAM_DOP:
 
-                synchronizeSingleTimestream(timestream);
+                synchronizeSingleTimestream(activityIndex, timestream);
+                break;
+
+            default:
+
+                if (timestream != null && timestream.getProductCode().equals(currentProduct.getProductCode())) {
+                    currentProduct.getTimeStreams().put(timestream.getId(), timestream);
+                }
                 break;
 
         }
     }
 
-    private static void synchronizeSingleTimestream(Timestream timestream) {
+    private static void synchronizeSingleTimestream(int activityIndex, Timestream timestream) {
 
         currentProduct.getTimeStreams().put(timestream.getId(), timestream);
 
@@ -1167,7 +1147,22 @@ public class MyApplication extends Application {
 
         ));
 
-        setTimeStreamViewOriginalBackground(timestream);
+        if (draggableLinearLayout != null) {
+
+            View view = draggableLinearLayout.findViewById(Integer.parseInt(timestream.getBoundLayoutId()));
+
+            if (view instanceof TimestreamCombinationView) {
+
+                ((TimestreamCombinationView) view).getBuyBackground()
+                        .setBackgroundColor(getColorByTimestreamStateCode(
+                                timestream.getTimeStreamStateCode()
+                        ));
+
+            } else {
+
+                view.setBackgroundColor(getColorByTimestreamStateCode(timestream.getTimeStreamStateCode()));
+            }
+        }
 
         timestream.setUpdated(false);
 
@@ -1178,7 +1173,7 @@ public class MyApplication extends Application {
                 Timestream.refresh(timestream);
                 TimestreamCombinationView combView = TraversalTimestreamActivity.combViews.get(timestream.getId());
                 if(combView != null)
-                    combView.bindData(timestream);
+                    combView.bindData(TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF, timestream);
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -1237,7 +1232,7 @@ public class MyApplication extends Application {
 
             Object o = releasedChild.getChildAt(i);
 
-            if (o instanceof EditText) MyInfoChangeWatcher.removeWatcher((EditText) o);
+            if (o instanceof EditText) ActivityInfoChangeWatcher.getActivityWatcher(activityIndex).removeWatcher((EditText) o);
         }
 
         draggableLinearLayout.removeView(releasedChild);

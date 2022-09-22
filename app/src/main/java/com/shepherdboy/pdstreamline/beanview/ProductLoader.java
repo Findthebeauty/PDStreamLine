@@ -16,7 +16,7 @@ import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.view.ClosableScrollView;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
-import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
+import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
 
 import java.util.LinkedHashMap;
 
@@ -31,41 +31,43 @@ public class ProductLoader {
      * @param index 添加的位置
      * @param product 加载的商品
      */
-    public static void loadCellHead(ViewGroup container, int index, Product product) {
+    public static void loadCellHead(int activityIndex, ViewGroup container, int index, Product product) {
 
-        CellHeadView head = new CellHeadView(container.getContext(), product.getProductCode());
+        CellHeadView head = new CellHeadView(activityIndex, container.getContext(), product.getProductCode());
         container.addView(head, index);
     }
 
     /**
      * 加载商品所有timestream
+     * @param activityIndex
      * @param container 父容器
      * @param index 添加的位置,必须是最开始的位置，因为要从此处开始往后计算combView数量
      * @param product 加载的商品
      */
-    public static void loadCellBody(ViewGroup container, int index, Product product) {
+    public static void loadCellBody(int activityIndex, ViewGroup container, int index, Product product) {
 
         LinkedHashMap<String, Timestream> timestreams = product.getTimeStreams();
 
         initCellBody(container, timestreams, index, product.getProductCode());
 
-        loadTimestreams(container, timestreams, index);
+        loadTimestreams(activityIndex, container, timestreams, index);
     }
 
     /**
      * 从指定位置开始加载timestream
+     * @param activityIndex
      * @param container 父容器
      * @param timestreams timestream列表
      * @param index 起始位置
      */
-    public static void loadTimestreams(ViewGroup container, LinkedHashMap<String, Timestream> timestreams, int index) {
+    public static void loadTimestreams(int activityIndex, ViewGroup container, LinkedHashMap<String, Timestream> timestreams, int index) {
 
         for (Timestream t : timestreams.values()) {
 
             TimestreamCombinationView combView =
                     (TimestreamCombinationView) container.getChildAt(index);
 
-            combView.bindData(t);
+            combView.bindData(activityIndex, t);
             index++;
         }
     }
@@ -111,7 +113,7 @@ public class ProductLoader {
         }
     }
 
-    public static View prepareNext(String productCode, DraggableLinearLayout view) {
+    public static View prepareNext(int activityIndex, String productCode, DraggableLinearLayout view) {
 
         TimestreamCombinationView nextTrigger =
                 new TimestreamCombinationView(view.getContext());
@@ -128,8 +130,8 @@ public class ProductLoader {
         e.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-
-                if (hasFocus && MyInfoChangeWatcher.isShouldWatch()) {
+                ActivityInfoChangeWatcher watcher = ActivityInfoChangeWatcher.getActivityWatcher(activityIndex);
+                if (hasFocus && watcher.isShouldWatch()) {
 
                     //将edittext所在view滚动到上方
                     ClosableScrollView.postLocate(ClosableScrollView.SCROLL_FROM_TOUCH, nextTrigger);
@@ -147,11 +149,11 @@ public class ProductLoader {
                         }
                     }).start();
                     TimestreamCombinationView next =
-                            new TimestreamCombinationView(view.getContext(), t);
-                    MyInfoChangeWatcher.setShouldWatch(false);
+                            new TimestreamCombinationView(activityIndex, view.getContext(), t);
+                    watcher.setShouldWatch(false);
                     view.addView(next,
                             view.indexOfChild(nextTrigger));
-                    MyInfoChangeWatcher.setShouldWatch(true);
+                    watcher.setShouldWatch(true);
                     MyApplication.clearOriginalInfo();
                     MyApplication.recordDraggableView();
                     DraggableLinearLayout.setFocus(next.getBuyDOPEt());

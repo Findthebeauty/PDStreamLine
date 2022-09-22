@@ -93,7 +93,7 @@ public class PDInfoWrapper {
 
         } else {
 
-            HttpDao.queryFromServer(productCode);
+            HttpDao.queryFromServer(MyApplication.activityIndex, productCode);
             AIInputter.fillTheBlanks(product);
         }
 
@@ -588,7 +588,7 @@ public class PDInfoWrapper {
             case MyDatabaseHelper.FRESH_TIMESTREAM_TABLE_NAME:
             case MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME:
 
-                sql = "insert into " + tableName + "(" +
+                sql = "insert or replace into " + tableName + "(" +
                         MyDatabaseHelper.FRESH_TIMESTREAM_COLUMNS + ") " + "values " +
                         "('" + id +
                         "','" + productCode +
@@ -605,7 +605,7 @@ public class PDInfoWrapper {
             case MyDatabaseHelper.PROMOTION_TIMESTREAM_TABLE_NAME:
             case MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME:
 
-                sql = "insert into " + tableName + "(" +
+                sql = "insert or replace into " + tableName + "(" +
                         MyDatabaseHelper.PROMOTION_TIMESTREAM_COLUMNS + ") " + "values " +
                         "('" + id +
                         "','" + productCode +

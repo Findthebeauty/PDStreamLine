@@ -67,8 +67,11 @@ public class PromotionActivity extends AppCompatActivity {
         for (Timestream t : basket.values()) {
 
             combinations.add(combine(t));
+        }
 
-            basket.remove(t.getId());
+        for (TimestreamCombination comb : combinations) {
+
+            basket.remove(comb.getBuyTimestream().getId());
         }
     }
 

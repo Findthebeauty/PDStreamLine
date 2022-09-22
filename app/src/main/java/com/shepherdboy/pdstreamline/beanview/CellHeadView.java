@@ -29,7 +29,7 @@ public class CellHeadView extends LinearLayout implements BeanView{
         super(context, attrs);
     }
 
-    public CellHeadView(Context context, String productCode) {
+    public CellHeadView(int activityIndex, Context context, String productCode) {
         super(context);
 
         this.setBackground(new ColorDrawable());
@@ -49,14 +49,14 @@ public class CellHeadView extends LinearLayout implements BeanView{
         headCodeTv.setId(View.generateViewId());
         expTv.setId(View.generateViewId());
 
-        bindData(productCode);
+        bindData(activityIndex, productCode);
     }
 
     /**
      *
      * @param o productCode
      */
-    public void bindData(Object o) {
+    public void bindData(int activityIndex, Object o) {
 
         String productCode = (String) o;
 

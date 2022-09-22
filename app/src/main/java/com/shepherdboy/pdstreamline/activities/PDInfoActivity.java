@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.InputType;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -41,8 +40,8 @@ import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.utils.ScanEventReceiver;
+import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
-import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -54,6 +53,7 @@ public class PDInfoActivity extends AppCompatActivity {
 
     private static Handler showHandler;
     private static String productToShow;
+    private static ActivityInfoChangeWatcher watcher;
 
     private static ArrayList<TextView> timestreamChildTextViewList = new ArrayList<>(3);
     private static ArrayList<EditText> timestreamChildEditTextList = new ArrayList<>(3);
@@ -107,7 +107,6 @@ public class PDInfoActivity extends AppCompatActivity {
 
         } else if (currentProduct != null) {
 
-            Log.d("onStart", currentProduct.toString());
             loadProduct(currentProduct);
         }
     }
@@ -119,7 +118,7 @@ public class PDInfoActivity extends AppCompatActivity {
 
     private void initActivity() {
 
-//        MyInfoChangeWatcher.init();
+//        ActivityInfoChangeWatcher.init();
         MyApplication.activityIndex = PD_INFO_ACTIVITY;
         draggableLinearLayout = findViewById(R.id.parent);
         productCodeEditText = findViewById(R.id.product_code);
@@ -153,9 +152,7 @@ public class PDInfoActivity extends AppCompatActivity {
             }
         });
 
-        MyInfoChangeWatcher.init(PD_INFO_ACTIVITY);
-
-        MyInfoChangeWatcher.watch(productCodeEditText, null, MyApplication.PRODUCT_CODE, true);
+        watcher.watch(productCodeEditText, null, MyApplication.PRODUCT_CODE, true);
         activity = PDInfoActivity.this;
     }
 
@@ -181,6 +178,8 @@ public class PDInfoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pdinfo);
         MyApplication.initActionBar(getSupportActionBar());
+
+        watcher = new ActivityInfoChangeWatcher(PD_INFO_ACTIVITY);
     }
 
     @Override
@@ -198,7 +197,7 @@ public class PDInfoActivity extends AppCompatActivity {
     }
     public static void loadProduct(Product product) {
 
-        MyInfoChangeWatcher.setShouldWatch(false);
+        watcher.setShouldWatch(false);
 
         currentProduct = product;
 
@@ -212,17 +211,17 @@ public class PDInfoActivity extends AppCompatActivity {
         productEXPTimeUnitButton.setText(product.getProductEXPTimeUnit());
         productSpecEditText.setText(product.getProductSpec());
 
-        MyInfoChangeWatcher.watch(productCodeEditText, null, MyApplication.PRODUCT_CODE, true);
-        MyInfoChangeWatcher.watch(productNameEditText, null, MyApplication.PRODUCT_NAME, true);
-        MyInfoChangeWatcher.watch(productEXPEditText, null, MyApplication.PRODUCT_EXP, true);
-        MyInfoChangeWatcher.watch(productSpecEditText, null, MyApplication.PRODUCT_SPEC, true);
-        MyInfoChangeWatcher.watch(productEXPTimeUnitButton);
+        watcher.watch(productCodeEditText, null, MyApplication.PRODUCT_CODE, true);
+        watcher.watch(productNameEditText, null, MyApplication.PRODUCT_NAME, true);
+        watcher.watch(productEXPEditText, null, MyApplication.PRODUCT_EXP, true);
+        watcher.watch(productSpecEditText, null, MyApplication.PRODUCT_SPEC, true);
+        watcher.watch(productEXPTimeUnitButton);
 
         loadTimestreams(timeStreams);
 
         if(timeStreams.size() > 0) DraggableLinearLayout.selectAll(topDOPEditText);
 
-        MyInfoChangeWatcher.setShouldWatch(true);
+        watcher.setShouldWatch(true);
     }
 
     private static void loadTimestreams(LinkedHashMap<String, Timestream> timeStreams) {
@@ -239,7 +238,7 @@ public class PDInfoActivity extends AppCompatActivity {
 //            timestreamViewIndex++;
 //        }
 
-        ProductLoader.loadTimestreams(draggableLinearLayout, timeStreams, 0);
+        ProductLoader.loadTimestreams(PD_INFO_ACTIVITY, draggableLinearLayout, timeStreams, 0);
 
 //        prepareNext();
 
@@ -255,7 +254,7 @@ public class PDInfoActivity extends AppCompatActivity {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
 
-                if (hasFocus && MyInfoChangeWatcher.isShouldWatch()) {
+                if (hasFocus && watcher.isShouldWatch()) {
 
                     e.setOnFocusChangeListener(null);
                     Timestream t = new Timestream();
@@ -305,12 +304,18 @@ public class PDInfoActivity extends AppCompatActivity {
 
         MyApplication.setTimeStreamViewOriginalBackground(timestream);
 
-        MyInfoChangeWatcher.watch(timestreamDOPEditText, timestream, MyApplication.TIMESTREAM_DOP, true);
-        MyInfoChangeWatcher.watch(timestreamCoordinateEditText, timestream, MyApplication.TIMESTREAM_COORDINATE, true);
-        MyInfoChangeWatcher.watch(timestreamInventoryEditText, timestream, MyApplication.TIMESTREAM_INVENTORY, true);
+        watcher.watch(timestreamDOPEditText, timestream, MyApplication.TIMESTREAM_DOP, true);
+        watcher.watch(timestreamCoordinateEditText, timestream, MyApplication.TIMESTREAM_COORDINATE, true);
+        watcher.watch(timestreamInventoryEditText, timestream, MyApplication.TIMESTREAM_INVENTORY, true);
 
 
         DraggableLinearLayout.selectAll(timestreamDOPEditText);
+    }
+
+    @Override
+    protected void onDestroy() {
+        watcher.destroy();
+        super.onDestroy();
     }
 
     private static void initTimestreamView(LinkedHashMap<String, Timestream> timestreams) {
@@ -320,7 +325,7 @@ public class PDInfoActivity extends AppCompatActivity {
         topTimestreamView = null;
         topDOPEditText = null;
 
-        draggableLinearLayout.addView(ProductLoader.prepareNext(
+        draggableLinearLayout.addView(ProductLoader.prepareNext(PD_INFO_ACTIVITY,
                 currentProduct.getProductCode(), draggableLinearLayout));
         ProductLoader.initCellBody(draggableLinearLayout,timestreams,0,currentProduct.getProductCode());
 //        // 根据根view的childCount计算timestreamView的数量

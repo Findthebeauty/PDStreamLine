@@ -5,7 +5,6 @@ import static com.shepherdboy.pdstreamline.MyApplication.onShowCombsHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +21,7 @@ import com.shepherdboy.pdstreamline.activities.TraversalTimestreamActivity;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
-import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
+import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
 
 import java.util.ArrayList;
 
@@ -41,10 +40,10 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
     private String productCode;
     private String timestreamId;
 
-    public TimestreamCombinationView(Context context, Timestream timestream) {
+    public TimestreamCombinationView(int activityIndex, Context context, Timestream timestream) {
         this(context);
 
-        bindData(timestream);
+        bindData(activityIndex, timestream);
     }
 
     public TimestreamCombinationView(Context context) {
@@ -158,7 +157,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
      *
      * @param o timestreamId
      */
-    public void bindData(Object o) {
+    public void bindData(int activityIndex, Object o) {
 
         // 如果传入null，表示更新nextTrigger的信息，只需要更新商品名
         if (o == null) {
@@ -167,6 +166,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
             return;
         }
 
+        ActivityInfoChangeWatcher watcher = ActivityInfoChangeWatcher.getActivityWatcher(activityIndex);
 
         Timestream timestream = (Timestream) o;
 
@@ -189,13 +189,11 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
                 unitTv.setText(MyApplication.getAllProducts().get(timestream.getProductCode()).getProductSpec());
 
                 if (timestream.isInBasket()) {
-                    Log.d("bindData", "inBasket");
 
                     buyBackground.setBackground(getResources().getDrawable(R.drawable.item_selected));
 
                 } else {
 
-                    Log.d("bindData", "notInBasket");
                     int color = MyApplication.getColorByTimestreamStateCode(timestream.getTimeStreamStateCode());
                     buyBackground.setBackgroundColor(color);
                 }
@@ -256,13 +254,13 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
             onShowTimeStreamsHashMap.put(buyBackground.getId(), timestreamCombination.getBuyTimestream()); //一个combination有3个背景，整体的、商品和赠品的，3个背景都要记录
             onShowTimeStreamsHashMap.put(giveawayBackground.getId(), timestreamCombination.getGiveawayTimestream()); //一个combination有3个背景，整体的、商品和赠品的，3个背景都要记录
 
-            MyInfoChangeWatcher.watch(buyDOPEt,timestreamCombination.getBuyTimestream(),MyApplication.TIMESTREAM_DOP,true);
-            MyInfoChangeWatcher.watch(inventory,timestreamCombination.getBuyTimestream(),MyApplication.TIMESTREAM_INVENTORY,true);
+            watcher.watch(buyDOPEt,timestreamCombination.getBuyTimestream(),MyApplication.TIMESTREAM_DOP,true);
+            watcher.watch(inventory,timestreamCombination.getBuyTimestream(),MyApplication.TIMESTREAM_INVENTORY,true);
 
         } else {
 
-            MyInfoChangeWatcher.watch(buyDOPEt,timestream,MyApplication.TIMESTREAM_DOP,true);
-            MyInfoChangeWatcher.watch(inventory,timestream,MyApplication.TIMESTREAM_INVENTORY,true);
+            watcher.watch(buyDOPEt,timestream,MyApplication.TIMESTREAM_DOP,true);
+            watcher.watch(inventory,timestream,MyApplication.TIMESTREAM_INVENTORY,true);
         }
 
     }

@@ -1,9 +1,12 @@
 package com.shepherdboy.pdstreamline.view;
 
+import static com.shepherdboy.pdstreamline.MyApplication.activityIndex;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -69,7 +72,7 @@ public class DraggableLinearLayout extends LinearLayout {
                 if (child instanceof LinearLayout) {
 
                     Set<Integer> timestreamIds = MyApplication.originalPositionHashMap.keySet();
-                    return timestreamIds.contains(child.getId()) || MyApplication.activityIndex == MyApplication.PROMOTION_TIMESTREAM_ACTIVITY;
+                    return timestreamIds.contains(child.getId()) || activityIndex == MyApplication.PROMOTION_TIMESTREAM_ACTIVITY;
                 }
 
                 return false;
@@ -220,11 +223,11 @@ public class DraggableLinearLayout extends LinearLayout {
 
         setFocus(editText);
 
-        selectAllAfter(editText, 25);
+        selectAllAfter(activityIndex, editText, 25);
 
     }
 
-    public static void selectAllAfter(EditText editText, int delay) {
+    public static void selectAllAfter(int activityIndex, EditText editText, int delay) {
 
         new Timer().schedule(new TimerTask() {
             @Override
@@ -232,15 +235,14 @@ public class DraggableLinearLayout extends LinearLayout {
 
                 InputMethodManager m = (InputMethodManager) editText.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 m.showSoftInput(editText, 0);
-                if (MyInfoChangeWatcher.infoHandler != null) {
+                Handler infoHandler = ActivityInfoChangeWatcher.getActivityWatcher(activityIndex).infoHandler;
+                if (infoHandler != null) {
 
                     Message msg = Message.obtain();
-                    msg.what = MyInfoChangeWatcher.SELECT_ALL;
+                    msg.what = ActivityInfoChangeWatcher.SELECT_ALL;
                     msg.obj = editText;
-                    MyInfoChangeWatcher.infoHandler.sendMessage(msg);
-                    
+                    infoHandler.sendMessage(msg);
                 }
-
             }
         },delay); //todo 关于软键盘弹出edittext内容消失的问题
     }
@@ -257,8 +259,6 @@ public class DraggableLinearLayout extends LinearLayout {
             default:
                 break;
         }
-
-
     }
 
     public LinearLayout getCapturedView() {

@@ -38,8 +38,8 @@ import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
+import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
-import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -70,9 +70,9 @@ public class SettingActivity extends AppCompatActivity {
     public static final int SINGLETON_SETTING_DOUBLE_CLICK_DELAY = 8;
     public static final int SINGLETON_SETTING_LONG_CLICK_DELAY = 9;
 
-
     public static SingletonSettingBean settingInstance;
 
+    private static ActivityInfoChangeWatcher watcher;
     //保存初始获取的所有scope用于后续的排序与加载
     public static List<DateScope> scopeList;
     //scopeId与scope映射
@@ -205,7 +205,7 @@ public class SettingActivity extends AppCompatActivity {
 
     private static void deleteScope(View releasedChild) {
 
-        MyInfoChangeWatcher.setShouldWatch(false);
+        watcher.setShouldWatch(false);
 
         int id = releasedChild.getId();
         DateScope scope = onShowScopeMap.remove(id);
@@ -223,7 +223,7 @@ public class SettingActivity extends AppCompatActivity {
         ViewGroup p = (ViewGroup) releasedChild.getParent();
         p.removeView(releasedChild);
 
-        MyInfoChangeWatcher.removeWatcher(releasedChild);
+        watcher.removeWatcher(releasedChild);
 
         LinearLayout nextScopeView = (LinearLayout) draggableLinearLayout.getChildAt(removeIndex);
         LinearLayout upperScopeView = null;
@@ -231,14 +231,14 @@ public class SettingActivity extends AppCompatActivity {
         if (removeIndex > 1) upperScopeView = (LinearLayout) draggableLinearLayout.getChildAt(removeIndex - 1);
 
         connectScopeView(nextScopeView, upperScopeView);
-        MyInfoChangeWatcher.setShouldWatch(true);
+        watcher.setShouldWatch(true);
         setExpSettingChanged(true);
         DraggableLinearLayout.setLayoutChanged(true);
     }
 
     private static void addScopeBeyond(View releasedChild) {
 
-        MyInfoChangeWatcher.setShouldWatch(false);
+        watcher.setShouldWatch(false);
 
         LinearLayout parent = (LinearLayout) releasedChild.getParent();
         int addIndex = 1;
@@ -278,7 +278,7 @@ public class SettingActivity extends AppCompatActivity {
 
         EditText lEditText = ((EditText)((LinearLayout)(newScopeView.getChildAt(0))).getChildAt(0));
 
-        MyInfoChangeWatcher.setShouldWatch(true);
+        watcher.setShouldWatch(true);
         setExpSettingChanged(true);
         DraggableLinearLayout.selectAll(lEditText);
         DraggableLinearLayout.setLayoutChanged(true);
@@ -335,7 +335,7 @@ public class SettingActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
 
-        MyInfoChangeWatcher.clearWatchers(SETTING_ACTIVITY);
+        watcher.clearWatchers(SETTING_ACTIVITY);
         if (isExpSettingChanged()) {
             saveSetting();
         }
@@ -350,6 +350,8 @@ public class SettingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
+        watcher = new ActivityInfoChangeWatcher(SETTING_ACTIVITY);
     }
 
     @Override
@@ -371,7 +373,6 @@ public class SettingActivity extends AppCompatActivity {
         draggableLinearLayout = findViewById(R.id.date_offset_setting_table);
         activityIndex = MyApplication.SETTING_ACTIVITY;
 
-        MyInfoChangeWatcher.init(activityIndex);
         initDateSettingView();
 
         if (dateSettingMap.isEmpty() || dateSettingIndex == null || settingInstance == null)
@@ -389,8 +390,8 @@ public class SettingActivity extends AppCompatActivity {
 
                 saveSetting();
                 SettingActivity.this.finish();
-                MyInfoChangeWatcher.commitAll();
-                MyInfoChangeWatcher.clearWatchers(SETTING_ACTIVITY);
+                watcher.commitAll();
+                watcher.clearWatchers(SETTING_ACTIVITY);
             }
         });
 
@@ -416,7 +417,7 @@ public class SettingActivity extends AppCompatActivity {
 
     private void loadSetting() {
 
-        MyInfoChangeWatcher.clearWatchers(SETTING_ACTIVITY);
+        watcher.clearWatchers(SETTING_ACTIVITY);
         loadEXPSetting();
         loadSingletonSetting();
     }
@@ -454,7 +455,7 @@ public class SettingActivity extends AppCompatActivity {
             b.setText("今天");
         }
 
-        MyInfoChangeWatcher.watch(b);
+        watcher.watch(b);
 //        saveSingletonSetting();
     }
 
@@ -474,9 +475,9 @@ public class SettingActivity extends AppCompatActivity {
         longClickCKBox.setChecked(settingInstance.isLongClickFlag());
         longClickEText.setText(settingInstance.getLongClickDelay());
 
-        if (!MyInfoChangeWatcher.myTextWatchers.containsKey(autoCommitEText)) {
+        if (!watcher.getMyWatchers().containsKey(autoCommitEText)) {
 
-            MyInfoChangeWatcher.watch(null, autoCommitEText, SINGLETON_SETTING_AUTO_COMMIT_DELAY);
+            watcher.watch(null, autoCommitEText, SINGLETON_SETTING_AUTO_COMMIT_DELAY);
 
             autoCommitCKBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
@@ -508,9 +509,9 @@ public class SettingActivity extends AppCompatActivity {
 
         }
 
-        if (!MyInfoChangeWatcher.myTextWatchers.containsKey(doubleClickEText)) {
+        if (!watcher.getMyWatchers().containsKey(doubleClickEText)) {
 
-            MyInfoChangeWatcher.watch(null, doubleClickEText, SINGLETON_SETTING_DOUBLE_CLICK_DELAY);
+            watcher.watch(null, doubleClickEText, SINGLETON_SETTING_DOUBLE_CLICK_DELAY);
 
             doubleClickCKBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
@@ -542,9 +543,9 @@ public class SettingActivity extends AppCompatActivity {
 
         }
 
-        if (!MyInfoChangeWatcher.myTextWatchers.containsKey(longClickEText)) {
+        if (!watcher.getMyWatchers().containsKey(longClickEText)) {
 
-            MyInfoChangeWatcher.watch(null, longClickEText, SINGLETON_SETTING_LONG_CLICK_DELAY);
+            watcher.watch(null, longClickEText, SINGLETON_SETTING_LONG_CLICK_DELAY);
 
             longClickCKBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
@@ -611,7 +612,7 @@ public class SettingActivity extends AppCompatActivity {
         int scopesCount = scopeList.size();
 
         MyApplication.init();
-        MyInfoChangeWatcher.clearWatchers(SETTING_ACTIVITY);
+        watcher.clearWatchers(SETTING_ACTIVITY);
 
         int scopesViewCount = draggableLinearLayout.getChildCount() - 1;
 
@@ -718,7 +719,7 @@ public class SettingActivity extends AppCompatActivity {
 
     private void loadEXPSetting() {
 
-        MyInfoChangeWatcher.setShouldWatch(false);
+        watcher.setShouldWatch(false);
 
         long upperBound = 0;
         long lowerBound = 0;
@@ -730,7 +731,7 @@ public class SettingActivity extends AppCompatActivity {
         }
 
         DraggableLinearLayout.setLayoutChanged(true);
-        MyInfoChangeWatcher.setShouldWatch(true);
+        watcher.setShouldWatch(true);
     }
 
     private void loadScope(long lowerBound, long upperBound, LinearLayout t) {
@@ -757,10 +758,10 @@ public class SettingActivity extends AppCompatActivity {
         String pOffsetValue = scope.getPromotionOffsetValue();
         String eOffsetValue = scope.getExpireOffsetValue();
         editTexts[0].setText(rangeValue);
-        MyInfoChangeWatcher.watch(scope, editTexts[0], DATE_SCOPE_RANGE_VALUE);
+        watcher.watch(scope, editTexts[0], DATE_SCOPE_RANGE_VALUE);
 
         textViews[0].setText(rangeUnit);
-        MyInfoChangeWatcher.watch(scope, textViews[0], DATE_SCOPE_RANGE_UNIT);
+        watcher.watch(scope, textViews[0], DATE_SCOPE_RANGE_UNIT);
         if (scope1 != null) {
 
             textViews[1].setText("(含)~");
@@ -775,11 +776,11 @@ public class SettingActivity extends AppCompatActivity {
         }
 
         editTexts[1].setText(pOffsetValue);
-        MyInfoChangeWatcher.watch(scope, editTexts[1], DATE_SCOPE_PROMOTION_OFFSET_VALUE);
+        watcher.watch(scope, editTexts[1], DATE_SCOPE_PROMOTION_OFFSET_VALUE);
         textViews[3].setText("天");
 
         editTexts[2].setText(eOffsetValue);
-        MyInfoChangeWatcher.watch(scope, editTexts[2], DATE_SCOPE_EXPIRE_OFFSET_VALUE);
+        watcher.watch(scope, editTexts[2], DATE_SCOPE_EXPIRE_OFFSET_VALUE);
         textViews[4].setText("天");
     }
 

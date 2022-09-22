@@ -8,7 +8,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.shepherdboy.pdstreamline.beans.Product;
-import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
+import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -40,8 +40,7 @@ public class HttpDao {
     private static boolean transmitEnd = false;
     private static long startTime;
 
-
-    public static void queryFromServer(String productCode) {
+    public static void queryFromServer(int activityIndex, String productCode) {
 
         queryThread = new Thread(new Runnable() {
             @Override
@@ -62,19 +61,19 @@ public class HttpDao {
                 }
 
                 Message msg = Message.obtain();
-                msg.what = MyInfoChangeWatcher.LAZY_LOAD;
+                msg.what = ActivityInfoChangeWatcher.LAZY_LOAD;
 
                 if (response.equals("null")) {
 
                     msg.obj = null;
-                    MyInfoChangeWatcher.infoHandler.sendMessage(msg);
+                    ActivityInfoChangeWatcher.getActivityWatcher(activityIndex).infoHandler.sendMessage(msg);
                     return;
                 }
 
                 JSONObject object = JSON.parseObject(response);
 
                 msg.obj = parseProduct(object);
-                MyInfoChangeWatcher.infoHandler.sendMessage(msg);
+                ActivityInfoChangeWatcher.getActivityWatcher(activityIndex).infoHandler.sendMessage(msg);
 
             }
         });
