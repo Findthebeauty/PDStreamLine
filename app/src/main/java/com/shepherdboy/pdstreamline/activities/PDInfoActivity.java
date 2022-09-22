@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -74,12 +75,15 @@ public class PDInfoActivity extends AppCompatActivity {
 
         Intent intent = new Intent(MyApplication.getContext(), PDInfoActivity.class);
         MyApplication.getContext().startActivity(intent);
+        if(code == null) return;
         productToShow = code;
     }
 
     @Override
     protected void onStart() {
 //        MyApplication.init();
+        super.onStart();
+
         initActivity();
 
         if (showHandler == null) {
@@ -103,10 +107,9 @@ public class PDInfoActivity extends AppCompatActivity {
 
         } else if (currentProduct != null) {
 
+            Log.d("onStart", currentProduct.toString());
             loadProduct(currentProduct);
         }
-
-        super.onStart();
     }
 
     public static Handler getShowHandler() {

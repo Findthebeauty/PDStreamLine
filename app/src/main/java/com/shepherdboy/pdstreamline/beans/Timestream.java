@@ -155,7 +155,7 @@ public class Timestream {
     }
 
     public void setDiscountRate(String discountRate) {
-        this.discountRate = discountRate;
+        this.discountRate = discountRate  == null ? "" : discountRate;
     }
 
     public String getProductName() {

@@ -38,7 +38,6 @@ import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
-import com.shepherdboy.pdstreamline.beanview.BeanView;
 import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
 import com.shepherdboy.pdstreamline.dao.HttpDao;
 import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
@@ -235,28 +234,29 @@ public class MyApplication extends Application {
 
             clickCount = 0;
             lastClickTime = 0L;
-            return onDBClick();
+            return onDBClick(event);
         }
 
         return false;
     }
 
-    private static boolean onDBClick() {
+    private static boolean onDBClick(MotionEvent event) {
 
         stopCountPressTime();
         switch (activityIndex) {
 
             case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
 
-                BeanView beanView = (BeanView) draggableLinearLayout.getCapturedView();
-
-                if (beanView == null) return false;
-                String code = beanView.getProductCode();
-                PDInfoActivity.actionStart(code);
+//                BeanView beanView = (BeanView) draggableLinearLayout.getCapturedView();
+//
+//                if (beanView == null) return false;
+                TraversalTimestreamActivity.recordTopProduct(event);
+                PDInfoActivity.actionStart(null);
                 break;
 
             case PD_INFO_ACTIVITY:
 //                serialize();
+                String code;
                 code = currentProduct.getProductCode();
                 TraversalTimestreamActivity.actionStart(code);
                 break;
@@ -577,6 +577,11 @@ public class MyApplication extends Application {
     }
 
     public static void deleteTimestream(String id) {
+
+        if (currentProduct != null) {
+
+            currentProduct.getTimeStreams().remove(id);
+        }
 
         PDInfoWrapper.deleteTimestream(sqLiteDatabase, id);
 
@@ -1034,7 +1039,6 @@ public class MyApplication extends Application {
 
         if (timeStreamLinearLayout == null) return;
 
-
         switch (activityIndex) {
 
             case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
@@ -1148,6 +1152,8 @@ public class MyApplication extends Application {
 
     private static void synchronizeSingleTimestream(Timestream timestream) {
 
+        currentProduct.getTimeStreams().put(timestream.getId(), timestream);
+
         timestream.setProductPromotionDate(DateUtil.calculatePromotionDate(
                 timestream.getProductDOP(),
                 Integer.parseInt(currentProduct.getProductEXP()),
@@ -1170,10 +1176,16 @@ public class MyApplication extends Application {
             case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
 
                 Timestream.refresh(timestream);
-                TimestreamCombinationView combView = draggableLinearLayout.
-                        findViewById(Integer.parseInt(timestream.getBoundLayoutId()));
-                combView.bindData(timestream);
-                PDInfoWrapper.updateInfo(sqLiteDatabase, timestream, MyDatabaseHelper.FRESH_TIMESTREAM_TABLE_NAME);
+                TimestreamCombinationView combView = TraversalTimestreamActivity.combViews.get(timestream.getId());
+                if(combView != null)
+                    combView.bindData(timestream);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        PDInfoWrapper.updateInfo(sqLiteDatabase, timestream, MyDatabaseHelper.FRESH_TIMESTREAM_TABLE_NAME);
+                    }
+                }).start();
                 break;
 
             default:

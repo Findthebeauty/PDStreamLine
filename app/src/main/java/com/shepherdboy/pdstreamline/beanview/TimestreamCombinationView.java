@@ -18,6 +18,7 @@ import androidx.constraintlayout.widget.ConstraintSet;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
+import com.shepherdboy.pdstreamline.activities.TraversalTimestreamActivity;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
@@ -171,6 +172,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
         this.productCode = timestream.getProductCode();
         this.timestreamId = timestream.getId();
+        TraversalTimestreamActivity.combViews.put(timestreamId, this);
 
         String discountRate = timestream.getDiscountRate();
 

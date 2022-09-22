@@ -136,7 +136,7 @@ public class ClosableScrollView extends ScrollView {
 
         if (MyApplication.activityIndex == MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF) {
 
-            TraversalTimestreamActivity.recordTopProduct();
+            TraversalTimestreamActivity.recordTopProduct(null);
         }
         super.onScrollChanged(l, t, oldl, oldt);
     }

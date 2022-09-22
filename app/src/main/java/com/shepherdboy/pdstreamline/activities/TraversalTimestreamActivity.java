@@ -5,6 +5,7 @@ import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_AC
 import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
 import static com.shepherdboy.pdstreamline.MyApplication.activityIndex;
 import static com.shepherdboy.pdstreamline.MyApplication.combinationHashMap;
+import static com.shepherdboy.pdstreamline.MyApplication.currentProduct;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 import static com.shepherdboy.pdstreamline.MyApplication.intentProductCode;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
@@ -61,6 +62,7 @@ import com.shepherdboy.pdstreamline.view.MyInfoChangeWatcher;
 import com.shepherdboy.pdstreamline.view.ShelfAdapter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -98,6 +100,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
     public static ConcurrentLinkedQueue<View> newViews = new ConcurrentLinkedQueue<>();
     public static ConcurrentHashMap<String, CellHeadView> headViews = new ConcurrentHashMap<>();
+    public static HashMap<String, TimestreamCombinationView> combViews = new HashMap<>();
     private static final boolean[] continueProcess = new boolean[]{true};
     private static boolean loadFinished = false;
     private static boolean prepareFinished = false;
@@ -217,30 +220,34 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         postMessage(MSG_LOAD_VIEWS, null);
     }
 
-    public static void recordTopProduct() {
-        int x = draggableLinearLayout.getChildAt(0).getWidth() / 2;
-        int offsetY = draggableLinearLayout.getChildAt(0).getHeight() / 2;
-        ScrollView scr = (ScrollView) (draggableLinearLayout.getParent());
-        View beanView = draggableLinearLayout.viewDragHelper.findTopChildUnder(x,
-                 scr.getScrollY() + offsetY);
+    public static void recordTopProduct(MotionEvent event) {
+
+        View beanView = null;
+
+        if (event == null) {
+
+            int x = draggableLinearLayout.getChildAt(0).getWidth() / 2;
+            int offsetY = draggableLinearLayout.getChildAt(0).getHeight() / 2;
+            ScrollView scr = (ScrollView) (draggableLinearLayout.getParent());
+            beanView = draggableLinearLayout.viewDragHelper.findTopChildUnder(x,
+                     scr.getScrollY() + offsetY);
+        } else if (event.getActionMasked() == MotionEvent.ACTION_DOWN){
+
+            beanView = draggableLinearLayout.viewDragHelper.findTopChildUnder((int) event.getX(), (int) (event.getY()));
+        }
 
         if (beanView instanceof LinearLayout) {
+
+            MyApplication.intentProductCode = ((BeanView)beanView).getProductCode();
+            if(currentProduct == null || !intentProductCode.equals(currentProduct.getProductCode()))
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    MyApplication.intentProductCode = ((BeanView)beanView).getProductCode();
-                    MyApplication.currentProduct = PDInfoWrapper.getProduct(intentProductCode,
+                    currentProduct = PDInfoWrapper.getProduct(intentProductCode,
                             sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
                 }
             }).start();
         }
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        if (activityIndex == TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF)
-        recordTopProduct();
-        return super.onTouchEvent(event);
     }
 
     @Override
@@ -553,6 +560,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         container = (ClosableScrollView) shelfLayout.getParent();
         newViews.clear();
         headViews.clear();
+        combViews.clear();
     }
 
     private void showRow(DraggableLinearLayout draggableLinearLayout, int rowNumber) {
@@ -896,6 +904,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         continueProcess[0] = false;
         newViews.clear();
         headViews.clear();
+        combViews.clear();
         tail = null;
         draggableLinearLayout = null;
         layoutIndex = LAYOUT_SHELF_LIST;

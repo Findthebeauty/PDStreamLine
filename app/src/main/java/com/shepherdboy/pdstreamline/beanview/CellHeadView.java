@@ -18,8 +18,6 @@ import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 
-import java.util.List;
-
 public class CellHeadView extends LinearLayout implements BeanView{
 
     private String productCode;
@@ -35,6 +33,8 @@ public class CellHeadView extends LinearLayout implements BeanView{
         super(context);
 
         this.setBackground(new ColorDrawable());
+        this.setFocusable(true);
+        this.setFocusableInTouchMode(true);
 
         this.setId(View.generateViewId());
         this.setGravity(Gravity.CENTER_VERTICAL);

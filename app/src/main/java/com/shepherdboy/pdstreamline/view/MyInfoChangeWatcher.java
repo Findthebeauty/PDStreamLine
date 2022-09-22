@@ -1,6 +1,8 @@
 package com.shepherdboy.pdstreamline.view;
 
+import static com.shepherdboy.pdstreamline.MyApplication.activityIndex;
 import static com.shepherdboy.pdstreamline.MyApplication.currentProduct;
+import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 
 import android.os.Handler;
 import android.os.Message;
@@ -22,6 +24,9 @@ import com.shepherdboy.pdstreamline.beans.DateScope;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
+import com.shepherdboy.pdstreamline.beanview.BeanView;
+import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
+import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 
@@ -104,11 +109,6 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
     }
 
     public static void init(int activityIndex) {
-
-        if (!activityWatchers.containsKey(activityIndex))
-            activityWatchers.put(activityIndex, new HashMap<>());
-        myTextWatchers = activityWatchers.get(activityIndex);
-
         initHandler();
     }
 
@@ -294,40 +294,21 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
         }
     }
 
-    private static void clearAllWatchers() {
-        for (HashMap<EditText, MyInfoChangeWatcher> watcherHashMap : activityWatchers.values()) {
-            for (Map.Entry<EditText, MyInfoChangeWatcher> entry : watcherHashMap.entrySet()) {
-
-                entry.getKey().removeTextChangedListener(entry.getValue());
-                entry.getKey().setOnFocusChangeListener(null);
-                entry.getValue().stopAutoCommit();
-            }
-
-            watcherHashMap.clear();
-        }
-        currentWatcher = null;
-    }
-
     public static void clearWatchers(int activityIndex) {
 
-        HashMap<EditText, MyInfoChangeWatcher> watcherHashMap = activityWatchers.get(activityIndex);
-
-        if (watcherHashMap == null) return;
-        for (Map.Entry<EditText, MyInfoChangeWatcher> entry : watcherHashMap.entrySet()) {
+        for (Map.Entry<EditText, MyInfoChangeWatcher> entry : myTextWatchers.entrySet()) {
 
             entry.getKey().removeTextChangedListener(entry.getValue());
             entry.getKey().setOnFocusChangeListener(null);
             entry.getValue().stopAutoCommit();
         }
 
-        watcherHashMap.clear();
+        myTextWatchers.clear();
 
         currentWatcher = null;
     }
 
     public static void destroy() {
-
-        clearAllWatchers();
 
         if (infoHandler != null) {
 
@@ -443,6 +424,14 @@ public class MyInfoChangeWatcher implements TextWatcher, View.OnFocusChangeListe
 
             stopAutoCommit();
             commit();
+        }
+
+        if (activityIndex == MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF && hasFocus) {
+
+            BeanView beanView = (BeanView) v.getParent().getParent();
+
+            currentProduct = PDInfoWrapper.getProduct(beanView.getProductCode(), sqLiteDatabase,
+                    MyDatabaseHelper.ENTIRE_TIMESTREAM);
         }
 
     }
