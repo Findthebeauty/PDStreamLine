@@ -235,7 +235,10 @@ public class DraggableLinearLayout extends LinearLayout {
 
                 InputMethodManager m = (InputMethodManager) editText.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 m.showSoftInput(editText, 0);
-                Handler infoHandler = ActivityInfoChangeWatcher.getActivityWatcher(activityIndex).infoHandler;
+                ActivityInfoChangeWatcher activityWatcher = ActivityInfoChangeWatcher.getActivityWatcher(activityIndex);
+                Handler infoHandler = null;
+                if (activityWatcher != null)
+                infoHandler = activityWatcher.infoHandler;
                 if (infoHandler != null) {
 
                     Message msg = Message.obtain();
