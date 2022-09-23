@@ -1,7 +1,9 @@
 package com.shepherdboy.pdstreamline.view;
 
+import static com.shepherdboy.pdstreamline.MyApplication.PD_INFO_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
 import static com.shepherdboy.pdstreamline.MyApplication.activityIndex;
+import static com.shepherdboy.pdstreamline.MyApplication.closableScrollView;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 
 import android.content.Context;
@@ -22,17 +24,17 @@ public class ClosableScrollView extends ScrollView {
     public static final int SCROLL_FROM_TOUCH = 100;
     public static final int SCROLL_FROM_RELOCATE = 101;
     //记录触摸位置的变化，用于判断是滑动还是长按
-    private static float newY;
-    private static float oldY;
-    private static float newX;
-    private static float oldX;
+    private float newY;
+    private float oldY;
+    private float newX;
+    private float oldX;
 
-    private static int originalY = 0;
+    private int originalY = 0;
     //滚动结束标志
-    private static boolean flingFinished = true;
+    private boolean flingFinished = true;
     int[] location = new int[2];
 
-    private static Handler scrollHandler;
+    private Handler scrollHandler;
 
     public ClosableScrollView(Context context) {
         super(context);
@@ -67,7 +69,7 @@ public class ClosableScrollView extends ScrollView {
                         view.getLocationOnScreen(location);
                         int dy = location[1];
                         ClosableScrollView.this.smoothScrollBy(0,
-                                dy - view.getHeight() - originalY);
+                                dy - view.getHeight() * 4 - originalY);
                         break;
 
                     case SCROLL_FROM_RELOCATE:
@@ -90,20 +92,30 @@ public class ClosableScrollView extends ScrollView {
 
     public static void postLocate(int what, Object obj) {
 
-        if (activityIndex != TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF) return;
-        Message msg = scrollHandler.obtainMessage();
-        msg.what = what;
-        msg.obj = obj;
-        scrollHandler.sendMessage(msg);
+        switch (activityIndex) {
+
+            case PD_INFO_ACTIVITY:
+            case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
+                if (closableScrollView == null) return;
+                Message msg = MyApplication.closableScrollView.scrollHandler.obtainMessage();
+                msg.what = what;
+                msg.obj = obj;
+                MyApplication.closableScrollView.scrollHandler.sendMessage(msg);
+                break;
+
+            default:
+                break;
+
+        }
     }
 
-    public static float getDeltaX() {
+    public float getDeltaX() {
 
         return Math.abs(newX - oldX);
 
     }
 
-    public static float getDeltaY() {
+    public float getDeltaY() {
 
         return Math.abs(newY - oldY);
 
@@ -173,11 +185,11 @@ public class ClosableScrollView extends ScrollView {
         return super.performClick();
     }
 
-    public static boolean isFlingFinished() {
+    public boolean isFlingFinished() {
         return flingFinished;
     }
 
-    public static int getOriginalY() {
+    public int getOriginalY() {
         return originalY;
     }
 
@@ -214,23 +226,23 @@ public class ClosableScrollView extends ScrollView {
         }).start();
     }
 
-    public static void setNewY(float newY) {
-        ClosableScrollView.newY = newY;
+    public void setNewY(float newY) {
+        this.newY = newY;
     }
 
-    public static void setOldY(float oldY) {
-        ClosableScrollView.oldY = oldY;
+    public void setOldY(float oldY) {
+        this.oldY = oldY;
     }
 
-    public static void setNewX(float newX) {
-        ClosableScrollView.newX = newX;
+    public void setNewX(float newX) {
+        this.newX = newX;
     }
 
-    public static void setOldX(float oldX) {
-        ClosableScrollView.oldX = oldX;
+    public void setOldX(float oldX) {
+        this.oldX = oldX;
     }
 
-    public static Handler getScrollHandler() {
+    public Handler getScrollHandler() {
         return scrollHandler;
     }
 }

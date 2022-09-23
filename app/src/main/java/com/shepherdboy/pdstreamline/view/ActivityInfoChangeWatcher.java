@@ -1,5 +1,7 @@
 package com.shepherdboy.pdstreamline.view;
 
+import static com.shepherdboy.pdstreamline.MyApplication.PD_INFO_ACTIVITY;
+import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
 import static com.shepherdboy.pdstreamline.MyApplication.currentProduct;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 
@@ -128,6 +130,19 @@ public class ActivityInfoChangeWatcher {
                                 sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
                     }
                 }
+
+                switch (activityIndex) {
+
+                    case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
+                    case PD_INFO_ACTIVITY:
+                        ClosableScrollView.postLocate(ClosableScrollView.SCROLL_FROM_TOUCH, v.getParent());
+                        break;
+
+                    default:
+                        break;
+
+                }
+
             }
 
             if (v instanceof EditText && (!hasFocus) && (!preInf.equals(currentInf)) && autoCommitOnLostFocus) {

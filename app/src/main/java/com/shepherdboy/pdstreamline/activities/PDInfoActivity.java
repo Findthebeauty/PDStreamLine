@@ -41,6 +41,7 @@ import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.utils.ScanEventReceiver;
 import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
+import com.shepherdboy.pdstreamline.view.ClosableScrollView;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 
 import java.util.ArrayList;
@@ -50,6 +51,9 @@ public class PDInfoActivity extends AppCompatActivity {
 
     private static final int ADD_TIMESTREAM_LAYOUT = 1;
     private static final int REMOVE_TIMESTREAM_LAYOUT = 2;
+
+    private static final int SHOW_PRODUCT_BY_CODE = 10;
+    private static final int SHOW_PRODUCT_BY_INSTANCE = 11;
 
     private static Handler showHandler;
     private static String productToShow;
@@ -61,11 +65,16 @@ public class PDInfoActivity extends AppCompatActivity {
     private static String[] textArray = new String[]{"生产日期:", "坐标:", "库存:"};
 
     private static LinearLayout topTimestreamView;
+    private static TimestreamCombinationView nextTrigger;
     private static EditText topDOPEditText,productCodeEditText,productNameEditText,
             productEXPEditText,productSpecEditText;
     public static Button scanner,productEXPTimeUnitButton;
 
     private static Activity activity;
+    private static TextView tail;
+
+    private static DraggableLinearLayout dragLayout;
+    private static ClosableScrollView scrollView;
 
     /**
      * 启动PDInfoActivity活动并加载传入条码对应的商品，如果传入空值，则尝试加载上次加载过的商品--currentProduct
@@ -77,6 +86,23 @@ public class PDInfoActivity extends AppCompatActivity {
         MyApplication.getContext().startActivity(intent);
         if(code == null) return;
         productToShow = code;
+    }
+
+    public static void postShowProduct(String after) {
+
+        postMessage(SHOW_PRODUCT_BY_CODE, after);
+    }
+
+    private static void postMessage(int what, Object obj) {
+
+        Message msg = showHandler.obtainMessage();
+        msg.what = what;
+        msg.obj = obj;
+        showHandler.sendMessage(msg);
+    }
+
+    public static void postLoadProduct(Product currentProduct) {
+        postMessage(SHOW_PRODUCT_BY_INSTANCE, currentProduct);
     }
 
     @Override
@@ -93,7 +119,19 @@ public class PDInfoActivity extends AppCompatActivity {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
 
-                    searchNext((String) msg.obj);
+                    switch (msg.what) {
+
+                        case SHOW_PRODUCT_BY_CODE:
+
+                            searchNext((String) msg.obj);
+                            break;
+
+                        case SHOW_PRODUCT_BY_INSTANCE:
+
+                            loadProduct((Product) msg.obj);
+                            break;
+
+                    }
                 }
             };
 
@@ -111,16 +149,16 @@ public class PDInfoActivity extends AppCompatActivity {
         }
     }
 
-    public static Handler getShowHandler() {
-
-        return showHandler;
-    }
-
     private void initActivity() {
 
 //        ActivityInfoChangeWatcher.init();
         MyApplication.activityIndex = PD_INFO_ACTIVITY;
-        draggableLinearLayout = findViewById(R.id.parent);
+
+        dragLayout = findViewById(R.id.parent);
+        draggableLinearLayout = dragLayout;
+        scrollView = findViewById(R.id.closableScrollView);
+        MyApplication.closableScrollView = scrollView;
+
         productCodeEditText = findViewById(R.id.product_code);
         productNameEditText = findViewById(R.id.product_name);
         productEXPEditText = findViewById(R.id.product_exp);
@@ -176,8 +214,11 @@ public class PDInfoActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_pdinfo);
         MyApplication.initActionBar(getSupportActionBar());
+
+
 
         watcher = new ActivityInfoChangeWatcher(PD_INFO_ACTIVITY);
     }
@@ -195,7 +236,7 @@ public class PDInfoActivity extends AppCompatActivity {
         ScanEventReceiver.show(scanResult.trim());
 
     }
-    public static void loadProduct(Product product) {
+    public void loadProduct(Product product) {
 
         watcher.setShouldWatch(false);
 
@@ -218,13 +259,14 @@ public class PDInfoActivity extends AppCompatActivity {
         watcher.watch(productEXPTimeUnitButton);
 
         loadTimestreams(timeStreams);
+        ProductLoader.refreshTailHeight(this, draggableLinearLayout, tail);
 
         if(timeStreams.size() > 0) DraggableLinearLayout.selectAll(topDOPEditText);
 
         watcher.setShouldWatch(true);
     }
 
-    private static void loadTimestreams(LinkedHashMap<String, Timestream> timeStreams) {
+    private void loadTimestreams(LinkedHashMap<String, Timestream> timeStreams) {
 
 //        LinearLayout timestreamView;
 //        int timestreamViewIndex = 0;
@@ -318,16 +360,26 @@ public class PDInfoActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    private static void initTimestreamView(LinkedHashMap<String, Timestream> timestreams) {
+    private void initTimestreamView(LinkedHashMap<String, Timestream> timestreams) {
 
         DraggableLinearLayout.setLayoutChanged(true);
 
         topTimestreamView = null;
         topDOPEditText = null;
 
-        draggableLinearLayout.addView(ProductLoader.prepareNext(PD_INFO_ACTIVITY,
-                currentProduct.getProductCode(), draggableLinearLayout));
-        ProductLoader.initCellBody(draggableLinearLayout,timestreams,0,currentProduct.getProductCode());
+        if (nextTrigger != null)
+            draggableLinearLayout.removeView(nextTrigger);
+        nextTrigger = (TimestreamCombinationView) ProductLoader.prepareNext(PD_INFO_ACTIVITY,
+                currentProduct.getProductCode(), draggableLinearLayout);
+        draggableLinearLayout.addView(nextTrigger, draggableLinearLayout.getChildCount() - 1);
+
+        if (tail == null) {
+            tail = ProductLoader.prepareTailView(this, draggableLinearLayout);
+            draggableLinearLayout.addView(tail);
+        }
+
+        ProductLoader.initCellBody(PD_INFO_ACTIVITY,
+                draggableLinearLayout,timestreams,0,currentProduct.getProductCode());
 //        // 根据根view的childCount计算timestreamView的数量
 //        int timestreamViewCount = draggableLinearLayout.getChildCount() - 1;
 //
@@ -417,6 +469,10 @@ public class PDInfoActivity extends AppCompatActivity {
 
                 Timestream rmTs = MyApplication.unloadTimestream((LinearLayout) releasedChild);
 
+                if (rmTs == null) {
+                    draggableLinearLayout.putBack(releasedChild);
+                    return;
+                }
                 PDInfoWrapper.deleteTimestream(MyApplication.sqLiteDatabase, rmTs.getId());
 
                 currentProduct.getTimeStreams().remove(rmTs.getId());
@@ -515,6 +571,7 @@ public class PDInfoActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
 
+        MyApplication.closableScrollView = null;
         //暂停时将改动的商品信息保存到数据库,全局
         new Thread() {
 

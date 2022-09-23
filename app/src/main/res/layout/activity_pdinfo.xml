@@ -114,7 +114,8 @@
             app:layout_constraintTop_toTopOf="@id/spec_measure"
             app:layout_constraintBottom_toBottomOf="@id/spec_measure"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
-    <ScrollView
+    <com.shepherdboy.pdstreamline.view.ClosableScrollView
+        android:id="@+id/closableScrollView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -202,6 +203,6 @@
         </com.shepherdboy.pdstreamline.view.DraggableLinearLayout>
 
 
-    </ScrollView>
+    </com.shepherdboy.pdstreamline.view.ClosableScrollView>
 
 </LinearLayout>

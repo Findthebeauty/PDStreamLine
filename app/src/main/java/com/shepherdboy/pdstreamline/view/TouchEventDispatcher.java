@@ -30,13 +30,13 @@ public class TouchEventDispatcher {
         return radios == 0 || (k < Math.tan(Math.toRadians(degree)) && radios < 50);
     }
 
-    public static void onTouchEvent(MotionEvent ev) {
+    public static void onTouchEvent(ClosableScrollView scrollView, MotionEvent ev) {
 
         if (ev.getActionMasked() == MotionEvent.ACTION_UP || ev.getActionMasked() == MotionEvent.ACTION_DOWN )
             directionConfirmed = false;
 
-        float dx = ClosableScrollView.getDeltaX();
-        float dy = ClosableScrollView.getDeltaY();
+        float dx = scrollView.getDeltaX();
+        float dy = scrollView.getDeltaY();
 
         if (dx + dy > 0) {
 

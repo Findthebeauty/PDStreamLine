@@ -45,7 +45,7 @@ public class ScanEventReceiver extends BroadcastReceiver {
 
         // 查询信息
         MyApplication.currentProduct = PDInfoWrapper.getProduct(productCode, MyApplication.sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
-        PDInfoActivity.loadProduct(MyApplication.currentProduct);
+        PDInfoActivity.postLoadProduct(MyApplication.currentProduct);
 
     }
 }

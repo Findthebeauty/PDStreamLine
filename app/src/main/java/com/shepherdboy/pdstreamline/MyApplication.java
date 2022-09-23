@@ -39,10 +39,12 @@ import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
+import com.shepherdboy.pdstreamline.beanview.ProductLoader;
 import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
 import com.shepherdboy.pdstreamline.dao.HttpDao;
 import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
+import com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
@@ -106,6 +108,7 @@ public class MyApplication extends Application {
     public static Set<Handler> handlers = new HashSet<>();
 
     public static DraggableLinearLayout draggableLinearLayout;
+    public static ClosableScrollView closableScrollView;
 
     public static Product currentProduct;
 
@@ -296,8 +299,9 @@ public class MyApplication extends Application {
 
                     clickCount = 0;
 
-                    if((!ClosableScrollView.isFlingFinished()) || !TouchEventDispatcher.validateDragRange(
-                            ClosableScrollView.getDeltaX(), ClosableScrollView.getDeltaY(),90d)) return;
+                    if(closableScrollView != null &&
+                            ((!closableScrollView.isFlingFinished()) || !TouchEventDispatcher.validateDragRange(
+                                    closableScrollView.getDeltaX(), closableScrollView.getDeltaY(),90d))) return;
 
                     draggableLinearLayout.setLongClicking(true);
                     onLongClick();
@@ -535,11 +539,11 @@ public class MyApplication extends Application {
 
                 if (product == null) {
                     currentProduct.setProductName("新商品，请输入商品名");
-                    PDInfoActivity.loadProduct(currentProduct);
+                    PDInfoActivity.postLoadProduct(currentProduct);
                     break;
                 }
 
-                PDInfoActivity.loadProduct(product);
+                PDInfoActivity.postLoadProduct(product);
                 break;
 
             case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
@@ -555,7 +559,6 @@ public class MyApplication extends Application {
                 break;
 
         }
-
     }
 
     public static void deleteTimestream(String id) {
@@ -911,9 +914,7 @@ public class MyApplication extends Application {
 
                     if (getAllProducts().containsKey(after)) {
 
-                        Message msg = Message.obtain();
-                        msg.obj = after;
-                        PDInfoActivity.getShowHandler().sendMessage(msg);
+                        PDInfoActivity.postShowProduct(after);
                     }
                     break;
 
@@ -941,6 +942,7 @@ public class MyApplication extends Application {
 
                     currentProduct.setProductSpec(after);
                     currentProduct.setUpdated(false);
+                    synchronize(null, filedIndex, activityIndex);
                     break;
 
 
@@ -979,6 +981,8 @@ public class MyApplication extends Application {
                         }
 
                     }
+                    MidnightTimestreamManagerService.basket.remove(timestream.getId());
+                    timestream.setInBasket(false);
                     synchronize(timestream, filedIndex, activityIndex);
                     break;
 
@@ -1050,7 +1054,7 @@ public class MyApplication extends Application {
 
     public static void setTimeStreamViewOriginalBackground(LinearLayout timestreamLinearLayout) {
 
-        Timestream ts = onShowTimeStreamsHashMap.get(timestreamLinearLayout.getId());
+//        Timestream ts = onShowTimeStreamsHashMap.get(timestreamLinearLayout.getId());
 
 
         switch (activityIndex) {
@@ -1067,7 +1071,7 @@ public class MyApplication extends Application {
 
 //                int timeStreamStateCode = 0;
 
-                if (ts == null) return;
+//                if (ts == null) return;
 
                 timestreamLinearLayout.setBackground(
                         originalBackgroundHashMap.get(timestreamLinearLayout.getId()));
@@ -1115,6 +1119,15 @@ public class MyApplication extends Application {
                 }
                 break;
 
+            case PRODUCT_SPEC:
+
+                if (allProducts != null) {
+                    allProducts.put(currentProduct.getProductCode(), currentProduct);
+                }
+                ProductLoader.loadTimestreams(activityIndex, draggableLinearLayout,
+                        currentProduct.getTimeStreams(), 0);
+                break;
+
             case TIMESTREAM_DOP:
 
                 synchronizeSingleTimestream(activityIndex, timestream);
@@ -1147,7 +1160,7 @@ public class MyApplication extends Application {
 
         ));
 
-        if (draggableLinearLayout != null) {
+        if (draggableLinearLayout != null && timestream.getBoundLayoutId() != null) {
 
             View view = draggableLinearLayout.findViewById(Integer.parseInt(timestream.getBoundLayoutId()));
 
@@ -1158,7 +1171,7 @@ public class MyApplication extends Application {
                                 timestream.getTimeStreamStateCode()
                         ));
 
-            } else {
+            } else if (view != null){
 
                 view.setBackgroundColor(getColorByTimestreamStateCode(timestream.getTimeStreamStateCode()));
             }

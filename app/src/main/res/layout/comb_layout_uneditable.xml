@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/combination"
+    android:padding="1sp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:id="@+id/buy_background"
+        android:orientation="vertical"
+        android:alpha="0.5"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/buy_pd_name"/>
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:id="@+id/give_away_background"
+        android:orientation="vertical"
+        android:alpha="0.5"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/give_away_pd_name"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+    <TextView
+        android:id="@+id/buy_pd_name"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="1dp"
+        android:minLines="2"
+        android:padding="1dp"
+        android:textSize="15sp"
+        android:gravity="center_vertical"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/buy_dop_measure"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/give_away_pd_name"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="1dp"
+        android:minLines="2"
+        android:padding="1dp"
+        android:textSize="15sp"
+        android:gravity="center_vertical"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/buy_dop_measure"
+        app:layout_constraintTop_toBottomOf="@id/buy_pd_name"
+        android:visibility="visible"
+        />
+
+    <EditText
+        android:id="@+id/buy_dop_measure"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:background="@null"
+        android:inputType="number"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="1dp"
+        android:padding="1dp"
+        android:text="@string/empty_date"
+        android:visibility="invisible"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:textSize="20sp"
+        app:layout_constraintRight_toLeftOf="@id/inventory_measure"
+        app:layout_constraintBottom_toBottomOf="@+id/buy_pd_name"
+        app:layout_constraintTop_toTopOf="@+id/buy_pd_name" />
+    <TextView
+        android:id="@+id/buy_dop"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:padding="1dp"
+        android:textSize="20sp"
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="@+id/buy_pd_name"
+        app:layout_constraintTop_toTopOf="@+id/buy_pd_name"
+        app:layout_constraintLeft_toLeftOf="@id/buy_dop_measure"
+        app:layout_constraintRight_toRightOf="@id/buy_dop_measure"/>
+
+    <EditText
+        android:id="@+id/inventory_measure"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        app:layout_constraintRight_toLeftOf="@id/unit"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="@string/default_inventory"
+        android:textSize="17sp"
+        android:visibility="invisible"
+        android:focusable="false"/>
+
+    <EditText
+        android:id="@+id/inventory"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:gravity="center"
+        android:textSize="17sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="@id/inventory_measure"
+        app:layout_constraintRight_toRightOf="@id/inventory_measure"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="2"
+        android:id="@+id/unit"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:layout_marginEnd="2dp"
+        android:layout_marginStart="1dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <TextView
+        android:id="@+id/give_away_dop"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="3dp"
+        android:gravity="center"
+        android:padding="1dp"
+        android:textSize="15sp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="@id/buy_dop_measure"
+        app:layout_constraintRight_toRightOf="@id/buy_dop_measure"
+        app:layout_constraintTop_toBottomOf="@id/buy_pd_name"/>
+
+    <TextView
+        android:id="@+id/give_away_flag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="0.45"
+        android:rotation="-38"
+        android:text="赠"
+        android:textAlignment="center"
+        android:textColor="@color/orange"
+        android:textSize="30sp"
+        app:layout_constraintLeft_toLeftOf="@id/buy_dop_measure"
+        app:layout_constraintRight_toRightOf="@id/buy_dop_measure"
+        app:layout_constraintBottom_toBottomOf="@id/give_away_dop"
+        app:layout_constraintTop_toTopOf="@id/give_away_dop"
+        android:visibility="visible"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

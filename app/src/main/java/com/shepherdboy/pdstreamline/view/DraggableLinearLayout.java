@@ -171,7 +171,13 @@ public class DraggableLinearLayout extends LinearLayout {
     public void putBack(View view){
 
         Point originalPoint = MyApplication.originalPositionHashMap.get(view.getId());
-        viewDragHelper.settleCapturedViewAt(originalPoint.x, originalPoint.y);
+
+        try {
+
+            viewDragHelper.settleCapturedViewAt(originalPoint.x, originalPoint.y);
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        }
 
 //        Timestream ts = MyApplication.onShowTimeStreamsHashMap.get(view.getId());
 //        MyApplication.setTimeStreamViewOriginalBackgroundColor(ts);
@@ -326,12 +332,12 @@ public class DraggableLinearLayout extends LinearLayout {
 
             if(event.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
-                ClosableScrollView.setOldX(event.getRawX());
-                ClosableScrollView.setOldY(event.getRawY());
+                ((ClosableScrollView) p).setOldX(event.getRawX());
+                ((ClosableScrollView) p).setOldY(event.getRawY());
             }
 
-            ClosableScrollView.setNewX(event.getRawX());
-            ClosableScrollView.setNewY(event.getRawY());
+            ((ClosableScrollView) p).setNewX(event.getRawX());
+            ((ClosableScrollView) p).setNewY(event.getRawY());
 
         }
         if (draggableView != null) {
@@ -378,16 +384,16 @@ public class DraggableLinearLayout extends LinearLayout {
         ViewParent p =  getParent();
         if (p instanceof ClosableScrollView) {
 
-            TouchEventDispatcher.onTouchEvent(event);
+            TouchEventDispatcher.onTouchEvent((ClosableScrollView)p, event);
             if(event.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
-                ClosableScrollView.setOldX(event.getRawX());
-                ClosableScrollView.setOldY(event.getRawY());
+                ((ClosableScrollView) p).setOldX(event.getRawX());
+                ((ClosableScrollView) p).setOldY(event.getRawY());
                 if (draggableView != null) setFocus(draggableView);
             }
 
-            ClosableScrollView.setNewX(event.getRawX());
-            ClosableScrollView.setNewY(event.getRawY());
+            ((ClosableScrollView) p).setNewX(event.getRawX());
+            ((ClosableScrollView) p).setNewY(event.getRawY());
 
         }
 

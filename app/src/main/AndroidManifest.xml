@@ -25,11 +25,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
-        android:theme="@style/Theme.PDStreamLine">
+        android:theme="@style/customAnimation">
         <activity
             android:name=".activities.TraversalTimestreamActivity"
             android:exported="true"
-            android:launchMode="singleTask"
+            android:launchMode="singleInstance"
             android:windowSoftInputMode="adjustNothing"/>
         <activity
             android:name=".activities.ScanActivity"
@@ -57,7 +57,7 @@
         <activity
             android:name=".activities.PDInfoActivity"
             android:exported="true"
-            android:launchMode="singleTask"
+            android:launchMode="singleInstance"
             android:windowSoftInputMode="adjustNothing"/>
         <activity
             android:name=".utils.ErrorInfoDisplayActivity"

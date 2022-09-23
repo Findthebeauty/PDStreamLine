@@ -1,5 +1,7 @@
 package com.shepherdboy.pdstreamline.beanview;
 
+import static com.shepherdboy.pdstreamline.MyApplication.POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY;
+import static com.shepherdboy.pdstreamline.MyApplication.POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.combinationHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowCombsHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
@@ -31,7 +33,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
     private LinearLayout giveawayBackground;
     private TextView buyProductNameTv;
     private TextView giveawayProductNameTv;
-    private EditText buyDOPEt;
+    private TextView buyDOPEt;
     private EditText inventory;
     private TextView unitTv;
     private TextView giveawayDOPTv;
@@ -41,25 +43,37 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
     private String timestreamId;
 
     public TimestreamCombinationView(int activityIndex, Context context, Timestream timestream) {
-        this(context);
+        this(activityIndex, context);
 
         bindData(activityIndex, timestream);
     }
 
-    public TimestreamCombinationView(Context context) {
+    public TimestreamCombinationView(int activityIndex, Context context) {
         super(context);
 
-        initView(context);
+        initView(activityIndex, context);
     }
 
-    private void initView(Context context) {
+    private void initView(int activityIndex, Context context) {
 
         setId(View.generateViewId());
         setFocusable(true);
         setFocusableInTouchMode(true);
 
         LayoutInflater inflater = LayoutInflater.from(context);
-        ConstraintLayout combination = inflater.inflate(R.layout.comb_layout, null).findViewById(R.id.combination);
+        ConstraintLayout combination;
+        switch (activityIndex) {
+
+            case POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY:
+            case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
+                combination = inflater.inflate(R.layout.comb_layout_uneditable, null).findViewById(R.id.combination);
+                break;
+
+            default:
+                combination = inflater.inflate(R.layout.comb_layout, null).findViewById(R.id.combination);
+                break;
+
+        }
 
         ConstraintLayout.LayoutParams lp = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         this.setPadding(1,0,1,0);
@@ -184,7 +198,17 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
             case "":
 
                 buyProductNameTv.setText(timestream.getProductName());
-                buyDOPEt.setText(DateUtil.typeMach(timestream.getProductDOP()).substring(0,10));
+                switch (activityIndex) {
+
+                    case POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY:
+                    case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
+                        buyDOPEt.setText(DateUtil.typeMach(timestream.getProductDOP()).substring(5,10));
+                        break;
+
+                    default:
+                        buyDOPEt.setText(DateUtil.typeMach(timestream.getProductDOP()).substring(0,10));
+                        break;
+                }
                 inventory.setText(timestream.getProductInventory());
                 unitTv.setText(MyApplication.getAllProducts().get(timestream.getProductCode()).getProductSpec());
 
@@ -254,19 +278,37 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
             onShowTimeStreamsHashMap.put(buyBackground.getId(), timestreamCombination.getBuyTimestream()); //一个combination有3个背景，整体的、商品和赠品的，3个背景都要记录
             onShowTimeStreamsHashMap.put(giveawayBackground.getId(), timestreamCombination.getGiveawayTimestream()); //一个combination有3个背景，整体的、商品和赠品的，3个背景都要记录
 
-            watcher.watch(buyDOPEt,timestreamCombination.getBuyTimestream(),MyApplication.TIMESTREAM_DOP,true);
+            switch (activityIndex) {
+
+                case POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY:
+                case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
+                    break;
+
+                default:
+                    watcher.watch((EditText) buyDOPEt,timestreamCombination.getBuyTimestream(),MyApplication.TIMESTREAM_DOP,true);
+                    break;
+            }
             watcher.watch(inventory,timestreamCombination.getBuyTimestream(),MyApplication.TIMESTREAM_INVENTORY,true);
 
         } else {
 
-            watcher.watch(buyDOPEt,timestream,MyApplication.TIMESTREAM_DOP,true);
+            switch (activityIndex) {
+
+                case POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY:
+                case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
+                    break;
+
+                default:
+                    watcher.watch((EditText) buyDOPEt,timestream,MyApplication.TIMESTREAM_DOP,true);
+                    break;
+            }
             watcher.watch(inventory,timestream,MyApplication.TIMESTREAM_INVENTORY,true);
         }
 
     }
 
     public EditText getBuyDOPEt() {
-        return buyDOPEt;
+        return (EditText) buyDOPEt;
     }
 
     public TextView getBuyProductNameTv() {

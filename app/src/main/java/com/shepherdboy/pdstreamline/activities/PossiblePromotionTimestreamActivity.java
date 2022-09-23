@@ -330,7 +330,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
     /**添加单一timestreamView到父布局中*/
     private static void addTimestreamView(LinearLayout rootView) {
 
-        rootView.addView(new TimestreamCombinationView(rootView.getContext()));
+        rootView.addView(new TimestreamCombinationView(POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY, rootView.getContext()));
 //        Context context = rootView.getContext();
 //        LinearLayout childView = new LinearLayout(context);
 //        rootView.addView(childView, 1 + MyApplication.originalPositionHashMap.size());

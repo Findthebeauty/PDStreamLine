@@ -1,11 +1,16 @@
 package com.shepherdboy.pdstreamline.beanview;
 
+import static com.shepherdboy.pdstreamline.MyApplication.closableScrollView;
 import static com.shepherdboy.pdstreamline.MyApplication.currentProduct;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 
+import android.app.Activity;
+import android.graphics.Rect;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.shepherdboy.pdstreamline.MyApplication;
@@ -48,7 +53,7 @@ public class ProductLoader {
 
         LinkedHashMap<String, Timestream> timestreams = product.getTimeStreams();
 
-        initCellBody(container, timestreams, index, product.getProductCode());
+        initCellBody(activityIndex, container, timestreams, index, product.getProductCode());
 
         loadTimestreams(activityIndex, container, timestreams, index);
     }
@@ -79,7 +84,11 @@ public class ProductLoader {
      * @param index
      * @param productCode
      */
-    public static void initCellBody(ViewGroup container, LinkedHashMap<String, Timestream> timestreams, int index, String productCode) {
+    public static void initCellBody(int activityIndex,
+                                    ViewGroup container,
+                                    LinkedHashMap<String, Timestream> timestreams,
+                                    int index,
+                                    String productCode) {
 
         int startIndex = index;
         int combCount = 0;
@@ -108,7 +117,7 @@ public class ProductLoader {
 
         while (combCount - 1 < timestreams.size()) {
 
-            container.addView(new TimestreamCombinationView(container.getContext()), startIndex);
+            container.addView(new TimestreamCombinationView(activityIndex, container.getContext()), startIndex);
             combCount++;
         }
     }
@@ -116,7 +125,7 @@ public class ProductLoader {
     public static View prepareNext(int activityIndex, String productCode, DraggableLinearLayout view) {
 
         TimestreamCombinationView nextTrigger =
-                new TimestreamCombinationView(view.getContext());
+                new TimestreamCombinationView(activityIndex, view.getContext());
 
         nextTrigger.setProductCode(productCode);
 
@@ -163,5 +172,32 @@ public class ProductLoader {
         });
 
         return nextTrigger;
+    }
+
+    public static TextView prepareTailView(Activity activity, DraggableLinearLayout draggableLinearLayout) {
+
+        Rect outRect = new Rect();
+        activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(outRect);
+
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                outRect.height());
+
+        TextView textView = new TextView(draggableLinearLayout.getContext());
+        textView.setId(View.generateViewId());
+        textView.setLayoutParams(lp);
+        return textView;
+    }
+
+    public static void refreshTailHeight(Activity activity, DraggableLinearLayout draggableLinearLayout, TextView tail) {
+
+        if(closableScrollView == null) return;
+        DisplayMetrics dm = new DisplayMetrics();
+
+        activity.getWindowManager().getDefaultDisplay().getMetrics(dm);
+
+        int lastViewHeight = (draggableLinearLayout.getChildAt(0)).getHeight();
+
+        int height = dm.heightPixels - MyApplication.closableScrollView.getOriginalY() - lastViewHeight * 2;
+        tail.setHeight(height);
     }
 }

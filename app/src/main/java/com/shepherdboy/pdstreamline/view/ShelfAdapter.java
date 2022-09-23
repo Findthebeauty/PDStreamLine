@@ -76,6 +76,10 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.ViewHolder> 
         return currentShelf;
     }
 
+    public static void setCurrentShelf(Shelf currentShelf) {
+        ShelfAdapter.currentShelf = currentShelf;
+    }
+
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 

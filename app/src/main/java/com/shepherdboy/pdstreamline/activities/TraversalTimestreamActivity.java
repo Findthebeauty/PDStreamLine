@@ -28,11 +28,9 @@ import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerSer
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -52,6 +50,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.activities.transaction.Streamline;
 import com.shepherdboy.pdstreamline.beans.Cell;
@@ -88,11 +89,11 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
     private static ClosableScrollView container;
     private static DraggableLinearLayout shelfLayout;
+    private static ClosableScrollView scrollView;
     private static ActivityInfoChangeWatcher watcher;
 
     private Shelf tempShelf;//货架信息改变时临时保存改变后的信息，用于回滚操作
     private Shelf defaultShelf;
-    private static Shelf currentShelf;
     private static Row currentRow;
     private static ArrayList<Shelf> shelfList;
     private static ArrayList<String> classifyList;
@@ -169,10 +170,10 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
                     draggableLinearLayout.putBack(releasedChild);
                     return;
                 }
-
                 deleteTimestream(ts.getId());
                 ts.setInBasket(false);
                 basket.remove(ts.getId());
+                DraggableLinearLayout.setFocus(headViews.get(ts.getProductCode()));
                 break;
 
             case DRAG_RIGHT:
@@ -521,18 +522,38 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         if (layoutIndex == LAYOUT_SHOW_SHELF_PRODUCT) {
 
-            showShelf(currentShelf);
+            showShelf(ShelfAdapter.getCurrentShelf());
             return;
         }
 
         if (layoutIndex == LAYOUT_MODIFY_SHELF_INFO) {
 
-            modifyShelf(currentShelf);
+            modifyShelf(ShelfAdapter.getCurrentShelf());
             return;
         }
 
         layoutIndex = LAYOUT_SHELF_LIST;
         initShowShelfList(TraversalTimestreamActivity.this);
+        if (intentProductCode != null) {
+
+            String shelvesIndexes = MyApplication.getAllProducts().get(intentProductCode).getShelvesIndexes();
+
+            Shelf shelf = null;
+            if (shelvesIndexes != null) {
+                ArrayList<String> shelfIds = JSON.parseObject(shelvesIndexes, new TypeReference<ArrayList<String>>() {
+                });
+
+                if (shelfIds != null && shelfIds.size() > 0){
+                    shelf = ShelfDAO.getShelf(shelfIds.get(0));
+                }
+            }
+
+            if(shelf == null) {
+                shelf = defaultShelf;
+            }
+
+            showShelf(shelf);
+        }
     }
 
     private void cancelModify(Shelf shelf) {
@@ -552,15 +573,15 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     private void showShelf(Shelf shelf) {
 
         //todo 展示货架
-        currentShelf = shelf;
+        ShelfAdapter.setCurrentShelf(shelf);
 
         if (layoutIndex == LAYOUT_SHOW_SHELF_PRODUCT) {
 
             activityIndex = TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
             watcher = ActivityInfoChangeWatcher.getActivityWatcher(TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF);
             draggableLinearLayout = shelfLayout;
+            MyApplication.closableScrollView = scrollView;
             postLoadViews();
-            postLocate();
 
         } else {
 
@@ -569,6 +590,8 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
             watcher.setShouldWatch(false);
             showRow(draggableLinearLayout, 1); //todo 货架行的遍历方式
         }
+
+        postLocate();
         DraggableLinearLayout.setLayoutChanged(true);
         watcher.setShouldWatch(true);
 
@@ -581,6 +604,8 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         watcher = new ActivityInfoChangeWatcher(activityIndex);
         shelfLayout = TraversalTimestreamActivity.this.findViewById(R.id.row);
         draggableLinearLayout = shelfLayout;
+        scrollView = findViewById(R.id.closableScrollView);
+        MyApplication.closableScrollView = scrollView;
         container = (ClosableScrollView) shelfLayout.getParent();
         newViews.clear();
         headViews.clear();
@@ -594,8 +619,11 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         if (combinationHashMap == null)
         combinationHashMap = PDInfoWrapper.getTimestreamCombinations(sqLiteDatabase);
 
-        if(activityIndex == TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF)
-        prepareTailView(draggableLinearLayout);
+        if(activityIndex == TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF) {
+            tail = ProductLoader.prepareTailView(this, draggableLinearLayout);
+            draggableLinearLayout.addView(tail, draggableLinearLayout.getChildCount() - 1);
+        }
+
 
         new Thread(new Runnable() {
             @Override
@@ -653,7 +681,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         loadFinished = true;
 
         if (prepareFinished)
-        refreshTailHeight();
+        ProductLoader.refreshTailHeight(this, draggableLinearLayout, tail);
 
         DraggableLinearLayout.setLayoutChanged(true);
     }
@@ -701,32 +729,6 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         }
 
         newViews.add(ProductLoader.prepareNext(TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF, cell.getProductCode(), view));
-    }
-
-    private void prepareTailView(DraggableLinearLayout draggableLinearLayout) {
-
-        Rect outRect = new Rect();
-        getWindow().getDecorView().getWindowVisibleDisplayFrame(outRect);
-
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                outRect.height());
-
-        tail = new TextView(draggableLinearLayout.getContext());
-        tail.setId(View.generateViewId());
-        tail.setLayoutParams(lp);
-        draggableLinearLayout.addView(tail,draggableLinearLayout.getChildCount() - 1);
-    }
-
-    private void refreshTailHeight() {
-
-        DisplayMetrics dm = new DisplayMetrics();
-
-        this.getWindowManager().getDefaultDisplay().getMetrics(dm);//this指当前activity
-
-        int lastViewHeight = (draggableLinearLayout.getChildAt(0)).getHeight();
-
-        int height = dm.heightPixels - ClosableScrollView.getOriginalY() - lastViewHeight * 2;
-        tail.setHeight(height);
     }
 
     /**
@@ -796,6 +798,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
         intentProductCode = code;
         c.startActivity(i);
+
     }
 
     @Override
@@ -844,14 +847,14 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
                             case MSG_MODIFY_SHELF:
 
-                                currentShelf = (Shelf) msg.obj;
-                                modifyShelf(currentShelf);
+                                Shelf shelf = (Shelf) msg.obj;
+                                modifyShelf(shelf);
                                 break;
 
                             case MSG_SHOW_SHELF:
 
-                                currentShelf = (Shelf) msg.obj;
-                                showShelf(currentShelf);
+                                shelf = (Shelf) msg.obj;
+                                showShelf(shelf);
                                 break;
 
                             case MSG_LOAD_VIEWS:
@@ -867,7 +870,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 
                             case MSG_REFRESH_TAIL_HEIGHT:
 
-                                refreshTailHeight();
+                                ProductLoader.refreshTailHeight(TraversalTimestreamActivity.this, draggableLinearLayout, tail);
                                 break;
 
                             case MSG_SYNC_PRODUCT:
@@ -901,6 +904,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
 //        if (layoutIndex == LAYOUT_SHOW_SHELF_PRODUCT) {
 //            container.removeView(shelfLayout);
 //        }
+        MyApplication.closableScrollView = null;
         super.onPause();
     }
 
@@ -928,7 +932,8 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         headViews.clear();
         combViews.clear();
         tail = null;
-        draggableLinearLayout = null;
+        shelfLayout = null;
+        scrollView = null;
         layoutIndex = LAYOUT_SHELF_LIST;
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
