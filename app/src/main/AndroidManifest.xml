@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission
         android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
         tools:ignore="ProtectedPermissions" />
@@ -24,13 +24,16 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:usesCleartextTraffic="true"
-        android:theme="@style/customAnimation">
+        android:theme="@style/customAnimation"
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name=".BaseActivity"
+            android:exported="false" />
         <activity
             android:name=".activities.TraversalTimestreamActivity"
             android:exported="true"
             android:launchMode="singleInstance"
-            android:windowSoftInputMode="adjustNothing"/>
+            android:windowSoftInputMode="adjustNothing" />
         <activity
             android:name=".activities.ScanActivity"
             android:configChanges="orientation|screenSize"
@@ -39,7 +42,7 @@
         <activity
             android:name=".activities.SettingActivity"
             android:exported="true"
-            android:launchMode="singleTask" />
+            android:launchMode="singleInstance" />
         <activity
             android:name=".activities.PromotionActivity"
             android:exported="true"
@@ -47,7 +50,7 @@
         <activity
             android:name=".activities.PossiblePromotionTimestreamActivity"
             android:exported="true"
-            android:launchMode="singleTask" />
+            android:launchMode="singleInstance" />
 
         <service
             android:name=".services.MidnightTimestreamManagerService"
@@ -58,15 +61,15 @@
             android:name=".activities.PDInfoActivity"
             android:exported="true"
             android:launchMode="singleInstance"
-            android:windowSoftInputMode="adjustNothing"/>
+            android:windowSoftInputMode="adjustNothing" />
         <activity
             android:name=".utils.ErrorInfoDisplayActivity"
             android:exported="true"
-            android:launchMode="singleTask" />
+            android:launchMode="singleInstance" />
         <activity
             android:name=".activities.MainActivity"
             android:exported="true"
-            android:launchMode="singleTask">
+            android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

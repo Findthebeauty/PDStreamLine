@@ -15,7 +15,6 @@ import static com.shepherdboy.pdstreamline.MyApplication.drawableFirstLevel;
 import static com.shepherdboy.pdstreamline.MyApplication.drawableSecondLevel;
 import static com.shepherdboy.pdstreamline.MyApplication.getContext;
 import static com.shepherdboy.pdstreamline.MyApplication.handlers;
-import static com.shepherdboy.pdstreamline.MyApplication.init;
 import static com.shepherdboy.pdstreamline.MyApplication.initActionBar;
 import static com.shepherdboy.pdstreamline.MyApplication.intentProductCode;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
@@ -46,7 +45,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
@@ -81,7 +79,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class TraversalTimestreamActivity extends AppCompatActivity {
+public class TraversalTimestreamActivity extends BaseActivity {
 
     private static int dragThreshold = 105;
     private static final int DRAG_LEFT = 200;
@@ -273,7 +271,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        init();
+//        init();
     }
 
     private void initShowShelfList(Context context) {
@@ -931,6 +929,7 @@ public class TraversalTimestreamActivity extends AppCompatActivity {
         newViews.clear();
         headViews.clear();
         combViews.clear();
+        ActivityInfoChangeWatcher.destroy(watcher);
         tail = null;
         shelfLayout = null;
         scrollView = null;

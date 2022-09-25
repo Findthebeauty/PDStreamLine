@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.shepherdboy.pdstreamline.MyApplication;
@@ -25,7 +24,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     //将未处理一场打印到界面上，全局
     final Thread.UncaughtExceptionHandler defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
@@ -51,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         MyApplication.initActionBar(getSupportActionBar());
@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        initActivity();
+//        initActivity();
 //
 //        //本地数据库应用外部保存位置，退出时
 //        tempDataBasePath = Environment.getExternalStorageDirectory() + "/Android/v2";
@@ -196,6 +196,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
 
+        ActivityManager.getInstance().removeAllExcept(MainActivity.this);
         MidnightTimestreamManagerService.actionStart(MainActivity.this);
 
         initActivity();

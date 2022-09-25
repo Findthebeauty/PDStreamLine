@@ -4,8 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.ViewGroup;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Timestream;
@@ -16,7 +14,7 @@ import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-public class PromotionActivity extends AppCompatActivity {
+public class PromotionActivity extends BaseActivity {
 
     private LinkedList<Timestream> oddments;
     private LinkedList<TimestreamCombination> combinations;

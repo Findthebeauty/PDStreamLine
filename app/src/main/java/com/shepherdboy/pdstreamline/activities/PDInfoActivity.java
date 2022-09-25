@@ -26,7 +26,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -47,7 +46,7 @@ import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-public class PDInfoActivity extends AppCompatActivity {
+public class PDInfoActivity extends BaseActivity {
 
     private static final int ADD_TIMESTREAM_LAYOUT = 1;
     private static final int REMOVE_TIMESTREAM_LAYOUT = 2;
@@ -356,7 +355,11 @@ public class PDInfoActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        watcher.destroy();
+        ActivityInfoChangeWatcher.destroy(watcher);
+
+        nextTrigger = null;
+        tail = null;
+
         super.onDestroy();
     }
 
@@ -369,8 +372,10 @@ public class PDInfoActivity extends AppCompatActivity {
 
         if (nextTrigger != null)
             draggableLinearLayout.removeView(nextTrigger);
+
         nextTrigger = (TimestreamCombinationView) ProductLoader.prepareNext(PD_INFO_ACTIVITY,
                 currentProduct.getProductCode(), draggableLinearLayout);
+
         draggableLinearLayout.addView(nextTrigger, draggableLinearLayout.getChildCount() - 1);
 
         if (tail == null) {

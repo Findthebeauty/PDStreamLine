@@ -735,9 +735,16 @@ public class MyApplication extends Application {
 
         onShowTimeStreamsHashMap.clear();
         clearOriginalInfo();
+
+        currentProduct = null;
+        intentProductCode = null;
+        draggableLinearLayout = null;
+        closableScrollView = null;
+
     }
 
     public static void clearOriginalInfo() {
+
         originalPositionHashMap.clear();
         originalBackgroundHashMap.clear();
 

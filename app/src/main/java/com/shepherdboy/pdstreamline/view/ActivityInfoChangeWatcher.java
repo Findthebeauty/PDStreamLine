@@ -409,12 +409,18 @@ public class ActivityInfoChangeWatcher {
     public static void destroyAll() {
 
         for(ActivityInfoChangeWatcher watcher : activityInfoChangeWatchers.values()) {
-            watcher.destroy();
+            destroy(watcher);
         }
         activityInfoChangeWatchers.clear();
     }
 
-    public void destroy() {
+    public static void destroy(ActivityInfoChangeWatcher watcher) {
+
+        if (watcher == null) return;
+
+        watcher.destroy();
+    }
+    private void destroy() {
 
         if (infoHandler != null) {
 

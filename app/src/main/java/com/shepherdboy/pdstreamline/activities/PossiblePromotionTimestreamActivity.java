@@ -26,8 +26,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Timestream;
@@ -43,7 +41,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
+public class PossiblePromotionTimestreamActivity extends BaseActivity {
 
     private static final int PICK_OUT = 1;
     private static final int DELETE = 2;
@@ -201,7 +199,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
         setContentView(R.layout.activity_possible_promotion_timestream);
         MyApplication.initActionBar(getSupportActionBar());
 
-        MyApplication.init();
+//        MyApplication.init();
         MyApplication.initDatabase(this);
 
         watcher = ActivityInfoChangeWatcher.getActivityWatcher(POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY);
@@ -314,7 +312,7 @@ public class PossiblePromotionTimestreamActivity extends AppCompatActivity {
      * */
     private static void initTimestreamsView(int timestreamsCount) {
 
-        MyApplication.init();
+//        MyApplication.init();
         DraggableLinearLayout.setLayoutChanged(true);
 
         int tsViewCount = draggableLinearLayout.getChildCount() - 1;

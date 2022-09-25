@@ -25,8 +25,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.shepherdboy.pdstreamline.MyApplication;
@@ -55,7 +53,7 @@ import java.util.List;
 /**
  *
  */
-public class SettingActivity extends AppCompatActivity {
+public class SettingActivity extends BaseActivity {
 
     public static final String AUTO_COMMIT_DELAY_TAG_NAME = "autoCommitDelayMs";
 
@@ -368,7 +366,7 @@ public class SettingActivity extends AppCompatActivity {
         instance = SettingActivity.this;
 
         MyApplication.initActionBar(getSupportActionBar());
-        MyApplication.init();
+//        MyApplication.init();
         MyApplication.initDatabase(this);
         draggableLinearLayout = findViewById(R.id.date_offset_setting_table);
         activityIndex = MyApplication.SETTING_ACTIVITY;
@@ -611,7 +609,7 @@ public class SettingActivity extends AppCompatActivity {
 
         int scopesCount = scopeList.size();
 
-        MyApplication.init();
+//        MyApplication.init();
         watcher.clearWatchers(SETTING_ACTIVITY);
 
         int scopesViewCount = draggableLinearLayout.getChildCount() - 1;
