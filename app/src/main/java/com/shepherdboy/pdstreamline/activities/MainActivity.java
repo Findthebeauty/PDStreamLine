@@ -1,5 +1,7 @@
 package com.shepherdboy.pdstreamline.activities;
 
+import static com.shepherdboy.pdstreamline.MyApplication.currentProduct;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -66,7 +68,7 @@ public class MainActivity extends BaseActivity {
             @Override
             public void uncaughtException(@NonNull Thread thread, @NonNull Throwable exception) {
 
-                MyApplication.saveChanges();
+                MyApplication.saveChanges(currentProduct);
 //                //将应用内部数据库拷贝到应用外部文件夹
 //                verifyPermissions(MainActivity.this);
 //                MyDatabaseHelper.copyDataBase(databasePath,

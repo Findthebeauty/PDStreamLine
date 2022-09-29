@@ -7,6 +7,7 @@ import android.util.Log;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
 
@@ -62,17 +63,22 @@ public class HttpDao {
 
                 Message msg = Message.obtain();
                 msg.what = ActivityInfoChangeWatcher.LAZY_LOAD;
+                Object[] result = new Object[2];
 
-                if (response.equals("null")) {
+                Product product = null;
+                if (!response.equals("null")) {
 
-                    msg.obj = null;
-                    ActivityInfoChangeWatcher.getActivityWatcher(activityIndex).infoHandler.sendMessage(msg);
-                    return;
+                    JSONObject object = JSON.parseObject(response);
+
+                    product = parseProduct(object);
+
+                    MyApplication.getAllProducts().put(productCode, product);
                 }
 
-                JSONObject object = JSON.parseObject(response);
+                result[0] = productCode;
+                result[1] = product;
+                msg.obj = result;
 
-                msg.obj = parseProduct(object);
                 ActivityInfoChangeWatcher.getActivityWatcher(activityIndex).infoHandler.sendMessage(msg);
 
             }
@@ -104,8 +110,8 @@ public class HttpDao {
         HttpURLConnection connection;
         connection = (HttpURLConnection) new URL(url).openConnection();
         connection.setRequestMethod("GET");
-        connection.setConnectTimeout(10000);
-        connection.setReadTimeout(10000);
+        connection.setConnectTimeout(3000);
+        connection.setReadTimeout(3000);
 //                    connection.addRequestProperty("ACCEPT","application/json");
 
         InputStream in = connection.getInputStream();

@@ -12,27 +12,22 @@ import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerSer
 import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.timestreamRestoreTimer;
 
 import android.content.Intent;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
-import android.text.InputType;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
+import com.shepherdboy.pdstreamline.binder.ProductObserver;
 import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
-import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 
@@ -46,12 +41,15 @@ public class PossiblePromotionTimestreamActivity extends BaseActivity {
     private static final int PICK_OUT = 1;
     private static final int DELETE = 2;
 
+    private LinkedList<Timestream> possiblePromotionTimestreams;
 
-    private static TextView[] textViews = new TextView[4]; //用于临时存放创建新timestream view时的textview的引用
+    private ActivityInfoChangeWatcher watcher;
 
-    private static LinkedList<Timestream> possiblePromotionTimestreams;
+    private static Handler handler;
 
-    private static ActivityInfoChangeWatcher watcher;
+    private static ProductObserver observer;
+
+    private static DraggableLinearLayout dragLayout;
 
     private void cancelTimerTask() {
 
@@ -97,7 +95,7 @@ public class PossiblePromotionTimestreamActivity extends BaseActivity {
     }
 
     public static void pickOutPossibleStaleTimestream() {
-        MyApplication.saveChanges();
+//        MyApplication.saveChanges();
         PDInfoWrapper.getAndMoveTimestreamByDate(sqLiteDatabase,
                 SettingActivity.settingInstance.getNextSalesmanCheckDay());
     }
@@ -138,6 +136,14 @@ public class PossiblePromotionTimestreamActivity extends BaseActivity {
             }
             Toast.makeText(draggableLinearLayout.getContext(), "新增临期商品已全部捡出!", Toast.LENGTH_LONG).show();
         }
+    }
+
+    public static ProductObserver getObserver() {
+        return observer;
+    }
+
+    public static DraggableLinearLayout getDragLayout() {
+        return dragLayout;
     }
 
     /** 根据左右拖动的距离返回int值*/
@@ -199,33 +205,60 @@ public class PossiblePromotionTimestreamActivity extends BaseActivity {
         setContentView(R.layout.activity_possible_promotion_timestream);
         MyApplication.initActionBar(getSupportActionBar());
 
-//        MyApplication.init();
+        MyApplication.init();
         MyApplication.initDatabase(this);
 
         watcher = ActivityInfoChangeWatcher.getActivityWatcher(POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY);
         if(watcher == null) watcher = new ActivityInfoChangeWatcher(POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY);
+
+        if (handler != null) handler.removeCallbacksAndMessages(null);
+        handler = new Handler() {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                loadTimestreams();
+            }
+        };
+        MyApplication.handlers.add(handler);
+    }
+
+    @Override
+    protected void onDestroy() {
+        dragLayout = null;
+        super.onDestroy();
+
+        MyApplication.productSubject.detach(observer);
+        observer = null;
     }
 
     private void initActivity() {
 
         MyApplication.activityIndex = POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY;
 
-        draggableLinearLayout = findViewById(R.id.parent);
+        if (dragLayout == null)
+        dragLayout = findViewById(R.id.parent);
+
+        draggableLinearLayout = dragLayout;
+
+        observer = new ProductObserver(POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY, handler);
+        MyApplication.productSubject.attach(observer);
+
+        loadTimestreams();
+    }
+
+    private void loadTimestreams() {
 
         possiblePromotionTimestreams = PDInfoWrapper.getStaleTimestreams(sqLiteDatabase,
-                MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM);
+                MyDatabaseHelper.TIMESTREAM_TO_CHECK);
 
         LinkedList<Timestream> uncheckedTimestreams = filterTimestream(possiblePromotionTimestreams);
 
         if (uncheckedTimestreams.size() == 0) {
 
             Toast.makeText(this,"所有临期商品已捡出!", Toast.LENGTH_LONG).show();
-//            this.startActivity(new Intent(this, MainActivity.class));
             PromotionActivity.actionStart();
             return;
         }
 
-        Log.d("unchecked", uncheckedTimestreams.size() + ": " + uncheckedTimestreams);
         initTimestreamsView(uncheckedTimestreams.size());
 
         loadTimestreams(uncheckedTimestreams);
@@ -270,40 +303,11 @@ public class PossiblePromotionTimestreamActivity extends BaseActivity {
 
             if (timestream.isInBasket()) continue;
 
-            combView = (TimestreamCombinationView) draggableLinearLayout.getChildAt(childViewIndex);
+            combView = (TimestreamCombinationView) dragLayout.getChildAt(childViewIndex);
             combView.bindData(POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY, timestream);
-//            loadTimestream(timestream, combView);
 
-//            MyApplication.onShowTimeStreamsHashMap.put(combView.getId(), timestream);
-//
-//            MyApplication.setTimeStreamViewOriginalBackground(timestream);
-//
-//            watcher.watch((EditText) (combView.getChildAt(2)), timestream, MyApplication.TIMESTREAM_INVENTORY, true);
             childViewIndex++;
         }
-    }
-
-    /**加载单一timestream到view中*/
-    private void loadTimestream(Timestream timestream, LinearLayout tsView) {
-
-        LinearLayout box;
-
-        TextView dopTV = (TextView) tsView.getChildAt(0);
-        TextView nameTV = (TextView) tsView.getChildAt(1);
-        EditText inventoryET = (EditText) tsView.getChildAt(2);
-
-        box = (LinearLayout) tsView.getChildAt(3);
-        TextView codeTV = (TextView) box.getChildAt(0);
-        TextView crdTV = (TextView) box.getChildAt(1);
-
-        dopTV.setText(DateUtil.typeMach(timestream.getProductDOP()).substring(5,10));
-        nameTV.setText(timestream.getProductName());
-        inventoryET.setText(timestream.getProductInventory());
-        codeTV.setText(timestream.getShortCode());
-        crdTV.setText(timestream.getProductCoordinate());
-
-        timestream.setBoundLayoutId(tsView.getId() + "");
-
     }
 
     /**根据timestream的数量预先生成timestreamView
@@ -313,107 +317,24 @@ public class PossiblePromotionTimestreamActivity extends BaseActivity {
     private static void initTimestreamsView(int timestreamsCount) {
 
 //        MyApplication.init();
-        DraggableLinearLayout.setLayoutChanged(true);
+        dragLayout.setLayoutChanged(true);
 
-        int tsViewCount = draggableLinearLayout.getChildCount() - 1;
+        int tsViewCount = dragLayout.getChildCount() - 1;
 
         while (tsViewCount < timestreamsCount) {
 
-            addTimestreamView(draggableLinearLayout);
+            addTimestreamView(dragLayout);
             tsViewCount++;
         }
-
     }
 
     /**添加单一timestreamView到父布局中*/
     private static void addTimestreamView(LinearLayout rootView) {
 
         rootView.addView(new TimestreamCombinationView(POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY, rootView.getContext()));
-//        Context context = rootView.getContext();
-//        LinearLayout childView = new LinearLayout(context);
-//        rootView.addView(childView, 1 + MyApplication.originalPositionHashMap.size());
-//
-//        for (int i = 0; i < 4; i++) {
-//
-//            textViews[i] = new TextView(context);
-//        }
-//
-//        LinearLayout box = new LinearLayout(context);
-//        EditText et = new EditText(context);
-//
-//        childView.addView(textViews[0]);
-//        childView.addView(textViews[1]);
-//        childView.addView(et);
-//        childView.addView(box);
-//        box.addView(textViews[2]);
-//        box.addView(textViews[3]);
-//
-//        decorate(childView);
-    }
-
-    /**生成的timestreamView参数初始化*/
-    private static void decorate(LinearLayout childView) {
-
-        childView.setId(View.generateViewId());
-
-        LinearLayout.LayoutParams lParams;
-        TextView tv;
-        EditText et;
-        LinearLayout box;
-
-        lParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        childView.setLayoutParams(lParams);
-        childView.setBackground(new ColorDrawable());
-        childView.setAlpha(0.8f);
-        childView.setOrientation(LinearLayout.HORIZONTAL);
-        childView.setGravity(Gravity.CENTER_VERTICAL);
-        childView.setWeightSum(1f);
-
-
-        tv = textViews[0];
-        lParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 0.23f);
-        tv.setLayoutParams(lParams);
-        tv.setGravity(Gravity.CENTER);
-        int pd = (int) DraggableLinearLayout.dpToFloat(5, childView.getContext());
-        tv.setPadding(pd, 0, pd, 0);
-        tv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 23);
-
-        tv = textViews[1];
-        lParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 0.47f);
-        tv.setLayoutParams(lParams);
-        tv.setGravity(Gravity.CENTER_VERTICAL);
-
-        et = (EditText) childView.getChildAt(2);
-        lParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 0.15f);
-        et.setLayoutParams(lParams);
-        et.setGravity(Gravity.CENTER);
-        et.setPadding(pd, 0, pd, 0);
-        et.setInputType(InputType.TYPE_CLASS_NUMBER);
-        et.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 23);
-        et.setBackground(null);
-        et.setSelectAllOnFocus(true);
-
-        box = (LinearLayout) childView.getChildAt(3);
-        lParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 0.15f);
-        box.setLayoutParams(lParams);
-        box.setOrientation(LinearLayout.VERTICAL);
-
-        tv = textViews[2];
-        lParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                0, 1f);
-        tv.setLayoutParams(lParams);
-        tv.setGravity(Gravity.CENTER);
-        tv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
-
-        tv = textViews[3];
-        lParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                0, 1f);
-        tv.setLayoutParams(lParams);
-        tv.setGravity(Gravity.CENTER);
-        tv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
 
     }
+
 
     public static void actionStart() {
 

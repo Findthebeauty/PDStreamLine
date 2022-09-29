@@ -41,6 +41,8 @@ import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.beanview.ProductLoader;
 import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
+import com.shepherdboy.pdstreamline.binder.ProductObserver;
+import com.shepherdboy.pdstreamline.binder.ProductSubject;
 import com.shepherdboy.pdstreamline.dao.HttpDao;
 import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
@@ -111,6 +113,7 @@ public class MyApplication extends Application {
     public static ClosableScrollView closableScrollView;
 
     public static Product currentProduct;
+    public static ProductSubject productSubject;
 
     public static int activityIndex;
 
@@ -142,14 +145,13 @@ public class MyApplication extends Application {
     static LinearLayout temp;
 
     public static LinkedHashMap<Integer, Timestream> onShowTimeStreamsHashMap = new LinkedHashMap<>(); // hashMap存放当前展示的时光流，key为viewId
-    public static HashMap<String, Timestream> timeStreams = new LinkedHashMap<>(); // hashMap存放当前展示的时光流，key为timestreamId
     public static LinkedHashMap<Integer, TimestreamCombination> onShowCombsHashMap = new LinkedHashMap<>(); // hashMap存放当前展示的捆绑商品，key为viewId
 
     public static HashMap<Integer, Point> originalPositionHashMap = new HashMap<>(); // hashMap存放每个时光流的初始坐标，key为viewId
     public static HashMap<Integer, Drawable> originalBackgroundHashMap = new HashMap<>(); // hashMap存放每个view的初始背景，key为viewId
     public static LinkedList thingsToSaveList = new LinkedList();
 
-    private static HashMap<String, Product> allProducts; //无Timestream的Product
+    private static HashMap<String, Product> allProducts; //全局Product表
 
     public static HashMap<String, TimestreamCombination> combinationHashMap; //已经捆绑的所有商品
 
@@ -179,6 +181,7 @@ public class MyApplication extends Application {
             @Override
             public void onClick(View v) {
 
+                MainActivity.actionStart();
                 SettingActivity.actionStart();
             }
         });
@@ -259,7 +262,7 @@ public class MyApplication extends Application {
                 break;
 
             case PD_INFO_ACTIVITY:
-//                serialize();
+                serialize(currentProduct);
                 String code;
                 code = currentProduct.getProductCode();
                 TraversalTimestreamActivity.actionStart(code);
@@ -341,9 +344,10 @@ public class MyApplication extends Application {
     }
 
 
-    public static void saveChanges() {
+    public static void saveChanges(Product product) {
 
-        pickupChanges();
+        if(product == null) return;
+        pickupChanges(product);
 
         while (!thingsToSaveList.isEmpty()) {
 
@@ -365,9 +369,8 @@ public class MyApplication extends Application {
         }
     }
 
-    public static void serialize() {
-        TraversalTimestreamActivity.postSyncProduct(currentProduct);
-        saveChanges();
+    public static void serialize(Product product) {
+        saveChanges(product);
     }
 
     public static boolean tryCatchVolumeDown(Activity activity, int keyCode) {
@@ -529,20 +532,23 @@ public class MyApplication extends Application {
 
     /**
      * 延迟加载从webserver中获取的信息
-     * @param product
+     * @param result 从中心服务器获取的Product 2位信息数组{productCode，product}
      */
-    public static void lazyLoad(Product product) {
+    public static void lazyLoad(Object[] result) {
+
+        String productCode = (String) result[0];
+        Product product = (Product) result[1];
+
+        if (product != null) {
+            allProducts.put(productCode, product);
+        }
 
         switch (activityIndex) {
 
             case PD_INFO_ACTIVITY:
 
-                if (product == null) {
-                    currentProduct.setProductName("新商品，请输入商品名");
-                    PDInfoActivity.postLoadProduct(currentProduct);
-                    break;
-                }
-
+                if (product == null) allProducts.get(productCode).setProductName("新商品，请输入商品名");
+                if(currentProduct != null && productCode.equals(currentProduct.getProductCode()))
                 PDInfoActivity.postLoadProduct(product);
                 break;
 
@@ -551,7 +557,8 @@ public class MyApplication extends Application {
                 if (product == null) break;
 
                 Message msg = Message.obtain();
-                msg.obj = product.getProductCode();
+                msg.what = TraversalTimestreamActivity.MSG_SYNC_PRODUCT;
+                msg.obj = product;
                 TraversalTimestreamActivity.handler.sendMessage(msg);
                 break;
 
@@ -561,14 +568,11 @@ public class MyApplication extends Application {
         }
     }
 
-    public static void deleteTimestream(String id) {
+    public static void deleteTimestream(Timestream timestream) {
 
-        if (currentProduct != null) {
+        getAllProducts().get(timestream.getProductCode()).getTimeStreams().remove(timestream.getId());
 
-            currentProduct.getTimeStreams().remove(id);
-        }
-
-        PDInfoWrapper.deleteTimestream(sqLiteDatabase, id);
+        PDInfoWrapper.deleteTimestream(sqLiteDatabase, timestream.getId());
 
 
     }
@@ -583,6 +587,7 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         context = getApplicationContext();
+        productSubject = new ProductSubject();
         initDatabase(context);
         SettingActivity.initSetting();
         syncProductInfoFromServer(settingInstance.getLastSyncTime());
@@ -640,37 +645,34 @@ public class MyApplication extends Application {
     }
 
     // 将改变的信息保存到thingsToSaveList里面
-    public static void pickupChanges() {
+    public static void pickupChanges(Product product) {
 
-        if (MyApplication.currentProduct != null) {
+        if (!product.isUpdated()) {
 
-            if (!MyApplication.currentProduct.isUpdated()) {
+            thingsToSaveList.add(product);
 
-                thingsToSaveList.add(MyApplication.currentProduct);
-                MyApplication.getAllProducts().put(currentProduct.getProductCode(), currentProduct);
+        }
 
-            }
+        if (!product.getTimeStreams().isEmpty()) {
 
-            if (!MyApplication.currentProduct.getTimeStreams().isEmpty()) {
+            for (Timestream timeStream : product.getTimeStreams().values()) {
 
-                for (Timestream timeStream : currentProduct.getTimeStreams().values()) {
+                if (!timeStream.isUpdated()) {
 
-                    if (!timeStream.isUpdated()) {
-
-                        thingsToSaveList.add(timeStream);
-
-                    }
+                    thingsToSaveList.add(timeStream);
 
                 }
 
             }
 
         }
+
     }
 
-    public static void recordDraggableView() {
+    public static void recordDraggableView(DraggableLinearLayout view) {
+        if (view == null ) return;
 
-        if (DraggableLinearLayout.isLayoutChanged()) {
+        if (view.isLayoutChanged()) {
 
             switch (activityIndex) {
 
@@ -678,10 +680,9 @@ public class MyApplication extends Application {
 
                 case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
 
-                    if (draggableLinearLayout == null ) return;
-                    for (int i = 0; i < draggableLinearLayout.getChildCount() - 1; i++) {
+                    for (int i = 0; i < view.getChildCount() - 1; i++) {
 
-                        recordViewStateByChildIndex(draggableLinearLayout, i);
+                        recordViewStateByChildIndex(view, i);
                     }
                     break;
 
@@ -689,20 +690,20 @@ public class MyApplication extends Application {
 
                 case SETTING_ACTIVITY:
 
-                    for (int i = 0; i < draggableLinearLayout.getChildCount() - 1; i++) {
+                    for (int i = 0; i < view.getChildCount() - 1; i++) {
 
-                        recordViewStateByChildIndex(draggableLinearLayout, i + 1);
+                        recordViewStateByChildIndex(view, i + 1);
 
                     }
                     break;
 
                 case PROMOTION_TIMESTREAM_ACTIVITY:
 
-                    for (int i = 0; i < draggableLinearLayout.getChildCount(); i++) {
+                    for (int i = 0; i < view.getChildCount(); i++) {
 
-                        recordViewStateByChildIndex(draggableLinearLayout, i);
+                        recordViewStateByChildIndex(view, i);
 
-                        temp = (LinearLayout) draggableLinearLayout.getChildAt(i);
+                        temp = (LinearLayout) view.getChildAt(i);
 
                         if (temp instanceof DraggableLinearLayout) {
 
@@ -715,7 +716,7 @@ public class MyApplication extends Application {
                     break;
             }
         }
-        DraggableLinearLayout.setLayoutChanged(false);
+        view.setLayoutChanged(false);
 
     }
 
@@ -734,12 +735,25 @@ public class MyApplication extends Application {
     public static void init() {
 
         onShowTimeStreamsHashMap.clear();
-        clearOriginalInfo();
+        onShowCombsHashMap.clear();
 
+        if (combinationHashMap != null) {
+            combinationHashMap.clear();
+            combinationHashMap = null;
+        }
+
+        clearOriginalInfo();
         currentProduct = null;
         intentProductCode = null;
         draggableLinearLayout = null;
         closableScrollView = null;
+
+        if (allProducts != null) {
+
+            allProducts.clear();
+            allProducts = null;
+
+        }
 
     }
 
@@ -913,6 +927,13 @@ public class MyApplication extends Application {
 
         boolean infoValidated = AIInputter.validate(after, timestream, filedIndex);
 
+
+        Product product = null;
+        if(timestream != null)
+        product = allProducts.get(timestream.getProductCode());
+        if(product == null) product = PDInfoWrapper.getProduct(timestream.getProductCode(), sqLiteDatabase,
+                MyDatabaseHelper.ENTIRE_TIMESTREAM);
+
         if (infoValidated) {
 
             switch (filedIndex) {
@@ -927,29 +948,30 @@ public class MyApplication extends Application {
 
                 case PRODUCT_NAME:
 
-                    currentProduct.setProductName(after);
-                    currentProduct.setUpdated(false);
-
+                    product.setProductName(after);
+                    product.setUpdated(false);
+                    synchronize(product, timestream, filedIndex,
+                            activityIndex);
                     break;
 
                 case PRODUCT_EXP:
 
-                    currentProduct.setProductEXP(after);
-                    synchronize(null, filedIndex, activityIndex);
+                    product.setProductEXP(after);
+                    synchronize(product, null, filedIndex, activityIndex);
 
                     break;
 
                 case PRODUCT_EXP_TIME_UNIT:
 
-                    currentProduct.setProductEXPTimeUnit(after);
-                    synchronize(null, filedIndex, activityIndex);
+                    product.setProductEXPTimeUnit(after);
+                    synchronize(product, null, filedIndex, activityIndex);
                     break;
 
                 case PRODUCT_SPEC:
 
-                    currentProduct.setProductSpec(after);
-                    currentProduct.setUpdated(false);
-                    synchronize(null, filedIndex, activityIndex);
+                    product.setProductSpec(after);
+                    product.setUpdated(false);
+                    synchronize(product, null, filedIndex, activityIndex);
                     break;
 
 
@@ -959,7 +981,7 @@ public class MyApplication extends Application {
 
                         try {
 
-                            after = AIInputter.translate(currentProduct, timestream.getProductDOP(), after);
+                            after = AIInputter.translate(product, timestream.getProductDOP(), after);
 
                             ActivityInfoChangeWatcher.getActivityWatcher(activityIndex).setShouldWatch(false);
 
@@ -990,33 +1012,33 @@ public class MyApplication extends Application {
                     }
                     MidnightTimestreamManagerService.basket.remove(timestream.getId());
                     timestream.setInBasket(false);
-                    synchronize(timestream, filedIndex, activityIndex);
+                    synchronize(product, timestream, filedIndex, activityIndex);
                     break;
 
                 case TIMESTREAM_COORDINATE:
 
                     timestream.setProductCoordinate(after);
                     timestream.setUpdated(false);
-                    synchronize(timestream, filedIndex, activityIndex);
+                    synchronize(product, timestream, filedIndex, activityIndex);
                     break;
 
                 case TIMESTREAM_INVENTORY:
 
                     timestream.setProductInventory(after);
                     timestream.setUpdated(false);
-                    synchronize(timestream, filedIndex, activityIndex);
+                    synchronize(product, timestream, filedIndex, activityIndex);
                     break;
 
                 case TIMESTREAM_BUY_SPECS:
                     timestream.setBuySpecs(after);
                     timestream.setUpdated(false);
-                    synchronize(timestream, filedIndex, activityIndex);
+                    synchronize(product, timestream, filedIndex, activityIndex);
                     break;
 
                 case TIMESTREAM_PRESENT_SPECS:
                     timestream.setGiveawaySpecs(after);
                     timestream.setUpdated(false);
-                    synchronize(timestream, filedIndex, activityIndex);
+                    synchronize(product, timestream, filedIndex, activityIndex);
                     break;
                 }
 
@@ -1031,29 +1053,29 @@ public class MyApplication extends Application {
      * 根据timeStream日期状态设置linearLayout颜色，针对单个timestream
      */
 
-    public static void setTimeStreamViewOriginalBackground(Timestream ts) {
-
-        if (ts == null) return;
-
-        LinearLayout timeStreamLinearLayout =
-                draggableLinearLayout.findViewById(Integer.parseInt(ts.getBoundLayoutId()
-        ));
-
-        if (timeStreamLinearLayout == null) return;
-
-        switch (activityIndex) {
-
-            case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
-
-                return;
-
-            default:
-                break;
-
-        }
-        setTimeStreamViewOriginalBackground(timeStreamLinearLayout);
-
-    }
+//    public static void setTimeStreamViewOriginalBackground(Timestream ts) {
+//
+//        if (ts == null) return;
+//
+//        LinearLayout timeStreamLinearLayout =
+//                draggableLinearLayout.findViewById(Integer.parseInt(ts.getBoundLayoutId()
+//        ));
+//
+//        if (timeStreamLinearLayout == null) return;
+//
+//        switch (activityIndex) {
+//
+//            case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
+//
+//                return;
+//
+//            default:
+//                break;
+//
+//        }
+//        setTimeStreamViewOriginalBackground(timeStreamLinearLayout);
+//
+//    }
 
     /**
      * 根据timeStream日期状态设置linearLayout颜色，针对单个timestreamView
@@ -1111,16 +1133,18 @@ public class MyApplication extends Application {
         }
     }
 
-    private static void synchronize(@Nullable Timestream timestream, int filedIndex, int activityIndex) {
+    private static void synchronize(Product product, @Nullable Timestream timestream, int filedIndex, int activityIndex) {
 
         switch (filedIndex) {
 
+            case PRODUCT_NAME:
+                break;
             case PRODUCT_EXP:
             case PRODUCT_EXP_TIME_UNIT:
 
-                currentProduct.setUpdated(false);
+                product.setUpdated(false);
 
-                for (Timestream ts : currentProduct.getTimeStreams().values()) {
+                for (Timestream ts : product.getTimeStreams().values()) {
 
                     synchronizeSingleTimestream(activityIndex, ts);
                 }
@@ -1129,58 +1153,87 @@ public class MyApplication extends Application {
             case PRODUCT_SPEC:
 
                 if (allProducts != null) {
-                    allProducts.put(currentProduct.getProductCode(), currentProduct);
+                    allProducts.put(product.getProductCode(), product);
                 }
                 ProductLoader.loadTimestreams(activityIndex, draggableLinearLayout,
-                        currentProduct.getTimeStreams(), 0);
+                        product.getTimeStreams(), 0);
+
                 break;
 
             case TIMESTREAM_DOP:
 
                 synchronizeSingleTimestream(activityIndex, timestream);
+
                 break;
 
             default:
 
-                if (timestream != null && timestream.getProductCode().equals(currentProduct.getProductCode())) {
-                    currentProduct.getTimeStreams().put(timestream.getId(), timestream);
+                if (timestream != null && timestream.getProductCode().equals(product.getProductCode())) {
+                    product.getTimeStreams().put(timestream.getId(), timestream);
                 }
                 break;
-
         }
+        productSubject.notify(product.getProductCode());
     }
 
     private static void synchronizeSingleTimestream(int activityIndex, Timestream timestream) {
 
-        currentProduct.getTimeStreams().put(timestream.getId(), timestream);
+        Product product = allProducts.get(timestream.getProductCode());
+
+        if (product == null) product = PDInfoWrapper.getProduct(timestream.getProductCode(),
+                sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
+
+        product.getTimeStreams().put(timestream.getId(), timestream);
 
         timestream.setProductPromotionDate(DateUtil.calculatePromotionDate(
                 timestream.getProductDOP(),
-                Integer.parseInt(currentProduct.getProductEXP()),
-                currentProduct.getProductEXPTimeUnit()
+                Integer.parseInt(product.getProductEXP()),
+                product.getProductEXPTimeUnit()
         ));
 
         timestream.setProductExpireDate(DateUtil.calculateProductExpireDate(
                 timestream.getProductDOP(),
-                Integer.parseInt(currentProduct.getProductEXP()),
-                currentProduct.getProductEXPTimeUnit()
+                Integer.parseInt(product.getProductEXP()),
+                product.getProductEXPTimeUnit()
 
         ));
 
-        if (draggableLinearLayout != null && timestream.getBoundLayoutId() != null) {
+        ProductObserver observer = (ProductObserver) productSubject.getObservers().get(activityIndex);
+        View tsView = null;
+        if(observer != null)
+            tsView = observer.getTimestreamViewMap().get(timestream.getId());
 
-            View view = draggableLinearLayout.findViewById(Integer.parseInt(timestream.getBoundLayoutId()));
+        DraggableLinearLayout dragLayout = null;
 
-            if (view instanceof TimestreamCombinationView) {
+        switch (activityIndex) {
 
-                ((TimestreamCombinationView) view).getBuyBackground()
+            case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
+                dragLayout = TraversalTimestreamActivity.getDragLayout();
+                break;
+
+            case PD_INFO_ACTIVITY:
+                dragLayout = PDInfoActivity.getDragLayout();
+                break;
+
+            case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
+                dragLayout = PossiblePromotionTimestreamActivity.getDragLayout();
+
+            default:
+                break;
+        }
+
+        if (dragLayout != null && tsView != null) {
+
+            if (tsView instanceof TimestreamCombinationView) {
+
+                ((TimestreamCombinationView) tsView).getBuyBackground()
                         .setBackgroundColor(getColorByTimestreamStateCode(
                                 timestream.getTimeStreamStateCode()
                         ));
 
-            } else if (view != null){
+            } else {
 
-                view.setBackgroundColor(getColorByTimestreamStateCode(timestream.getTimeStreamStateCode()));
+                tsView.setBackgroundColor(getColorByTimestreamStateCode(timestream.getTimeStreamStateCode()));
             }
         }
 
@@ -1246,7 +1299,7 @@ public class MyApplication extends Application {
         originalPositionHashMap.remove(releasedChild.getId());
         originalBackgroundHashMap.remove(releasedChild.getId());
 
-        DraggableLinearLayout.setLayoutChanged(true);
+        ((DraggableLinearLayout)(releasedChild.getParent())).setLayoutChanged(true);
 
         for (int i = 0; i < releasedChild.getChildCount(); i++) {
 

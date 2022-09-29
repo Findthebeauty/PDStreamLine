@@ -62,6 +62,8 @@ public class PDInfoWrapper {
      */
     public static Product getProduct(String productCode, SQLiteDatabase sqLiteDatabase, int typeCode) {
 
+        Product pr = MyApplication.getAllProducts().get(productCode);
+        if(pr != null) return pr;
         Product product;
 
         LinkedHashMap<String, Timestream> timeStreamHashMap = new LinkedHashMap<>();
@@ -125,6 +127,15 @@ public class PDInfoWrapper {
 
         product.setTimeStreams(timeStreamHashMap);
 
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                HashMap<String, Product> allProducts = MyApplication.getAllProducts();
+                if (!allProducts.containsKey(productCode))
+                    allProducts.put(productCode, product);
+            }
+        }).start();
+
         return product;
     }
 
@@ -139,8 +150,6 @@ public class PDInfoWrapper {
 
         LinkedList<Timestream> tsLList = new LinkedList<>();
 
-        Cursor cursor;
-        Timestream tempTs;
         String tableName = null;
 
         switch (intentCode) {
@@ -148,17 +157,34 @@ public class PDInfoWrapper {
             case MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM:
 
                 tableName = MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME;
+                getUnCheckedTimestreams(sqLiteDatabase, intentCode, tsLList, tableName);
+
                 break;
 
 
             case MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM:
 
                 tableName = MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME;
+                getUnCheckedTimestreams(sqLiteDatabase, intentCode, tsLList, tableName);
+
                 break;
 
+            case MyDatabaseHelper.TIMESTREAM_TO_CHECK:
 
+                getUnCheckedTimestreams(sqLiteDatabase, MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM,
+                        tsLList, MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME);
+                getUnCheckedTimestreams(sqLiteDatabase, MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM,
+                        tsLList, MyDatabaseHelper.POSSIBLE_PROMOTION_TIMESTREAM_TABLE_NAME);
+                break;
         }
 
+        return tsLList;
+    }
+
+    private static void getUnCheckedTimestreams(SQLiteDatabase sqLiteDatabase, int intentCode, LinkedList<Timestream> tsLList, String tableName) {
+
+        Timestream tempTs;
+        Cursor cursor;
         cursor = MyDatabaseHelper.query(sqLiteDatabase, tableName,
                 new String[]{"*"}, null, null);
 
@@ -211,8 +237,6 @@ public class PDInfoWrapper {
 
             Collections.sort(tsLList, AscCoordinateComparator.getInstance());
         }
-
-        return tsLList;
     }
 
     public static HashMap<String, TimestreamCombination> getTimestreamCombinations(SQLiteDatabase sqLiteDatabase) {
@@ -653,8 +677,8 @@ public class PDInfoWrapper {
     }
 
     /**
-     * 不包含Timestream列表
-     * @return
+     * 所有商品
+     * @return map
      */
     public static HashMap<String, Product> getAllProduct() {
 
@@ -679,6 +703,13 @@ public class PDInfoWrapper {
             p.setLastCheckDate(cursor.getString(7));
             p.setNextCheckDate(cursor.getString(8));
             p.setDefaultCoordinate(cursor.getString(9));
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+
+                    getEntireTimestream(p,MyApplication.sqLiteDatabase, p.getTimeStreams());
+                }
+            }).start();
             r.put(p.getProductCode(), p);
 
         } while (cursor.moveToNext());

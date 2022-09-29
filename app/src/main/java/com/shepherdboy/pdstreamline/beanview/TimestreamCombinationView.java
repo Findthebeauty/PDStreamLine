@@ -1,7 +1,9 @@
 package com.shepherdboy.pdstreamline.beanview;
 
+import static com.shepherdboy.pdstreamline.MyApplication.PD_INFO_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY;
+import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
 import static com.shepherdboy.pdstreamline.MyApplication.combinationHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowCombsHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
@@ -19,9 +21,12 @@ import androidx.constraintlayout.widget.ConstraintSet;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
+import com.shepherdboy.pdstreamline.activities.PDInfoActivity;
+import com.shepherdboy.pdstreamline.activities.PossiblePromotionTimestreamActivity;
 import com.shepherdboy.pdstreamline.activities.TraversalTimestreamActivity;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
+import com.shepherdboy.pdstreamline.binder.ProductObserver;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
 
@@ -182,6 +187,10 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
         ActivityInfoChangeWatcher watcher = ActivityInfoChangeWatcher.getActivityWatcher(activityIndex);
 
+        watcher.removeWatcher(buyDOPEt);
+        watcher.removeWatcher(inventory);
+        watcher.removeWatcher(giveawayDOPTv);
+
         Timestream timestream = (Timestream) o;
 
         this.productCode = timestream.getProductCode();
@@ -223,6 +232,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
                 }
                 onShowTimeStreamsHashMap.put(buyBackground.getId(), timestream); //一个combination有3个背景，整体的、商品和赠品的，3个背景都要记录
 
+                mapping(activityIndex, timestream);
                 break;
 
             case "0.5":
@@ -305,6 +315,30 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
             watcher.watch(inventory,timestream,MyApplication.TIMESTREAM_INVENTORY,true);
         }
 
+    }
+
+    private void mapping(int activityIndex, Timestream timestream) {
+
+        ProductObserver observer = null;
+        switch (activityIndex) {
+
+            case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
+                observer = PossiblePromotionTimestreamActivity.getObserver();
+                break;
+
+            case PD_INFO_ACTIVITY:
+                observer = PDInfoActivity.getObserver();
+                break;
+
+            case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
+                observer = TraversalTimestreamActivity.getObserver();
+                break;
+
+            default:
+                break;
+        }
+
+        if(observer != null) observer.bind(timestream.getId(), this);
     }
 
     public EditText getBuyDOPEt() {

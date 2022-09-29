@@ -13,6 +13,8 @@ import com.shepherdboy.pdstreamline.beans.DateScope;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
+import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
+import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -207,18 +209,22 @@ public class AIInputter {
 
     public static boolean validate(String information, Timestream timestream, int fieldIndex) {
 
+        if (timestream == null) return false;
+        Product product = PDInfoWrapper.getProduct(timestream.getProductCode(),
+                MyApplication.sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
+
         switch (fieldIndex) {
 
             case MyApplication.PRODUCT_NAME:
 
-                return !information.equals(MyApplication.currentProduct.getProductName());
+                return !information.equals(product.getProductName());
 
             case MyApplication.PRODUCT_EXP:
 
                 try {
 
                     int EXP = Integer.parseInt(information);
-                    int preEXP = Integer.parseInt(MyApplication.currentProduct.getProductEXP());
+                    int preEXP = Integer.parseInt(product.getProductEXP());
 
                     if (EXP <= 0) {
 
@@ -226,7 +232,7 @@ public class AIInputter {
                     }
 
                     long mls = SettingActivity.stringToMillionSeconds(information,
-                            MyApplication.currentProduct.getProductEXPTimeUnit());
+                            product.getProductEXPTimeUnit());
 
                     long minMls = SettingActivity.dateSettingIndex.get(SettingActivity.dateSettingIndex.size() - 1);
 

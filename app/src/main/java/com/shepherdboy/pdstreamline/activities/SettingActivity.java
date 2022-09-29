@@ -84,6 +84,15 @@ public class SettingActivity extends BaseActivity {
     //相邻两个scope共享一个边界，上面的下界是下面的上界，上面的下界scopeId对应下界的上界TextView，用于共享边界的同步与插入scope
     private static final HashMap<String, TextView> upperBoundTextViewMap = new HashMap<>();
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        draglayout = null;
+    }
+
+    private static DraggableLinearLayout draglayout;
+
     private static final int ADD_SCOPE = 1;
     private static final int DELETE_SCOPE = 2;
 
@@ -231,7 +240,7 @@ public class SettingActivity extends BaseActivity {
         connectScopeView(nextScopeView, upperScopeView);
         watcher.setShouldWatch(true);
         setExpSettingChanged(true);
-        DraggableLinearLayout.setLayoutChanged(true);
+        draglayout.setLayoutChanged(true);
     }
 
     private static void addScopeBeyond(View releasedChild) {
@@ -279,7 +288,7 @@ public class SettingActivity extends BaseActivity {
         watcher.setShouldWatch(true);
         setExpSettingChanged(true);
         DraggableLinearLayout.selectAll(lEditText);
-        DraggableLinearLayout.setLayoutChanged(true);
+        draglayout.setLayoutChanged(true);
     }
 
     private static void connectScopeView(LinearLayout lowerScopeView, LinearLayout upperScopeView) {
@@ -366,11 +375,11 @@ public class SettingActivity extends BaseActivity {
         instance = SettingActivity.this;
 
         MyApplication.initActionBar(getSupportActionBar());
-//        MyApplication.init();
+        MyApplication.init();
         MyApplication.initDatabase(this);
-        draggableLinearLayout = findViewById(R.id.date_offset_setting_table);
+        draglayout = findViewById(R.id.date_offset_setting_table);
+        draggableLinearLayout = draglayout;
         activityIndex = MyApplication.SETTING_ACTIVITY;
-
         initDateSettingView();
 
         if (dateSettingMap.isEmpty() || dateSettingIndex == null || settingInstance == null)
@@ -626,7 +635,7 @@ public class SettingActivity extends BaseActivity {
             scopesViewCount--;
         }
 
-        DraggableLinearLayout.setLayoutChanged(true);
+        draglayout.setLayoutChanged(true);
 
         if (upperBoundTextViewMap != null) upperBoundTextViewMap.clear();
         if (onShowScopeMap != null) onShowScopeMap.clear();
@@ -728,7 +737,7 @@ public class SettingActivity extends BaseActivity {
             loadScope(lowerBound, upperBound, (LinearLayout) draggableLinearLayout.getChildAt(i + 1));
         }
 
-        DraggableLinearLayout.setLayoutChanged(true);
+        draglayout.setLayoutChanged(true);
         watcher.setShouldWatch(true);
     }
 
@@ -834,7 +843,7 @@ public class SettingActivity extends BaseActivity {
      */
     public synchronized static void applyEXPSetting() {
 
-        MyApplication.saveChanges();
+//        MyApplication.saveChanges();
 
         if(!isExpSettingChanged()) return;
 

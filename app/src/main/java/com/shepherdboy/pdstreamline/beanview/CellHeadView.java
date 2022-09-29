@@ -13,9 +13,9 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Product;
+import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 
 public class CellHeadView extends LinearLayout implements BeanView{
@@ -60,7 +60,8 @@ public class CellHeadView extends LinearLayout implements BeanView{
 
         String productCode = (String) o;
 
-        Product p = MyApplication.getAllProducts().get(productCode);
+        Product p = PDInfoWrapper.getProduct(productCode,
+                sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
 
         headNameTv.setText(PDInfoWrapper.getProductName(productCode,sqLiteDatabase));
 

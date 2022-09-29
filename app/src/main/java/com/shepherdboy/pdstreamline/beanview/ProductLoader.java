@@ -1,7 +1,6 @@
 package com.shepherdboy.pdstreamline.beanview;
 
 import static com.shepherdboy.pdstreamline.MyApplication.closableScrollView;
-import static com.shepherdboy.pdstreamline.MyApplication.currentProduct;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 
 import android.app.Activity;
@@ -19,9 +18,8 @@ import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
-import com.shepherdboy.pdstreamline.view.ClosableScrollView;
-import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
+import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 
 import java.util.LinkedHashMap;
 
@@ -122,16 +120,16 @@ public class ProductLoader {
         }
     }
 
-    public static View prepareNext(int activityIndex, String productCode, DraggableLinearLayout view) {
+    public static View prepareNext(int activityIndex, Product product, DraggableLinearLayout view) {
 
         TimestreamCombinationView nextTrigger =
                 new TimestreamCombinationView(activityIndex, view.getContext());
 
-        nextTrigger.setProductCode(productCode);
+        nextTrigger.setProductCode(product.getProductCode());
 
         TextView nameTv = nextTrigger.getBuyProductNameTv();
         EditText inventoryEt = nextTrigger.getInventory();
-        nameTv.setText(MyApplication.getAllProducts().get(productCode).getProductName());
+        nameTv.setText(product.getProductName());
         inventoryEt.setFocusable(false);
         inventoryEt.setVisibility(View.INVISIBLE);
 
@@ -141,20 +139,18 @@ public class ProductLoader {
             public void onFocusChange(View v, boolean hasFocus) {
                 ActivityInfoChangeWatcher watcher = ActivityInfoChangeWatcher.getActivityWatcher(activityIndex);
                 if (hasFocus && watcher.isShouldWatch()) {
+//
+//                    //将edittext所在view滚动到上方
+//                    ClosableScrollView.postLocate(ClosableScrollView.SCROLL_FROM_TOUCH, nextTrigger);
 
-                    //将edittext所在view滚动到上方
-                    ClosableScrollView.postLocate(ClosableScrollView.SCROLL_FROM_TOUCH, nextTrigger);
-
-                    Product p = MyApplication.getAllProducts().get(productCode);
                     Timestream t = new Timestream();
-                    MyApplication.timeStreams.put(t.getId(), t);
-                    AIInputter.fillTheBlanks(p, t);
+                    AIInputter.fillTheBlanks(product, t);
+                    product.getTimeStreams().put(t.getId(), t);
 
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
                             PDInfoWrapper.updateInfo(sqLiteDatabase, t, MyDatabaseHelper.NEW_TIMESTREAM);
-                            currentProduct = PDInfoWrapper.getProduct(productCode, sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
                         }
                     }).start();
                     TimestreamCombinationView next =
@@ -164,9 +160,11 @@ public class ProductLoader {
                             view.indexOfChild(nextTrigger));
                     watcher.setShouldWatch(true);
                     MyApplication.clearOriginalInfo();
-                    MyApplication.recordDraggableView();
+                    MyApplication.recordDraggableView(view);
                     DraggableLinearLayout.setFocus(next.getBuyDOPEt());
-                    DraggableLinearLayout.setLayoutChanged(true);
+                    view.setLayoutChanged(true);
+
+                    MyApplication.productSubject.notify(product.getProductCode());
                 }
             }
         });

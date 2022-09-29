@@ -22,7 +22,6 @@ import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.activities.PDInfoActivity;
 import com.shepherdboy.pdstreamline.activities.SettingActivity;
 import com.shepherdboy.pdstreamline.beans.DateScope;
-import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beanview.BeanView;
@@ -41,6 +40,7 @@ public class ActivityInfoChangeWatcher {
 
     private static final HashMap<Integer, ActivityInfoChangeWatcher> activityInfoChangeWatchers = new HashMap<>();
     private final HashMap<EditText, Watcher> myWatchers = new HashMap<>();
+    private final HashMap<Integer, Watcher> watchers = new HashMap<>();
 
     public static final int SELECT_ALL = 1;
     public static final int LAZY_LOAD = 2;
@@ -53,7 +53,7 @@ public class ActivityInfoChangeWatcher {
     private long lastInputTimeMillis = 0;
     private int activityIndex;
 
-    private boolean shouldWatch = true;
+    private boolean shouldWatch = false;
 
     public static ActivityInfoChangeWatcher getActivityWatcher(int activityIndex) {
 
@@ -65,6 +65,8 @@ public class ActivityInfoChangeWatcher {
     }
 
     class Watcher implements TextWatcher, View.OnFocusChangeListener {
+
+        private boolean shouldWatch = false;
 
         private boolean autoCommitOnLostFocus = false;
 
@@ -83,6 +85,7 @@ public class ActivityInfoChangeWatcher {
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
+
         }
 
         @Override
@@ -135,7 +138,22 @@ public class ActivityInfoChangeWatcher {
 
                     case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
                     case PD_INFO_ACTIVITY:
-                        ClosableScrollView.postLocate(ClosableScrollView.SCROLL_FROM_TOUCH, v.getParent());
+                        View view = v;
+
+                        do {
+
+                            if (view instanceof BeanView) {
+
+                                ClosableScrollView.postLocate(ClosableScrollView.SCROLL_FROM_TOUCH, view);
+                                break;
+                            }
+
+                            view = (View) view.getParent();
+
+                            if(view instanceof DraggableLinearLayout || view.equals(v.getRootView()))
+                                break;
+                        } while (true);
+
                         break;
 
                     default:
@@ -159,6 +177,14 @@ public class ActivityInfoChangeWatcher {
                         MyDatabaseHelper.ENTIRE_TIMESTREAM);
             }
 
+        }
+
+        public boolean isShouldWatch() {
+            return shouldWatch;
+        }
+
+        public void setShouldWatch(boolean shouldWatch) {
+            this.shouldWatch = shouldWatch;
         }
     }
 
@@ -189,12 +215,8 @@ public class ActivityInfoChangeWatcher {
 
                     case LAZY_LOAD:
 
-                        if (msg.obj == null) {
-                            MyApplication.lazyLoad(null);
-                        }
+                        MyApplication.lazyLoad((Object[])(msg.obj));
 
-                        Product p = (Product) msg.obj;
-                        MyApplication.lazyLoad(p);
                         break;
 
                     default:
@@ -228,7 +250,7 @@ public class ActivityInfoChangeWatcher {
         watcher.filedIndex = filedIndex;
         watcher.shelf = shelf;
         myWatchers.put(editText, watcher);
-
+        watchers.put(filedIndex, watcher);
     }
 
     public void watch(EditText editText, @Nullable Timestream timestream, int filedIndex, boolean autoCommitOnLastFocus) {
@@ -246,6 +268,7 @@ public class ActivityInfoChangeWatcher {
         watcher.filedIndex = filedIndex;
 
         myWatchers.put(editText, watcher);
+        watchers.put(filedIndex, watcher);
     }
 
     public void watch(DateScope scope, EditText editText, int index) {
@@ -260,6 +283,7 @@ public class ActivityInfoChangeWatcher {
         watcher.filedIndex = index;
 
         myWatchers.put(editText, watcher);
+        watchers.put(index, watcher);
     }
 
     public void watch(DateScope scope, TextView t, int index) {
@@ -403,6 +427,7 @@ public class ActivityInfoChangeWatcher {
         }
 
         myWatchers.clear();
+        watchers.clear();
 
     }
 
@@ -467,10 +492,12 @@ public class ActivityInfoChangeWatcher {
     }
 
     public void setShouldWatch(boolean shouldWatch) {
+
         if (shouldWatch) {
 
             for(Watcher w : myWatchers.values()) {
 
+                w.setShouldWatch(true);
                 w.preInf = w.watchedEditText.getText().toString().trim();
 
                 if (!w.preInf.equals("") && w.filedIndex == MyApplication.TIMESTREAM_DOP) {
@@ -480,8 +507,25 @@ public class ActivityInfoChangeWatcher {
                 }
                 w.currentInf = w.preInf;
             }
+
+        } else {
+
+            for (Watcher w : myWatchers.values()) {
+
+                w.setShouldWatch(false);
+            }
         }
         this.shouldWatch = shouldWatch;
+    }
+
+    public void setShouldWatch(boolean shouldWatch, int fieldIndex) {
+
+        Watcher watcher = watchers.get(fieldIndex);
+
+        if(watcher != null) {
+
+            watcher.setShouldWatch(shouldWatch);
+        }
     }
 
     public void startAutoCommit(Watcher watcher) {

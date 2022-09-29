@@ -16,15 +16,17 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
     public static final int POSSIBLE_EXPIRED_TIMESTREAM = 2;
 
-    public static final int PROMOTION_TIMESTREAM = 3;
+    public static final int TIMESTREAM_TO_CHECK = 3;
 
-    public static final int OFF_SHELVES_HISTORY= 4;
+    public static final int PROMOTION_TIMESTREAM = 4;
 
-    public static final int NEW_TIMESTREAM = 5;
+    public static final int OFF_SHELVES_HISTORY= 5;
 
-    public static final int UPDATE_BASKET = 6;
+    public static final int NEW_TIMESTREAM = 6;
 
-    public static final int UNPACK_COMBINATION = 7;
+    public static final int UPDATE_BASKET = 7;
+
+    public static final int UNPACK_COMBINATION = 8;
 
     public static final String PROMOTION_DATE_SELECTION = "product_promotion_date";
 

@@ -18,6 +18,7 @@ public class PromotionActivity extends BaseActivity {
 
     private LinkedList<Timestream> oddments;
     private LinkedList<TimestreamCombination> combinations;
+    private DraggableLinearLayout dragLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,8 +33,9 @@ public class PromotionActivity extends BaseActivity {
 
     private void initActivity() {
 
-        MyApplication.draggableLinearLayout = findViewById(R.id.parent);
-        DraggableLinearLayout.setLayoutChanged(true);
+        dragLayout = findViewById(R.id.parent);
+        MyApplication.draggableLinearLayout = dragLayout;
+        dragLayout.setLayoutChanged(true);
         oddments = new LinkedList<>();
         combinations = new LinkedList<>();
 

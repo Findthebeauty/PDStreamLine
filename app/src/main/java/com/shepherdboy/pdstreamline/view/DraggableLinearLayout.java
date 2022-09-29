@@ -54,7 +54,7 @@ public class DraggableLinearLayout extends LinearLayout {
 
     public ViewDragHelper viewDragHelper;
 
-    private static boolean layoutChanged = false;
+    private boolean layoutChanged = false;
 
     public DraggableLinearLayout(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -239,19 +239,19 @@ public class DraggableLinearLayout extends LinearLayout {
             @Override
             public void run() {
 
-                InputMethodManager m = (InputMethodManager) editText.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                m.showSoftInput(editText, 0);
-                ActivityInfoChangeWatcher activityWatcher = ActivityInfoChangeWatcher.getActivityWatcher(activityIndex);
-                Handler infoHandler = null;
-                if (activityWatcher != null)
-                infoHandler = activityWatcher.infoHandler;
-                if (infoHandler != null) {
+            InputMethodManager m = (InputMethodManager) editText.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            m.showSoftInput(editText, 0);
+            ActivityInfoChangeWatcher activityWatcher = ActivityInfoChangeWatcher.getActivityWatcher(activityIndex);
+            Handler infoHandler = null;
+            if (activityWatcher != null)
+            infoHandler = activityWatcher.infoHandler;
+            if (infoHandler != null) {
 
-                    Message msg = Message.obtain();
-                    msg.what = ActivityInfoChangeWatcher.SELECT_ALL;
-                    msg.obj = editText;
-                    infoHandler.sendMessage(msg);
-                }
+                Message msg = Message.obtain();
+                msg.what = ActivityInfoChangeWatcher.SELECT_ALL;
+                msg.obj = editText;
+                infoHandler.sendMessage(msg);
+            }
             }
         },delay); //todo 关于软键盘弹出edittext内容消失的问题
     }
@@ -355,7 +355,7 @@ public class DraggableLinearLayout extends LinearLayout {
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
 
             getCurrentView(event);
-            MyApplication.recordDraggableView();
+            MyApplication.recordDraggableView(this);
         }
     }
 
@@ -455,7 +455,7 @@ public class DraggableLinearLayout extends LinearLayout {
         super.onLayout(changed, l, t, r, b);
 
         layoutChanged = true;
-        MyApplication.recordDraggableView();
+        MyApplication.recordDraggableView(this);
     }
 
     public boolean isDragging() {
@@ -474,11 +474,11 @@ public class DraggableLinearLayout extends LinearLayout {
         this.longClicking = longClicking;
     }
 
-    public static boolean isLayoutChanged() {
+    public boolean isLayoutChanged() {
         return layoutChanged;
     }
 
-    public static void setLayoutChanged(boolean layoutChanged) {
-        DraggableLinearLayout.layoutChanged = layoutChanged;
+    public void setLayoutChanged(boolean layoutChanged) {
+        this.layoutChanged = layoutChanged;
     }
 }
