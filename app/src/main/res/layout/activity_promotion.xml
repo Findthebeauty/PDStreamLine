@@ -5,32 +5,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
     tools:context=".activities.PromotionActivity">
-
-    <LinearLayout
-        android:layout_width="match_parent"
+    <com.shepherdboy.pdstreamline.view.DraggableLinearLayout
+        android:id="@+id/parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        app:verticalDraggable="false"
+        app:horizontalDraggable="true">
 
-        <com.shepherdboy.pdstreamline.view.DraggableLinearLayout
-            android:id="@+id/parent"
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            android:orientation="vertical"
-            app:verticalDraggable="false"
-            app:horizontalDraggable="true">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/child1">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="I'm in!"/>
-            </LinearLayout>
-
-        </com.shepherdboy.pdstreamline.view.DraggableLinearLayout>
-
-    </LinearLayout>
+    </com.shepherdboy.pdstreamline.view.DraggableLinearLayout>
 </ScrollView>

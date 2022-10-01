@@ -39,8 +39,13 @@ public class PromotionActivity extends BaseActivity {
         oddments = new LinkedList<>();
         combinations = new LinkedList<>();
 
-        if (SettingActivity.settingInstance.isAutoCombine())
+        if (SettingActivity.settingInstance.isAutoCombine()) {
+
             autoCombine(MidnightTimestreamManagerService.basket);
+
+        }
+
+
     }
 
     /**
@@ -62,11 +67,17 @@ public class PromotionActivity extends BaseActivity {
 
 
     }
+
     public void autoCombine(HashMap<String, Timestream> basket) {
 
         for (Timestream t : basket.values()) {
 
-            combinations.add(combine(t));
+            if(t.getTimeStreamStateCode() == Timestream.CLOSE_TO_EXPIRE) {
+
+                TimestreamCombination comb = combine(t);
+                if(comb != null)
+                    combinations.add(comb);
+            }
         }
 
         for (TimestreamCombination comb : combinations) {
@@ -98,6 +109,7 @@ public class PromotionActivity extends BaseActivity {
             inventory -= 1;
             t.setProductInventory(String.valueOf(inventory));
             oddments.add(new Timestream(t));
+            if (inventory < 2) return null;
         }
 
         return new TimestreamCombination(t);
