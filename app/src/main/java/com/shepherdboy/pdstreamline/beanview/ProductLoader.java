@@ -1,5 +1,6 @@
 package com.shepherdboy.pdstreamline.beanview;
 
+import static com.shepherdboy.pdstreamline.MyApplication.PROMOTION_TIMESTREAM_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.closableScrollView;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 
@@ -21,6 +22,7 @@ import com.shepherdboy.pdstreamline.utils.AIInputter;
 import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 /**
@@ -51,7 +53,7 @@ public class ProductLoader {
 
         LinkedHashMap<String, Timestream> timestreams = product.getTimeStreams();
 
-        initCellBody(activityIndex, container, timestreams, index, product.getProductCode());
+        initCellBody(activityIndex, container, timestreams.size(), index);
 
         loadTimestreams(activityIndex, container, timestreams, index);
     }
@@ -63,9 +65,9 @@ public class ProductLoader {
      * @param timestreams timestream列表
      * @param index 起始位置
      */
-    public static void loadTimestreams(int activityIndex, ViewGroup container, LinkedHashMap<String, Timestream> timestreams, int index) {
+    public static void loadTimestreams(int activityIndex, ViewGroup container, HashMap timestreams, int index) {
 
-        for (Timestream t : timestreams.values()) {
+        for (Object t : timestreams.values()) {
 
             TimestreamCombinationView combView =
                     (TimestreamCombinationView) container.getChildAt(index);
@@ -78,15 +80,15 @@ public class ProductLoader {
     /**
      * 匹配view数量
      * @param container
-     * @param timestreams
+     * @param size
      * @param index
-     * @param productCode
      */
     public static void initCellBody(int activityIndex,
                                     ViewGroup container,
-                                    LinkedHashMap<String, Timestream> timestreams,
-                                    int index,
-                                    String productCode) {
+                                    int size,
+                                    int index) {
+
+        if(size == 0) return;
 
         int startIndex = index;
         int combCount = 0;
@@ -107,17 +109,40 @@ public class ProductLoader {
             index++;
         } while (true);
 
-        while (combCount - 1 > timestreams.size()) {
+        switch (activityIndex) {
 
-            container.removeViewAt(startIndex);
-            combCount--;
+            case PROMOTION_TIMESTREAM_ACTIVITY:
+
+                while (combCount > size) {
+
+                    container.removeViewAt(startIndex);
+                    combCount--;
+                }
+
+                while (combCount < size) {
+
+                    container.addView(new TimestreamCombinationView(activityIndex, container.getContext()), startIndex);
+                    combCount++;
+                }
+
+                break;
+
+            default:
+
+                while (combCount - 1 > size) {
+
+                    container.removeViewAt(startIndex);
+                    combCount--;
+                }
+
+                while (combCount - 1 < size) {
+
+                    container.addView(new TimestreamCombinationView(activityIndex, container.getContext()), startIndex);
+                    combCount++;
+                }
+                break;
         }
 
-        while (combCount - 1 < timestreams.size()) {
-
-            container.addView(new TimestreamCombinationView(activityIndex, container.getContext()), startIndex);
-            combCount++;
-        }
     }
 
     public static View prepareNext(int activityIndex, Product product, DraggableLinearLayout view) {

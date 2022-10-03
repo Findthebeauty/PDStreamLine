@@ -6,12 +6,19 @@ import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 用于管理Timestream生命周期
  */
 public class Streamline {
+
+    public static final LinkedList<Timestream> giveawayTimestreams = new LinkedList<>();
+
+    public static final Set<Timestream> offShelvesTimestreams = new HashSet<>();
 
     /**
      * 将解绑的商品根据商品所处的生命周期{fresh,close to expire(promotion),expired}
@@ -61,4 +68,5 @@ public class Streamline {
             PDInfoWrapper.updateInfo(sqLiteDatabase, t, MyDatabaseHelper.PROMOTION_TIMESTREAM_TABLE_NAME);
         }
     }
+
 }

@@ -3,6 +3,7 @@ package com.shepherdboy.pdstreamline.beanview;
 import static com.shepherdboy.pdstreamline.MyApplication.PD_INFO_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY;
+import static com.shepherdboy.pdstreamline.MyApplication.PROMOTION_TIMESTREAM_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
 import static com.shepherdboy.pdstreamline.MyApplication.combinationHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowCombsHashMap;
@@ -71,6 +72,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
             case POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY:
             case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
+            case PROMOTION_TIMESTREAM_ACTIVITY:
                 combination = inflater.inflate(R.layout.comb_layout_uneditable, null).findViewById(R.id.combination);
                 break;
 
@@ -178,6 +180,10 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
      */
     public void bindData(int activityIndex, Object o) {
 
+        timestreamCombination = null;
+        timestreamId = null;
+        productCode = null;
+
         // 如果传入null，表示更新nextTrigger的信息，只需要更新商品名
         if (o == null) {
 
@@ -191,7 +197,16 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
         watcher.removeWatcher(inventory);
         watcher.removeWatcher(giveawayDOPTv);
 
-        Timestream timestream = (Timestream) o;
+        Timestream timestream;
+
+        if (o instanceof Timestream) {
+
+            timestream = (Timestream) o;
+
+        } else {
+
+            timestream = ((TimestreamCombination) o).getBuyTimestream();
+        }
 
         this.productCode = timestream.getProductCode();
         this.timestreamId = timestream.getId();
@@ -200,7 +215,6 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
         String discountRate = timestream.getDiscountRate();
 
         onShowTimeStreamsHashMap.put(this.getId(), timestream);
-        timestream.setBoundLayoutId(String.valueOf(this.getId()));
 
         switch (discountRate) {
 
@@ -219,7 +233,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
                         break;
                 }
                 inventory.setText(timestream.getProductInventory());
-                unitTv.setText(MyApplication.getAllProducts().get(timestream.getProductCode()).getProductSpec());
+                unitTv.setText(String.valueOf(MyApplication.getAllProducts().get(timestream.getProductCode()).getProductSpec()));
 
                 if (timestream.isInBasket()) {
 
@@ -230,6 +244,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
                     int color = MyApplication.getColorByTimestreamStateCode(timestream.getTimeStreamStateCode());
                     buyBackground.setBackgroundColor(color);
                 }
+
                 onShowTimeStreamsHashMap.put(buyBackground.getId(), timestream); //一个combination有3个背景，整体的、商品和赠品的，3个背景都要记录
 
                 mapping(activityIndex, timestream);
@@ -255,7 +270,6 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
                 timestreamCombination = combinationHashMap.get(timestream.getSiblingPromotionId());
 
-                timestreamCombination.getBuyTimestream().setBoundLayoutId(String.valueOf(this.getId()));
                 break;
 
             default:
@@ -269,7 +283,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
             buyProductNameTv.setText(timestreamCombination.getBuyProductName());
             buyDOPEt.setText(DateUtil.typeMach(timestreamCombination.getBuyTimestream()
                     .getProductDOP()).substring(0,10));
-            inventory.setText(timestreamCombination.getPackageCount());
+            inventory.setText(String.valueOf(timestreamCombination.getPackageCount()));
             unitTv.setText("组");
 
             giveawayProductNameTv.setText(timestreamCombination.getGiveawayProductName());
@@ -292,6 +306,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
                 case POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY:
                 case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
+                case PROMOTION_TIMESTREAM_ACTIVITY:
                     break;
 
                 default:
@@ -306,6 +321,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
                 case POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY:
                 case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
+                case PROMOTION_TIMESTREAM_ACTIVITY:
                     break;
 
                 default:

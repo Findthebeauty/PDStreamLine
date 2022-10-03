@@ -247,7 +247,10 @@ public class Timestream {
     public Timestream(Timestream t) {
 
         this();
+        setProductCode(t.getProductCode());
+        setProductName(t.getProductName());
         setPromoting(false);
+        setDiscountRate("");
         setProductDOP(t.getProductDOP());
         setInBasket(t.isInBasket());
         setProductCoordinate(t.getProductCoordinate());

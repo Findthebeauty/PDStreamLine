@@ -1,24 +1,34 @@
 package com.shepherdboy.pdstreamline.activities;
 
+import static com.shepherdboy.pdstreamline.MyApplication.PROMOTION_TIMESTREAM_ACTIVITY;
+import static com.shepherdboy.pdstreamline.MyApplication.combinationHashMap;
+import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
+
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ViewGroup;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
+import com.shepherdboy.pdstreamline.activities.transaction.Streamline;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
+import com.shepherdboy.pdstreamline.beanview.ProductLoader;
+import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService;
+import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 
 public class PromotionActivity extends BaseActivity {
 
-    private LinkedList<Timestream> oddments;
-    private LinkedList<TimestreamCombination> combinations;
+    private HashMap<String, Timestream> oddments;
+    private HashMap<String, TimestreamCombination> combinations;
     private DraggableLinearLayout dragLayout;
+
+    private static ActivityInfoChangeWatcher watcher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,9 +45,12 @@ public class PromotionActivity extends BaseActivity {
 
         dragLayout = findViewById(R.id.parent);
         MyApplication.draggableLinearLayout = dragLayout;
+        MyApplication.activityIndex = PROMOTION_TIMESTREAM_ACTIVITY;
         dragLayout.setLayoutChanged(true);
-        oddments = new LinkedList<>();
-        combinations = new LinkedList<>();
+        oddments = new HashMap<>();
+        combinations = new HashMap<>();
+
+        watcher = new ActivityInfoChangeWatcher(PROMOTION_TIMESTREAM_ACTIVITY);
 
         if (SettingActivity.settingInstance.isAutoCombine()) {
 
@@ -45,7 +58,17 @@ public class PromotionActivity extends BaseActivity {
 
         }
 
+        loadTimestreams();
+    }
 
+    private void loadTimestreams() {
+
+        ProductLoader.initCellBody(MyApplication.PROMOTION_TIMESTREAM_ACTIVITY,
+                dragLayout,combinations.size() + oddments.size(),0);
+        ProductLoader.loadTimestreams(MyApplication.PROMOTION_TIMESTREAM_ACTIVITY,
+                dragLayout,combinations,0);
+        ProductLoader.loadTimestreams(MyApplication.PROMOTION_TIMESTREAM_ACTIVITY,
+                dragLayout,oddments,combinations.size());
     }
 
     /**
@@ -75,12 +98,20 @@ public class PromotionActivity extends BaseActivity {
             if(t.getTimeStreamStateCode() == Timestream.CLOSE_TO_EXPIRE) {
 
                 TimestreamCombination comb = combine(t);
-                if(comb != null)
-                    combinations.add(comb);
+                if(comb != null) {
+                    combinations.put(t.getId(), comb);
+
+                    if (combinationHashMap == null)
+                        combinationHashMap = PDInfoWrapper.getTimestreamCombinations(sqLiteDatabase);
+                    MyApplication.combinationHashMap.put(t.getId(), comb);
+                }
+            } else {
+
+                Streamline.offShelvesTimestreams.add(t);
             }
         }
 
-        for (TimestreamCombination comb : combinations) {
+        for (TimestreamCombination comb : combinations.values()) {
 
             basket.remove(comb.getBuyTimestream().getId());
         }
@@ -96,6 +127,7 @@ public class PromotionActivity extends BaseActivity {
      */
     private TimestreamCombination combine(Timestream t) {
 
+        Log.d("combine", t.toString());
         int inventory = Integer.parseInt(t.getProductInventory());
 
         t.setSiblingPromotionId(t.getId());
@@ -108,7 +140,8 @@ public class PromotionActivity extends BaseActivity {
 
             inventory -= 1;
             t.setProductInventory(String.valueOf(inventory));
-            oddments.add(new Timestream(t));
+            Timestream timestream = new Timestream(t);
+            oddments.put(timestream.getId(), timestream);
             if (inventory < 2) return null;
         }
 

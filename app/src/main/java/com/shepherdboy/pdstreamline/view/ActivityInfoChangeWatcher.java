@@ -190,6 +190,8 @@ public class ActivityInfoChangeWatcher {
 
     public ActivityInfoChangeWatcher(Integer activityIndex) {
         initHandler();
+        ActivityInfoChangeWatcher watcher = activityInfoChangeWatchers.remove(activityIndex);
+        if(watcher != null) watcher.destroy();
         activityInfoChangeWatchers.put(activityIndex, this);
         this.activityIndex = activityIndex;
     }

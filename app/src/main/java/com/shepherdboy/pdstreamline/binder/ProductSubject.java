@@ -17,6 +17,7 @@ public class ProductSubject implements Subject{
     @Override
     public void detach(Observer observer) {
 
+        if (observer != null)
         observers.remove(((ProductObserver)observer).getActivityIndex());
     }
 

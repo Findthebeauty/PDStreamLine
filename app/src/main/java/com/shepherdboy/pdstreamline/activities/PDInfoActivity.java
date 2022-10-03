@@ -313,7 +313,7 @@ public class PDInfoActivity extends BaseActivity {
         }
 
         ProductLoader.initCellBody(PD_INFO_ACTIVITY,
-                dragLayout,product.getTimeStreams(),0,product.getProductCode());
+                dragLayout,product.getTimeStreams().size(),0);
 
         if (product.getTimeStreams().size() > 0) {
 
