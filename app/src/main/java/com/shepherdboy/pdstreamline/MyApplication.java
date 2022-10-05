@@ -30,6 +30,7 @@ import com.alibaba.fastjson.JSON;
 import com.shepherdboy.pdstreamline.activities.MainActivity;
 import com.shepherdboy.pdstreamline.activities.PDInfoActivity;
 import com.shepherdboy.pdstreamline.activities.PossiblePromotionTimestreamActivity;
+import com.shepherdboy.pdstreamline.activities.PromotionActivity;
 import com.shepherdboy.pdstreamline.activities.ScanActivity;
 import com.shepherdboy.pdstreamline.activities.SettingActivity;
 import com.shepherdboy.pdstreamline.activities.TraversalTimestreamActivity;
@@ -252,6 +253,13 @@ public class MyApplication extends Application {
         stopCountPressTime();
         switch (activityIndex) {
 
+            case PROMOTION_TIMESTREAM_ACTIVITY:
+
+                View view = draggableLinearLayout.viewDragHelper.findTopChildUnder((int) (event.getX()),
+                        (int) (event.getY()));
+                PromotionActivity.onViewClick(view);
+                break;
+
             case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
 
 //                BeanView beanView = (BeanView) draggableLinearLayout.getCapturedView();
@@ -323,6 +331,7 @@ public class MyApplication extends Application {
 
         switch (activityIndex) {
 
+            case PROMOTION_TIMESTREAM_ACTIVITY:
             case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
 
                 draggableLinearLayout.setVerticalDraggable(true);
@@ -575,6 +584,22 @@ public class MyApplication extends Application {
         PDInfoWrapper.deleteTimestream(sqLiteDatabase, timestream.getId());
 
 
+    }
+
+    public static void onViewClick(int activityIndex, View v) {
+
+        switch (activityIndex) {
+
+            case PROMOTION_TIMESTREAM_ACTIVITY:
+
+                PromotionActivity.onViewClick(v);
+                break;
+
+            default:
+                break;
+
+
+        }
     }
 //
 //    static {

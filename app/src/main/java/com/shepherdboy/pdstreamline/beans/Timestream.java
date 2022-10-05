@@ -257,7 +257,7 @@ public class Timestream {
         setProductDOP(t.getProductDOP());
         setProductExpireDate(t.getProductExpireDate());
         setProductPromotionDate(t.getProductPromotionDate());
-        setProductInventory("1");
+        setProductInventory(t.getProductInventory());
     }
 
     public Timestream(String productCode) {

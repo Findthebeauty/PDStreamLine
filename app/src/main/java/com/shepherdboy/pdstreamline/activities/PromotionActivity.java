@@ -6,8 +6,13 @@ import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Message;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+
+import androidx.annotation.NonNull;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
@@ -15,6 +20,7 @@ import com.shepherdboy.pdstreamline.activities.transaction.Streamline;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.beanview.ProductLoader;
+import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService;
 import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
@@ -24,11 +30,31 @@ import java.util.HashMap;
 
 public class PromotionActivity extends BaseActivity {
 
-    private HashMap<String, Timestream> oddments;
-    private HashMap<String, TimestreamCombination> combinations;
+    private static HashMap<String, Timestream> oddments;
+    private static HashMap<String, TimestreamCombination> combinations;
+    private static HashMap<String, Timestream> oldTimestreams;
     private DraggableLinearLayout dragLayout;
 
+    private View temp;
+
     private static ActivityInfoChangeWatcher watcher;
+
+    private static Handler handler;
+
+    public static void onViewClick(View v) {
+
+        if(!(v instanceof TimestreamCombinationView)) return;
+
+        postCombine(v);
+    }
+
+    private static void postCombine(View v) {
+
+        Message message = handler.obtainMessage();
+        message.obj = v;
+        handler.sendMessage(message);
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,24 +75,82 @@ public class PromotionActivity extends BaseActivity {
         dragLayout.setLayoutChanged(true);
         oddments = new HashMap<>();
         combinations = new HashMap<>();
+        oldTimestreams = new HashMap<>();
 
         watcher = new ActivityInfoChangeWatcher(PROMOTION_TIMESTREAM_ACTIVITY);
+        initHandler();
 
         if (SettingActivity.settingInstance.isAutoCombine()) {
 
             autoCombine(MidnightTimestreamManagerService.basket);
 
+            loadTimestreams(true);
+
+        } else {
+
+            filterProduct();
+            loadTimestreams(false);
         }
 
-        loadTimestreams();
     }
 
-    private void loadTimestreams() {
+    private void initHandler() {
+
+        if(handler != null) handler.removeCallbacksAndMessages(null);
+
+        handler = new Handler() {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+
+                TimestreamCombinationView comb = (TimestreamCombinationView) msg.obj;
+                initCombine(comb);
+            }
+        };
+
+        MyApplication.handlers.add(handler);
+    }
+
+    private void initCombine(TimestreamCombinationView combView) {
+        setContentView(R.layout.promotion_combine);
+
+        Timestream timestream;
+
+        String timestreamId = combView.getTimestreamId();
+
+        if (combinations.containsKey(timestreamId)) {
+
+            timestream = oldTimestreams.get(timestreamId);
+
+        } else {
+
+            timestream = oddments.get(timestreamId);
+        }
+
+        TimestreamCombinationView comb = new TimestreamCombinationView(PROMOTION_TIMESTREAM_ACTIVITY, this, timestream);
+
+        LinearLayout parent = findViewById(R.id.parent);
+
+        parent.addView(comb, 1);
+    }
+
+
+    private void filterProduct() {
+
+        for(Timestream t : MidnightTimestreamManagerService.basket.values()) {
+
+            if (t.getTimeStreamStateCode() == Timestream.CLOSE_TO_EXPIRE)
+                oddments.put(t.getId(), t);
+        }
+    }
+
+    private void loadTimestreams(boolean combined) {
 
         ProductLoader.initCellBody(MyApplication.PROMOTION_TIMESTREAM_ACTIVITY,
                 dragLayout,combinations.size() + oddments.size(),0);
-        ProductLoader.loadTimestreams(MyApplication.PROMOTION_TIMESTREAM_ACTIVITY,
-                dragLayout,combinations,0);
+
+        if(combined) ProductLoader.loadTimestreams(MyApplication.PROMOTION_TIMESTREAM_ACTIVITY,
+                dragLayout, combinations, 0);
+
         ProductLoader.loadTimestreams(MyApplication.PROMOTION_TIMESTREAM_ACTIVITY,
                 dragLayout,oddments,combinations.size());
     }
@@ -99,21 +183,16 @@ public class PromotionActivity extends BaseActivity {
 
                 TimestreamCombination comb = combine(t);
                 if(comb != null) {
-                    combinations.put(t.getId(), comb);
+                    combinations.put(comb.getBuyTimestream().getId(), comb);
 
                     if (combinationHashMap == null)
                         combinationHashMap = PDInfoWrapper.getTimestreamCombinations(sqLiteDatabase);
-                    MyApplication.combinationHashMap.put(t.getId(), comb);
+                    MyApplication.combinationHashMap.put(comb.getBuyTimestream().getId(), comb);
                 }
             } else {
 
                 Streamline.offShelvesTimestreams.add(t);
             }
-        }
-
-        for (TimestreamCombination comb : combinations.values()) {
-
-            basket.remove(comb.getBuyTimestream().getId());
         }
     }
 
@@ -127,25 +206,28 @@ public class PromotionActivity extends BaseActivity {
      */
     private TimestreamCombination combine(Timestream t) {
 
-        Log.d("combine", t.toString());
+        Timestream evenTimestream = new Timestream(t);
+        oldTimestreams.put(evenTimestream.getId(), t);
+
         int inventory = Integer.parseInt(t.getProductInventory());
 
-        t.setSiblingPromotionId(t.getId());
-        t.setBuySpecs("1");
-        t.setGiveawaySpecs("1");
-        t.setDiscountRate("0.5");
-        t.setInBasket(false);
+        evenTimestream.setSiblingPromotionId(t.getId());
+        evenTimestream.setBuySpecs("1");
+        evenTimestream.setGiveawaySpecs("1");
+        evenTimestream.setDiscountRate("0.5");
+        evenTimestream.setInBasket(false);
 
         if (inventory % 2 == 1) {
 
             inventory -= 1;
-            t.setProductInventory(String.valueOf(inventory));
+            evenTimestream.setProductInventory(String.valueOf(inventory));
             Timestream timestream = new Timestream(t);
+            timestream.setProductInventory("1");
             oddments.put(timestream.getId(), timestream);
             if (inventory < 2) return null;
         }
 
-        return new TimestreamCombination(t);
+        return new TimestreamCombination(evenTimestream);
     }
 
 

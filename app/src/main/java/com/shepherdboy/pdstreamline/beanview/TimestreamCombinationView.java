@@ -187,7 +187,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
         // 如果传入null，表示更新nextTrigger的信息，只需要更新商品名
         if (o == null) {
 
-            buyProductNameTv.setText(MyApplication.getAllProducts().get(productCode).getProductName());
+//            buyProductNameTv.setText(MyApplication.getAllProducts().get(productCode).getProductName());
             return;
         }
 
@@ -196,6 +196,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
         watcher.removeWatcher(buyDOPEt);
         watcher.removeWatcher(inventory);
         watcher.removeWatcher(giveawayDOPTv);
+        watcher.watch(this);
 
         Timestream timestream;
 
@@ -210,6 +211,8 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
         this.productCode = timestream.getProductCode();
         this.timestreamId = timestream.getId();
+
+        if(activityIndex == TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF)
         TraversalTimestreamActivity.combViews.put(timestreamId, this);
 
         String discountRate = timestream.getDiscountRate();

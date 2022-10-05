@@ -469,11 +469,16 @@ public class SettingActivity extends BaseActivity {
     private void  loadTimeIntervalSetting() {
 
         CheckBox autoCommitCKBox = findViewById(R.id.auto_commit_checkbox);
+        TextView autoCommitTV = findViewById(R.id.auto_commit_textview);
         EditText autoCommitEText = findViewById(R.id.auto_commit_delay_edittext);
         CheckBox doubleClickCKBox = findViewById(R.id.double_click_checkbox);
+        TextView doubleClickTV = findViewById(R.id.double_click_textview);
         EditText doubleClickEText = findViewById(R.id.double_click_delay_edittext);
         CheckBox longClickCKBox = findViewById(R.id.long_click_checkbox);
+        TextView longClickTV = findViewById(R.id.long_click_textview);
         EditText longClickEText = findViewById(R.id.long_click_delay_edittext);
+        CheckBox autoCombine = findViewById(R.id.auto_combine_checkbox);
+        TextView autoCombineTV = findViewById(R.id.auto_combine_textview);
 
         autoCommitCKBox.setChecked(settingInstance.isAutoCommitFlag());
         autoCommitEText.setText(settingInstance.getAutoCommitDelay());
@@ -481,6 +486,7 @@ public class SettingActivity extends BaseActivity {
         doubleClickEText.setText(settingInstance.getDoubleClickDelay());
         longClickCKBox.setChecked(settingInstance.isLongClickFlag());
         longClickEText.setText(settingInstance.getLongClickDelay());
+        autoCombine.setChecked(settingInstance.isAutoCombine());
 
         if (!watcher.getMyWatchers().containsKey(autoCommitEText)) {
 
@@ -516,6 +522,13 @@ public class SettingActivity extends BaseActivity {
 
         }
 
+        autoCommitTV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                autoCommitCKBox.setChecked(!autoCommitCKBox.isChecked());
+            }
+        });
+
         if (!watcher.getMyWatchers().containsKey(doubleClickEText)) {
 
             watcher.watch(null, doubleClickEText, SINGLETON_SETTING_DOUBLE_CLICK_DELAY);
@@ -549,6 +562,13 @@ public class SettingActivity extends BaseActivity {
             }
 
         }
+
+        doubleClickTV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                doubleClickCKBox.setChecked(!doubleClickCKBox.isChecked());
+            }
+        });
 
         if (!watcher.getMyWatchers().containsKey(longClickEText)) {
 
@@ -584,6 +604,27 @@ public class SettingActivity extends BaseActivity {
 
         }
 
+        longClickTV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                longClickCKBox.setChecked(!longClickCKBox.isChecked());
+            }
+        });
+
+        autoCombine.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                settingInstance.setAutoCombine(isChecked);
+                settingInstance.setUpdated(false);
+            }
+        });
+
+        autoCombineTV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                autoCombine.setChecked(!autoCombine.isChecked());
+            }
+        });
 
     }
 

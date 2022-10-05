@@ -7,7 +7,6 @@ import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -16,7 +15,7 @@ import java.util.Set;
  */
 public class Streamline {
 
-    public static final LinkedList<Timestream> giveawayTimestreams = new LinkedList<>();
+    public static final Set<Timestream> giveawayTimestreams = new HashSet<>();
 
     public static final Set<Timestream> offShelvesTimestreams = new HashSet<>();
 
