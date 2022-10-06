@@ -34,7 +34,7 @@ public class ScanActivity extends Activity {
 
         intentIntegrator.setCaptureActivity(ScanActivity.class);
         intentIntegrator.setDesiredBarcodeFormats(IntentIntegrator.ONE_D_CODE_TYPES);
-        intentIntegrator.setPrompt("扫描绑定");
+        intentIntegrator.setPrompt("扫描条码");
         intentIntegrator.setCameraId(0);
         intentIntegrator.setBeepEnabled(false);
         intentIntegrator.setBarcodeImageEnabled(false);

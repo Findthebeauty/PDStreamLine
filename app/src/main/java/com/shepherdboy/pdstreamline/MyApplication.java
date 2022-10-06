@@ -99,12 +99,13 @@ public class MyApplication extends Application {
     public static final int PD_INFO_ACTIVITY = 1;
     public static final int POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY = 2;
     public static final int PROMOTION_TIMESTREAM_ACTIVITY = 3;
-    public static final int POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY = 4;
-    public static final int EXPIRED_TIMESTREAM_ACTIVITY = 5;
-    public static final int SETTING_ACTIVITY = 6;
-    public static final int TRAVERSAL_TIMESTREAM_ACTIVITY = 7;
-    public static final int TRAVERSAL_TIMESTREAM_ACTIVITY_MODIFY_SHELF = 8;
-    public static final int TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF = 9;
+    public static final int PROMOTION_TIMESTREAM_ACTIVITY_COMBINE = 4;
+    public static final int POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY = 5;
+    public static final int EXPIRED_TIMESTREAM_ACTIVITY = 6;
+    public static final int SETTING_ACTIVITY = 7;
+    public static final int TRAVERSAL_TIMESTREAM_ACTIVITY = 8;
+    public static final int TRAVERSAL_TIMESTREAM_ACTIVITY_MODIFY_SHELF = 9;
+    public static final int TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF = 10;
 
     public static final int ITEM_SELECTED = 100;
 
@@ -153,6 +154,7 @@ public class MyApplication extends Application {
     public static LinkedList thingsToSaveList = new LinkedList();
 
     private static HashMap<String, Product> allProducts; //全局Product表
+    private static HashMap<String, Timestream> allTimestreams; //全局Product表 key timestreamId
 
     public static HashMap<String, TimestreamCombination> combinationHashMap; //已经捆绑的所有商品
 
@@ -195,6 +197,12 @@ public class MyApplication extends Application {
     public static HashMap<String, Product> getAllProducts() {
         if (allProducts == null) allProducts = PDInfoWrapper.getAllProduct();
         return allProducts;
+    }
+
+    public static HashMap<String, Timestream> getAllTimestreams() {
+        if (allTimestreams == null) allTimestreams = new HashMap<>();
+
+        return allTimestreams;
     }
 
     public static boolean tryCaptureClickEvent(MotionEvent event) {
@@ -270,10 +278,27 @@ public class MyApplication extends Application {
                 break;
 
             case PD_INFO_ACTIVITY:
+
                 serialize(currentProduct);
-                String code;
-                code = currentProduct.getProductCode();
-                TraversalTimestreamActivity.actionStart(code);
+
+                if (PDInfoActivity.getActivityRequestCode() == PDInfoActivity.REQUEST_CODE_GIVEAWAY) {
+                    view = draggableLinearLayout.viewDragHelper.findTopChildUnder((int) (event.getX()),
+                            (int) (event.getY()));
+
+                    if (view instanceof TimestreamCombinationView) {
+
+                        String timestreamId = ((TimestreamCombinationView) view).getTimestreamId();
+                        Timestream timestream = getAllTimestreams().get(timestreamId);
+
+                        PDInfoActivity.postActionResult(timestream);
+                    }
+
+                } else {
+
+                    String code;
+                    code = currentProduct.getProductCode();
+                    TraversalTimestreamActivity.actionStart(code);
+                }
                 break;
 
             default:
@@ -956,7 +981,8 @@ public class MyApplication extends Application {
         Product product = null;
         if(timestream != null)
         product = allProducts.get(timestream.getProductCode());
-        if(product == null) product = PDInfoWrapper.getProduct(timestream.getProductCode(), sqLiteDatabase,
+
+        if(product == null && timestream != null) product = PDInfoWrapper.getProduct(timestream.getProductCode(), sqLiteDatabase,
                 MyDatabaseHelper.ENTIRE_TIMESTREAM);
 
         if (infoValidated) {

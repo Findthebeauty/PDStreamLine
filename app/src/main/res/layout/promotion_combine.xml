@@ -20,27 +20,41 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+        <Button
+            android:id="@+id/add"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="赠品"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/switch_giveaway" />
+
         <Button
             android:id="@+id/switch_giveaway"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            android:text="切换"/>
-        <EditText
             android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginEnd="10sp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toLeftOf="@id/scan"
-            app:layout_constraintTop_toBottomOf="@id/switch_giveaway"
-            app:layout_constraintBottom_toBottomOf="@id/scan"/>
-        <Button
-            android:id="@+id/scan"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/switch_giveaway"
+            android:text="切换"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/combine"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/combine"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="提交"
             app:layout_constraintRight_toRightOf="parent"
-            android:text="扫描"/>
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toRightOf="@id/switch_giveaway"
+            />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/dragLayout">
+
+    </ScrollView>
 </LinearLayout>

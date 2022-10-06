@@ -48,6 +48,11 @@ public class PDInfoActivity extends BaseActivity {
 
     private static final int SHOW_PRODUCT_BY_CODE = 10;
     private static final int SHOW_PRODUCT_BY_INSTANCE = 11;
+    private static final int ACTION_RESULT = 12;
+
+    public static final int REQUEST_CODE_GIVEAWAY = 99;
+
+    private static int activityRequestCode;
 
     private static Handler showHandler;
     private static String productToShow;
@@ -83,6 +88,31 @@ public class PDInfoActivity extends BaseActivity {
         productToShow = code;
     }
 
+    public static void actionStart(Activity activity, int requestCode) {
+
+        Intent intent = new Intent(activity, PDInfoActivity.class);
+        activity.startActivityForResult(intent, requestCode);
+
+        activityRequestCode = requestCode;
+    }
+
+    public static void postActionResult(Timestream timestream) {
+
+        Message msg = showHandler.obtainMessage();
+        msg.what = ACTION_RESULT;
+        msg.obj = timestream;
+        showHandler.sendMessage(msg);
+    }
+
+    public void actionResult(Timestream timestream) {
+
+        Intent intent = new Intent();
+        MyApplication.getAllTimestreams().put(timestream.getId(), timestream);
+        intent.putExtra("giveaway", timestream.getId());
+        setResult(RESULT_OK, intent);
+        finish();
+    }
+
     public static void postShowProduct(String after) {
 
         postMessage(SHOW_PRODUCT_BY_CODE, after);
@@ -98,6 +128,10 @@ public class PDInfoActivity extends BaseActivity {
 
     public static void postLoadProduct(Product currentProduct) {
         postMessage(SHOW_PRODUCT_BY_INSTANCE, currentProduct);
+    }
+
+    public static int getActivityRequestCode() {
+        return activityRequestCode;
     }
 
     @Override
@@ -129,6 +163,15 @@ public class PDInfoActivity extends BaseActivity {
                             Product product = (Product) msg.obj;
                             if (product.getProductCode().equals(currentProduct.getProductCode()))
                                 loadProduct(product);
+                            break;
+
+                        case ACTION_RESULT:
+
+                            Timestream timestream = (Timestream) msg.obj;
+                            actionResult(timestream);
+                            break;
+
+                        default:
                             break;
                     }
                 }
@@ -173,7 +216,7 @@ public class PDInfoActivity extends BaseActivity {
 
         scanner = findViewById(R.id.zxing_barcode_scanner);
 
-        MyApplication.registerCameraScanner(this, (View) findViewById(R.id.parent).getParent());
+//        MyApplication.registerCameraScanner(this, (View) findViewById(R.id.parent).getParent());
 
         scanner.setOnClickListener(new View.OnClickListener() {
             @Override

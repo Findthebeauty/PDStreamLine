@@ -4,6 +4,7 @@ import static com.shepherdboy.pdstreamline.MyApplication.PD_INFO_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.PROMOTION_TIMESTREAM_ACTIVITY;
+import static com.shepherdboy.pdstreamline.MyApplication.PROMOTION_TIMESTREAM_ACTIVITY_COMBINE;
 import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
 import static com.shepherdboy.pdstreamline.MyApplication.combinationHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowCombsHashMap;
@@ -73,6 +74,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
             case POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY:
             case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
             case PROMOTION_TIMESTREAM_ACTIVITY:
+            case PROMOTION_TIMESTREAM_ACTIVITY_COMBINE:
                 combination = inflater.inflate(R.layout.comb_layout_uneditable, null).findViewById(R.id.combination);
                 break;
 
@@ -196,7 +198,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
         watcher.removeWatcher(buyDOPEt);
         watcher.removeWatcher(inventory);
         watcher.removeWatcher(giveawayDOPTv);
-        watcher.watch(this);
+//        watcher.watch(this);
 
         Timestream timestream;
 
@@ -218,6 +220,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
         String discountRate = timestream.getDiscountRate();
 
         onShowTimeStreamsHashMap.put(this.getId(), timestream);
+        MyApplication.getAllTimestreams().put(timestreamId, timestream);
 
         switch (discountRate) {
 
@@ -254,6 +257,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
                 break;
 
             case "0.5":
+            case "1":
 
                 for (View v : giveAwayViews) {
 
@@ -310,6 +314,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
                 case POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY:
                 case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
                 case PROMOTION_TIMESTREAM_ACTIVITY:
+                case PROMOTION_TIMESTREAM_ACTIVITY_COMBINE:
                     break;
 
                 default:
@@ -325,6 +330,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
                 case POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY:
                 case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
                 case PROMOTION_TIMESTREAM_ACTIVITY:
+                case PROMOTION_TIMESTREAM_ACTIVITY_COMBINE:
                     break;
 
                 default:

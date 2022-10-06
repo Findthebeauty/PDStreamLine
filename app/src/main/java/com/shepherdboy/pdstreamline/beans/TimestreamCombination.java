@@ -42,6 +42,15 @@ public class TimestreamCombination {
         this.giveawayTimestream = giveawayTimestream;
         selfPromotion = false;
         packageCount = Integer.parseInt(buyTimestream.getProductInventory());
+
+        buyTimestream.setBuySpecs("1");
+        buyTimestream.setGiveawaySpecs("1");
+        buyTimestream.setDiscountRate("1");
+        buyTimestream.setSiblingPromotionId(giveawayTimestream.getId());
+        giveawayTimestream.setBuySpecs("1");
+        giveawayTimestream.setGiveawaySpecs("1");
+        giveawayTimestream.setDiscountRate("0");
+        giveawayTimestream.setSiblingPromotionId(buyTimestream.getId());
     }
 
     public int getPackageCount() {

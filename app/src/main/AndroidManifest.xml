@@ -27,7 +27,7 @@
         android:theme="@style/customAnimation"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".BaseActivity"
+            android:name=".activities.BaseActivity"
             android:exported="false" />
         <activity
             android:name=".activities.TraversalTimestreamActivity"
@@ -46,7 +46,7 @@
         <activity
             android:name=".activities.PromotionActivity"
             android:exported="true"
-            android:launchMode="singleTask" />
+            android:launchMode="singleInstance" />
         <activity
             android:name=".activities.PossiblePromotionTimestreamActivity"
             android:exported="true"

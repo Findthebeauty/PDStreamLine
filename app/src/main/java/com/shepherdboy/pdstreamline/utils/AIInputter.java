@@ -209,7 +209,7 @@ public class AIInputter {
 
     public static boolean validate(String information, Timestream timestream, int fieldIndex) {
 
-        if (timestream == null) return false;
+        if (timestream == null) return fieldIndex == MyApplication.PRODUCT_CODE;
         Product product = PDInfoWrapper.getProduct(timestream.getProductCode(),
                 MyApplication.sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
 

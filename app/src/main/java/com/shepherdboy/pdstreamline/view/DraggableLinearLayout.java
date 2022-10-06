@@ -72,7 +72,7 @@ public class DraggableLinearLayout extends LinearLayout {
                 if (child instanceof LinearLayout) {
 
                     Set<Integer> timestreamIds = MyApplication.originalPositionHashMap.keySet();
-                    return timestreamIds.contains(child.getId()) || activityIndex == MyApplication.PROMOTION_TIMESTREAM_ACTIVITY;
+                    return timestreamIds.contains(child.getId());
                 }
 
                 return false;
@@ -148,8 +148,6 @@ public class DraggableLinearLayout extends LinearLayout {
                 return getMeasuredHeight() - child.getMeasuredHeight();
 
             }
-
-
 
         });
 
@@ -340,6 +338,7 @@ public class DraggableLinearLayout extends LinearLayout {
             ((ClosableScrollView) p).setNewY(event.getRawY());
 
         }
+
         if (draggableView != null) {
 
             return viewDragHelper.shouldInterceptTouchEvent(event);
@@ -431,6 +430,7 @@ public class DraggableLinearLayout extends LinearLayout {
 
         //获取到可拖拽的view
         if (draggableView != null) {
+
             //拖拽助手处理touch
             viewDragHelper.processTouchEvent(event);
             return true;

@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -65,13 +64,7 @@ public class ActivityInfoChangeWatcher {
         return myWatchers;
     }
 
-    public void watch(LinearLayout view) {
-
-        Watcher watcher = new Watcher();
-        view.setOnClickListener(watcher);
-    }
-
-    class Watcher implements TextWatcher, View.OnFocusChangeListener , View.OnClickListener{
+    class Watcher implements TextWatcher, View.OnFocusChangeListener {
 
         private boolean shouldWatch = false;
 
@@ -194,10 +187,6 @@ public class ActivityInfoChangeWatcher {
             this.shouldWatch = shouldWatch;
         }
 
-        @Override
-        public void onClick(View v) {
-            MyApplication.onViewClick(activityIndex, v);
-        }
     }
 
     public ActivityInfoChangeWatcher(Integer activityIndex) {
