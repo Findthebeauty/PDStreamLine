@@ -13,8 +13,6 @@ import com.shepherdboy.pdstreamline.beans.DateScope;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
-import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
-import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -209,9 +207,7 @@ public class AIInputter {
 
     public static boolean validate(String information, Timestream timestream, int fieldIndex) {
 
-        if (timestream == null) return fieldIndex == MyApplication.PRODUCT_CODE;
-        Product product = PDInfoWrapper.getProduct(timestream.getProductCode(),
-                MyApplication.sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
+        Product product = MyApplication.getCurrentProduct(timestream);
 
         switch (fieldIndex) {
 

@@ -626,6 +626,26 @@ public class MyApplication extends Application {
 
         }
     }
+
+    public static Product getCurrentProduct(Timestream timestream) {
+
+        Product product = null;
+
+        switch (MyApplication.activityIndex) {
+
+            case MyApplication.PD_INFO_ACTIVITY:
+                product = MyApplication.currentProduct;
+                break;
+
+            default:
+                if (timestream != null)
+                product = PDInfoWrapper.getProduct(timestream.getProductCode(),
+                        MyApplication.sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
+                break;
+        }
+
+        return product;
+    }
 //
 //    static {
 //
@@ -978,12 +998,7 @@ public class MyApplication extends Application {
         boolean infoValidated = AIInputter.validate(after, timestream, filedIndex);
 
 
-        Product product = null;
-        if(timestream != null)
-        product = allProducts.get(timestream.getProductCode());
-
-        if(product == null && timestream != null) product = PDInfoWrapper.getProduct(timestream.getProductCode(), sqLiteDatabase,
-                MyDatabaseHelper.ENTIRE_TIMESTREAM);
+        Product product = getCurrentProduct(timestream);
 
         if (infoValidated) {
 

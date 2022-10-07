@@ -71,7 +71,7 @@ public class PromotionActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode != PDInfoActivity.REQUEST_CODE_GIVEAWAY) return;
+        if (requestCode != PDInfoActivity.REQUEST_CODE_GIVEAWAY || resultCode != RESULT_OK) return;
 
         String timestreamId = data.getExtras().getString("giveaway");
 
@@ -86,27 +86,55 @@ public class PromotionActivity extends BaseActivity {
         int buyInventory = Integer.parseInt(buyTimestream.getProductInventory());
         int giveawayInventory = Integer.parseInt(giveawayTimestream.getProductInventory());
 
-        TimestreamCombination comb;
-        if (giveawayInventory > buyInventory) {
+        int stateCode = giveawayTimestream.getTimeStreamStateCode();
 
-            Timestream timestream = new Timestream(giveawayTimestream);
-            timestream.setProductInventory(String.valueOf(buyInventory));
-            giveawayTimestream.setProductInventory(String.valueOf(buyInventory - giveawayInventory));
+        switch (stateCode) {
 
-            giveawayTimestream.setUpdated(false);
-            PDInfoWrapper.deleteTimestream(sqLiteDatabase, giveawayTimestream.getId());
-            PDInfoWrapper.updateInfo(sqLiteDatabase, giveawayTimestream, MyDatabaseHelper.NEW_TIMESTREAM);
+            case Timestream.CLOSE_TO_EXPIRE:
 
-            comb = new TimestreamCombination(buyTimestream, timestream);
+                TimestreamCombination comb;
+                if (giveawayInventory > buyInventory) {
 
-        } else {
+                    Timestream timestream = new Timestream(giveawayTimestream);
+                    timestream.setProductInventory(String.valueOf(buyInventory));
+                    giveawayTimestream.setProductInventory(String.valueOf(giveawayInventory - buyInventory));
 
-            giveawayTimestream.setProductInventory(buyTimestream.getProductInventory());
+                    giveawayTimestream.setUpdated(false);
+                    PDInfoWrapper.deleteTimestream(sqLiteDatabase, giveawayTimestream.getId());
+                    PDInfoWrapper.updateInfo(sqLiteDatabase, giveawayTimestream, MyDatabaseHelper.NEW_TIMESTREAM);
 
-            comb = new TimestreamCombination(buyTimestream, giveawayTimestream);
+                    comb = new TimestreamCombination(buyTimestream, timestream);
+
+                } else {
+
+                    giveawayTimestream.setProductInventory(buyTimestream.getProductInventory());
+
+                    comb = new TimestreamCombination(buyTimestream, giveawayTimestream);
+                }
+
+                combinationHashMap.put(buyTimestream.getId(), comb);
+
+                break;
+
+            case Timestream.FRESH:
+            case Timestream.EXPIRED:
+
+                Timestream timestream = new Timestream(giveawayTimestream);
+                timestream.setProductInventory(String.valueOf(buyInventory));
+
+                if (giveawayInventory > buyInventory) {
+
+                    giveawayTimestream.setProductInventory(String.valueOf(giveawayInventory - buyInventory));
+
+                    giveawayTimestream.setUpdated(false);
+                    PDInfoWrapper.deleteTimestream(sqLiteDatabase, giveawayTimestream.getId());
+                    PDInfoWrapper.updateInfo(sqLiteDatabase, giveawayTimestream, MyDatabaseHelper.NEW_TIMESTREAM);
+                }
+
+                comb = new TimestreamCombination(buyTimestream, timestream);
+                combinationHashMap.put(buyTimestream.getId(), comb);
+                break;
         }
-
-        combinationHashMap.put(buyTimestream.getId(), comb);
 
         currentComb.bindData(PROMOTION_TIMESTREAM_ACTIVITY_COMBINE, buyTimestream);
     }
