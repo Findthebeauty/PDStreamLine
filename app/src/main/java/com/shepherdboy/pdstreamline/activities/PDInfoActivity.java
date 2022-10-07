@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -53,6 +54,7 @@ public class PDInfoActivity extends BaseActivity {
     public static final int REQUEST_CODE_GIVEAWAY = 99;
 
     private static int activityRequestCode;
+    private static int parentIndex;
 
     private static Handler showHandler;
     private static String productToShow;
@@ -80,20 +82,13 @@ public class PDInfoActivity extends BaseActivity {
      * 启动PDInfoActivity活动并加载传入条码对应的商品，如果传入空值，则尝试加载上次加载过的商品--currentProduct
      * @param code
      */
-    public static void actionStart(String code) {
+    public static void actionStart(String code, int parentIndex) {
 
+        PDInfoActivity.parentIndex = parentIndex;
         Intent intent = new Intent(MyApplication.getContext(), PDInfoActivity.class);
         MyApplication.getContext().startActivity(intent);
         if(code == null) return;
         productToShow = code;
-    }
-
-    public static void actionStart(Activity activity, int requestCode) {
-
-        Intent intent = new Intent(activity, PDInfoActivity.class);
-        activity.startActivityForResult(intent, requestCode);
-
-        activityRequestCode = requestCode;
     }
 
     public static void postActionResult(Timestream timestream) {
@@ -111,6 +106,9 @@ public class PDInfoActivity extends BaseActivity {
         intent.putExtra("giveaway", timestream.getId());
         setResult(RESULT_OK, intent);
         finish();
+        Log.d("actionResult", "in");
+//        ActivityManager.getInstance().removeCurrent();
+//        ActivityManager.getInstance().remove(this);
     }
 
     public static void postShowProduct(String after) {
@@ -132,6 +130,10 @@ public class PDInfoActivity extends BaseActivity {
 
     public static int getActivityRequestCode() {
         return activityRequestCode;
+    }
+
+    public static int getParentIndex() {
+        return parentIndex;
     }
 
     @Override

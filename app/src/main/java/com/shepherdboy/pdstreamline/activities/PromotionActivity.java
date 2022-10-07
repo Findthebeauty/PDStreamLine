@@ -15,7 +15,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
@@ -46,7 +45,8 @@ public class PromotionActivity extends BaseActivity {
 
     private View temp;
 
-    Timestream buyTimestream;
+    private static Timestream buyTimestream;
+    private static Timestream giveawayTimestream;
     TimestreamCombinationView currentComb;
 
     private static ActivityInfoChangeWatcher watcher;
@@ -67,22 +67,9 @@ public class PromotionActivity extends BaseActivity {
         handler.sendMessage(message);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode != PDInfoActivity.REQUEST_CODE_GIVEAWAY || resultCode != RESULT_OK) return;
-
-        String timestreamId = data.getExtras().getString("giveaway");
-
-        assignMember();
-
-        combine(buyTimestream, MyApplication.getAllTimestreams().get(timestreamId));
-
-    }
-
     private void combine(Timestream buyTimestream, Timestream giveawayTimestream) {
 
+        if (buyTimestream == null || giveawayTimestream == null) return;
         int buyInventory = Integer.parseInt(buyTimestream.getProductInventory());
         int giveawayInventory = Integer.parseInt(giveawayTimestream.getProductInventory());
 
@@ -147,6 +134,15 @@ public class PromotionActivity extends BaseActivity {
         MyApplication.initDatabase(this);
 
         initActivity();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        if (layoutIndex == COMBINE) {
+            combine(buyTimestream, giveawayTimestream);
+        }
     }
 
     private void initActivity() {
@@ -248,7 +244,7 @@ public class PromotionActivity extends BaseActivity {
         addGiveawayBt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PDInfoActivity.actionStart(PromotionActivity.this, PDInfoActivity.REQUEST_CODE_GIVEAWAY);
+                PDInfoActivity.actionStart(null, PROMOTION_TIMESTREAM_ACTIVITY_COMBINE);
             }
         });
     }
@@ -358,8 +354,9 @@ public class PromotionActivity extends BaseActivity {
     }
 
 
-    public static void actionStart() {
+    public static void actionStart(Timestream timestream) {
 
+        giveawayTimestream = timestream;
         MyApplication.getContext().startActivity(new Intent(MyApplication.getContext(), PromotionActivity.class));
     }
 }

@@ -405,7 +405,6 @@ public class PDInfoWrapper {
                     Timestream temp = new Timestream();
                     AIInputter.fillTheBlanks(product, temp);
                     timestreamHashMap.put(temp.getId(), temp);
-
                 }
                 break;
 

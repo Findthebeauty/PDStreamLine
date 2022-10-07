@@ -46,7 +46,7 @@
         <activity
             android:name=".activities.PromotionActivity"
             android:exported="true"
-            android:launchMode="singleInstance" />
+            android:launchMode="singleTask" />
         <activity
             android:name=".activities.PossiblePromotionTimestreamActivity"
             android:exported="true"
@@ -60,7 +60,7 @@
         <activity
             android:name=".activities.PDInfoActivity"
             android:exported="true"
-            android:launchMode="singleInstance"
+            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustNothing" />
         <activity
             android:name=".utils.ErrorInfoDisplayActivity"

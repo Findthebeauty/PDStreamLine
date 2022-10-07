@@ -274,14 +274,14 @@ public class MyApplication extends Application {
 //
 //                if (beanView == null) return false;
                 TraversalTimestreamActivity.recordTopProduct(event);
-                PDInfoActivity.actionStart(null);
+                PDInfoActivity.actionStart(null, TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF);
                 break;
 
             case PD_INFO_ACTIVITY:
 
                 serialize(currentProduct);
 
-                if (PDInfoActivity.getActivityRequestCode() == PDInfoActivity.REQUEST_CODE_GIVEAWAY) {
+                if (PDInfoActivity.getParentIndex() == PROMOTION_TIMESTREAM_ACTIVITY_COMBINE) {
                     view = draggableLinearLayout.viewDragHelper.findTopChildUnder((int) (event.getX()),
                             (int) (event.getY()));
 
@@ -290,7 +290,7 @@ public class MyApplication extends Application {
                         String timestreamId = ((TimestreamCombinationView) view).getTimestreamId();
                         Timestream timestream = getAllTimestreams().get(timestreamId);
 
-                        PDInfoActivity.postActionResult(timestream);
+                        PromotionActivity.actionStart(timestream);
                     }
 
                 } else {

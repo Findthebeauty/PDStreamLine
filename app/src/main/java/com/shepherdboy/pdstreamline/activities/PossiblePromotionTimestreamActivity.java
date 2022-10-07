@@ -255,7 +255,7 @@ public class PossiblePromotionTimestreamActivity extends BaseActivity {
         if (uncheckedTimestreams.size() == 0) {
 
             Toast.makeText(this,"所有临期商品已捡出!", Toast.LENGTH_LONG).show();
-            PromotionActivity.actionStart();
+            PromotionActivity.actionStart(null);
             return;
         }
 

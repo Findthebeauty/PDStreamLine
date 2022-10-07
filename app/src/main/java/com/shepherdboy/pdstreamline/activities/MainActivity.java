@@ -1,5 +1,6 @@
 package com.shepherdboy.pdstreamline.activities;
 
+import static com.shepherdboy.pdstreamline.MyApplication.MAIN_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.currentProduct;
 
 import android.app.Activity;
@@ -147,7 +148,7 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
 
-                PDInfoActivity.actionStart(null);
+                PDInfoActivity.actionStart(null, MAIN_ACTIVITY);
 
             }
         });
