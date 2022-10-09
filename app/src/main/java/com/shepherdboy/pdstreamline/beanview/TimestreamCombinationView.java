@@ -398,6 +398,10 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
         this.productCode = productCode;
     }
 
+    public TimestreamCombination getTimestreamCombination() {
+        return timestreamCombination;
+    }
+
     /**
      * 重设模板中view的id为不重复的随机值，避免id冲突
      * @param view

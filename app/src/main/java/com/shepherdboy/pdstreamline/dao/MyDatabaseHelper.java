@@ -26,7 +26,9 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
     public static final int UPDATE_BASKET = 7;
 
-    public static final int UNPACK_COMBINATION = 8;
+    public static final int LOSS_LOG = 8;
+
+    public static final int UNPACK_COMBINATION = 9;
 
     public static final String PROMOTION_DATE_SELECTION = "product_promotion_date";
 
@@ -47,6 +49,8 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
     public static final String POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME = "possible_expired_timestream";
 
     public static final String PROMOTION_HISTORY_TABLE_NAME = "promotion_history";
+
+    public static final String PRODUCT_LOSS_LOG_TABLE_NAME = "product_loss_log";
 
     public static final String OFF_SHELVES_HISTORY_TABLE_NAME = "off_shelves_history";
 
@@ -88,6 +92,10 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "product_promotion_date,product_expire_date,product_coordinate," +
             "product_exact_promotion_inventory,product_discount_rate," +
             "sibling_promotion_id,product_exact_promotion_date";
+
+    public static final String PRODUCT_LOSS_LOG_COLUMNS = "sibling_product_code,sibling_product_dop," +
+            "loss_product_code,loss_product_dop,loss_inventory,loss_type,process_date,process_account," +
+            "process_photo_id";
 
     public static final String OBSERVER_COLUMNS = "id,product_code,product_has_fresh_timestream," +
             "product_last_check_date,product_next_check_date,product_dop_interval";
@@ -180,6 +188,19 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "product_discount_rate text," +
             "sibling_promotion_id text)";
 
+    public static final String CREATE_TABLE_PRODUCT_LOSS_LOG = "create table " +
+            PRODUCT_LOSS_LOG_TABLE_NAME +
+            "(id integer primary key autoincrement," +
+            "sibling_product_code text," +
+            "sibling_product_dop text," +
+            "loss_product_code text," +
+            "loss_product_dop text," +
+            "loss_inventory text," +
+            "loss_type text," +
+            "process_date text," +
+            "process_account text," +
+            "process_photo_id text)";
+
     public static final String CREATE_TABLE_OFF_SHELVES_HISTORY = "create table " +
             OFF_SHELVES_HISTORY_TABLE_NAME +
             "(id text primary key," +
@@ -259,6 +280,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(CREATE_TABLE_POSSIBLE_EXPIRED_TIMESTREAM);
         sqLiteDatabase.execSQL(CREATE_TABLE_PROMOTION_TIMESTREAM);
         sqLiteDatabase.execSQL(CREATE_TABLE_PROMOTION_HISTORY);
+        sqLiteDatabase.execSQL(CREATE_TABLE_PRODUCT_LOSS_LOG);
         sqLiteDatabase.execSQL(CREATE_TABLE_OFF_SHELVES_HISTORY);
         sqLiteDatabase.execSQL(CREATE_TABLE_OBSERVER);
         sqLiteDatabase.execSQL(CREATE_TABLE_DOP_INTERVALS);

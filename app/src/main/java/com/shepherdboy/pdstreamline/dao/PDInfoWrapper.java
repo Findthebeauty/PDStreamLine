@@ -9,6 +9,7 @@ import android.util.Log;
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.activities.SettingActivity;
 import com.shepherdboy.pdstreamline.beans.Product;
+import com.shepherdboy.pdstreamline.beans.ProductLoss;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.utils.AIInputter;
@@ -649,6 +650,23 @@ public class PDInfoWrapper {
         }
 
 
+    }
+
+    public static void updateInfo(SQLiteDatabase sqLiteDatabase, ProductLoss productLoss) {
+
+        String sql = "insert or replace into " + MyDatabaseHelper.PRODUCT_LOSS_LOG_TABLE_NAME + "(" +
+                MyDatabaseHelper.PRODUCT_LOSS_LOG_COLUMNS + ")" + "values('" +
+                productLoss.getSiblingProductCode() + "','" +
+                productLoss.getSiblingProductDOP() + "','" +
+                productLoss.getLossProductCode() + "','" +
+                productLoss.getLossProductDOP() + "','" +
+                productLoss.getLossInventory() + "','" +
+                productLoss.getLossType() + "','" +
+                productLoss.getProcessDate() + "','" +
+                productLoss.getProcessAccount() + "','" +
+                productLoss.getProcessPhotoId() + "')";
+
+        sqLiteDatabase.execSQL(sql);
     }
 
     public static void deleteTimestream(SQLiteDatabase sqLiteDatabase, String timeStreamId) {

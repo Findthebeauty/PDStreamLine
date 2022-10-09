@@ -13,12 +13,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.activities.transaction.Streamline;
+import com.shepherdboy.pdstreamline.beans.ProductLoss;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.beanview.ProductLoader;
@@ -26,6 +28,7 @@ import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
 import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService;
+import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 
@@ -163,6 +166,7 @@ public class PromotionActivity extends BaseActivity {
         watcher = ActivityInfoChangeWatcher.getActivityWatcher(PROMOTION_TIMESTREAM_ACTIVITY);
         setContentView(R.layout.activity_promotion);
         dragLayout = findViewById(R.id.parent);
+        Button submitBt = findViewById(R.id.submit);
         MyApplication.draggableLinearLayout = dragLayout;
         MyApplication.activityIndex = PROMOTION_TIMESTREAM_ACTIVITY;
         layoutIndex = TIMESTREAMS_TO_COMBINE;
@@ -183,6 +187,46 @@ public class PromotionActivity extends BaseActivity {
             loadTimestreams(false);
         }
 
+        submitBt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!oddments.isEmpty())
+                    Toast.makeText(PromotionActivity.this, "还有未处理商品", Toast.LENGTH_SHORT).show();
+
+                submitProductLoss();
+            }
+        });
+    }
+
+    private void submitProductLoss() {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                for (TimestreamCombination combination : combinations.values()) {
+
+                    ProductLoss productLoss = new ProductLoss();
+
+                    Timestream buyTimestream = combination.getBuyTimestream();
+                    Timestream giveawayTimestream = combination.getGiveawayTimestream();
+
+                    productLoss.setSiblingProductCode(buyTimestream.getProductCode());
+                    productLoss.setSiblingProductDOP(DateUtil.typeMach(buyTimestream.getProductDOP()));
+                    productLoss.setLossProductCode(giveawayTimestream.getProductCode());
+                    productLoss.setLossProductDOP(DateUtil.typeMach(giveawayTimestream.getProductDOP()));
+                    productLoss.setLossType("赠品");
+                    productLoss.setLossInventory(String.valueOf(combination.getPackageCount()));
+                    productLoss.setProcessAccount("管理员");
+                    productLoss.setProcessPhotoId("todo");
+
+                    PDInfoWrapper.updateInfo(sqLiteDatabase, productLoss);
+                }
+
+                combinations.clear();
+                oddments.clear();
+            }
+        }).start();
     }
 
     private void initHandler() {
@@ -241,10 +285,34 @@ public class PromotionActivity extends BaseActivity {
 
         Button addGiveawayBt = findViewById(R.id.add);
 
+        Button commitBt = findViewById(R.id.combine);
+
         addGiveawayBt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 PDInfoActivity.actionStart(null, PROMOTION_TIMESTREAM_ACTIVITY_COMBINE);
+            }
+        });
+
+        commitBt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if(combView.getTimestreamCombination() == null) {
+
+                    oddments.remove(timestreamId);
+
+                } else {
+
+                    combinations.remove(combView.getTimestreamCombination().getBuyTimestream().getId());
+                }
+
+                TimestreamCombination comb = currentComb.getTimestreamCombination();
+
+                if(comb != null)
+                    combinations.put(comb.getBuyTimestream().getId(), comb);
+
+                showBasket();
             }
         });
     }
