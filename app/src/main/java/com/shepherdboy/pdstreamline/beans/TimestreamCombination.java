@@ -121,4 +121,15 @@ public class TimestreamCombination {
         return list;
     }
 
+    @Override
+    public String toString() {
+        return "TimestreamCombination{" +
+                "buyProductName='" + buyProductName + '\'' +
+                ", giveawayProductName='" + giveawayProductName + '\'' +
+                ", buyTimestream=" + buyTimestream +
+                ", giveawayTimestream=" + giveawayTimestream +
+                ", selfPromotion=" + selfPromotion +
+                ", packageCount=" + packageCount +
+                '}';
+    }
 }

@@ -265,7 +265,6 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
                 }
 
                 timestreamCombination = combinationHashMap.get(timestream.getId());
-
                 break;
 
             case "0":

@@ -139,7 +139,6 @@ public class MainActivity extends BaseActivity {
         startPossiblePromotionActivityBT.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PossiblePromotionTimestreamActivity.pickOutPossibleStaleTimestream();
                 PossiblePromotionTimestreamActivity.actionStart();
             }
         });

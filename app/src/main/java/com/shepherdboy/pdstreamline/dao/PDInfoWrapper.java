@@ -455,13 +455,16 @@ public class PDInfoWrapper {
                     temp.setInBasket(Boolean.parseBoolean(cursor.getString(7)));
                 }
 
-                if (tableName.equals(MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME)) {
+                if(isPromoting) {
+
                     temp.setDiscountRate(cursor.getString(7));
                     temp.setBuySpecs(cursor.getString(8));
                     temp.setGiveawaySpecs(cursor.getString(9));
                     temp.setSiblingPromotionId(cursor.getString(10));
-                    temp.setInBasket(Boolean.parseBoolean(cursor.getString(11)));
                 }
+
+                if (tableName.equals(MyDatabaseHelper.POSSIBLE_EXPIRED_TIMESTREAM_TABLE_NAME))
+                    temp.setInBasket(Boolean.parseBoolean(cursor.getString(11)));
 
                 temp.setUpdated(true);
                 temp.setPromoting(isPromoting);
@@ -550,6 +553,7 @@ public class PDInfoWrapper {
                         "','" + siblingPromotionId + "')";
 
                 sqLiteDatabase.execSQL(sql);
+                Log.d("updateInfo", sql);
                 timestream.setUpdated(true);
                 break;
 
