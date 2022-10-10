@@ -6,7 +6,6 @@ import static com.shepherdboy.pdstreamline.MyApplication.POSSIBLE_PROMOTION_TIME
 import static com.shepherdboy.pdstreamline.MyApplication.PROMOTION_TIMESTREAM_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.PROMOTION_TIMESTREAM_ACTIVITY_COMBINE;
 import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
-import static com.shepherdboy.pdstreamline.MyApplication.combinationHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowCombsHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
 
@@ -264,7 +263,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
                     v.setVisibility(View.VISIBLE);
                 }
 
-                timestreamCombination = combinationHashMap.get(timestream.getId());
+                timestreamCombination = MyApplication.getCombinationHashMap().get(timestream.getId());
                 break;
 
             case "0":
@@ -274,7 +273,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
                     v.setVisibility(View.VISIBLE);
                 }
 
-                timestreamCombination = combinationHashMap.get(timestream.getSiblingPromotionId());
+                timestreamCombination = MyApplication.getCombinationHashMap().get(timestream.getSiblingPromotionId());
 
                 break;
 

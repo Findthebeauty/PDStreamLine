@@ -2,7 +2,6 @@ package com.shepherdboy.pdstreamline.activities;
 
 import static com.shepherdboy.pdstreamline.MyApplication.PROMOTION_TIMESTREAM_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.PROMOTION_TIMESTREAM_ACTIVITY_COMBINE;
-import static com.shepherdboy.pdstreamline.MyApplication.combinationHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.getContext;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 
@@ -103,7 +102,7 @@ public class PromotionActivity extends BaseActivity {
                     comb = new TimestreamCombination(buyTimestream, giveawayTimestream);
                 }
 
-                combinationHashMap.put(buyTimestream.getId(), comb);
+                MyApplication.getCombinationHashMap().put(buyTimestream.getId(), comb);
 
                 break;
 
@@ -123,7 +122,7 @@ public class PromotionActivity extends BaseActivity {
                 }
 
                 comb = new TimestreamCombination(buyTimestream, timestream);
-                combinationHashMap.put(buyTimestream.getId(), comb);
+                MyApplication.getCombinationHashMap().put(buyTimestream.getId(), comb);
                 break;
         }
 
@@ -143,8 +142,6 @@ public class PromotionActivity extends BaseActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
-        if(combinationHashMap == null) combinationHashMap = PDInfoWrapper.getTimestreamCombinations(sqLiteDatabase);
 
         if (layoutIndex == COMBINE) {
             combine(buyTimestream, giveawayTimestream);
@@ -389,9 +386,7 @@ public class PromotionActivity extends BaseActivity {
                 if(comb != null) {
                     combinations.put(comb.getBuyTimestream().getId(), comb);
 
-                    if (combinationHashMap == null)
-                        combinationHashMap = PDInfoWrapper.getTimestreamCombinations(sqLiteDatabase);
-                    MyApplication.combinationHashMap.put(comb.getBuyTimestream().getId(), comb);
+                    MyApplication.getCombinationHashMap().put(comb.getBuyTimestream().getId(), comb);
                 }
             } else {
 

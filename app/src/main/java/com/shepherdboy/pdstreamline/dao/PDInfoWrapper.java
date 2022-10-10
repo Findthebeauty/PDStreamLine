@@ -69,7 +69,7 @@ public class PDInfoWrapper {
 
         LinkedHashMap<String, Timestream> timeStreamHashMap = new LinkedHashMap<>();
 
-        sqLiteDatabase.beginTransaction();
+//        sqLiteDatabase.beginTransaction();
 
         Cursor cursor = MyDatabaseHelper.query(sqLiteDatabase, MyDatabaseHelper.PRODUCT_INFO_TABLE_NAME,
                 new String[]{"*"}, "product_code=?", new String[]{productCode});
@@ -123,8 +123,8 @@ public class PDInfoWrapper {
         }
 
         cursor.close();
-        sqLiteDatabase.setTransactionSuccessful();
-        sqLiteDatabase.endTransaction();
+//        sqLiteDatabase.setTransactionSuccessful();
+//        sqLiteDatabase.endTransaction();
 
         product.setTimeStreams(timeStreamHashMap);
 
@@ -553,8 +553,8 @@ public class PDInfoWrapper {
                         "','" + siblingPromotionId + "')";
 
                 sqLiteDatabase.execSQL(sql);
-                Log.d("updateInfo", sql);
                 timestream.setUpdated(true);
+
                 break;
 
             case MyDatabaseHelper.OFF_SHELVES_HISTORY:

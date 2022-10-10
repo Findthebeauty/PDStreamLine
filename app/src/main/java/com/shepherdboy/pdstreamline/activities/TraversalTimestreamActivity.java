@@ -7,7 +7,6 @@ import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_AC
 import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_MODIFY_SHELF;
 import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
 import static com.shepherdboy.pdstreamline.MyApplication.activityIndex;
-import static com.shepherdboy.pdstreamline.MyApplication.combinationHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.currentProduct;
 import static com.shepherdboy.pdstreamline.MyApplication.deleteTimestream;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
@@ -189,7 +188,7 @@ public class TraversalTimestreamActivity extends BaseActivity {
 
                 if (ts.getSiblingPromotionId() != null) {
 
-                    TimestreamCombination comb = combinationHashMap.get(ts.getId());
+                    TimestreamCombination comb = MyApplication.getCombinationHashMap().get(ts.getId());
                     List<Timestream> unpackedTimestreams = comb.unpack();
 
                     for (Timestream t : unpackedTimestreams) {
@@ -617,8 +616,6 @@ public class TraversalTimestreamActivity extends BaseActivity {
 
 
         currentRow = ShelfDAO.getRow(ShelfAdapter.getCurrentShelf(), rowNumber);
-        if (combinationHashMap == null)
-        combinationHashMap = PDInfoWrapper.getTimestreamCombinations(sqLiteDatabase);
 
         if(activityIndex == TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF) {
             tail = ProductLoader.prepareTailView(this, draggableLinearLayout);

@@ -156,7 +156,7 @@ public class MyApplication extends Application {
     private static HashMap<String, Product> allProducts; //全局Product表
     private static HashMap<String, Timestream> allTimestreams; //全局Product表 key timestreamId
 
-    public static HashMap<String, TimestreamCombination> combinationHashMap; //已经捆绑的所有商品
+    private static HashMap<String, TimestreamCombination> combinationHashMap; //已经捆绑的所有商品
 
     public static Date today = DateUtil.getStartPointToday();
 
@@ -401,6 +401,12 @@ public class MyApplication extends Application {
             }
 
         }
+    }
+
+    public static HashMap<String, TimestreamCombination> getCombinationHashMap() {
+
+        if(combinationHashMap == null) combinationHashMap = PDInfoWrapper.getTimestreamCombinations(sqLiteDatabase);
+        return combinationHashMap;
     }
 
     public static void serialize(Product product) {
