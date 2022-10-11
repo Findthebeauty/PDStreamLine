@@ -25,6 +25,25 @@ public class ProductLoss {
         this.processDate = DateUtil.typeMach(new Date());
     }
 
+    public ProductLoss(TimestreamCombination combination) {
+
+        this(combination, "赠品", String.valueOf(combination.getPackageCount()));
+    }
+
+    public ProductLoss(TimestreamCombination combination, String lossType, String lossInventory) {
+        this();
+        Timestream buyTimestream = combination.getBuyTimestream();
+        Timestream giveawayTimestream = combination.getGiveawayTimestream();
+
+        setSiblingProductCode(buyTimestream.getProductCode());
+        setSiblingProductDOP(DateUtil.typeMach(buyTimestream.getProductDOP()));
+        setLossProductCode(giveawayTimestream.getProductCode());
+        setLossProductDOP(DateUtil.typeMach(giveawayTimestream.getProductDOP()));
+        setLossType(lossType);
+        setLossInventory(lossInventory);
+        setProcessAccount("管理员");
+        setProcessPhotoId("todo");
+    }
     public String getId() {
         return id;
     }

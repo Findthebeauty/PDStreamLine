@@ -85,8 +85,8 @@ public class PDInfoActivity extends BaseActivity {
     public static void actionStart(String code, int parentIndex) {
 
         PDInfoActivity.parentIndex = parentIndex;
-        Intent intent = new Intent(MyApplication.getContext(), PDInfoActivity.class);
-        MyApplication.getContext().startActivity(intent);
+        Intent intent = new Intent(MyApplication.getCurrentActivityContext(), PDInfoActivity.class);
+        MyApplication.getCurrentActivityContext().startActivity(intent);
         if(code == null) return;
         productToShow = code;
     }
@@ -205,6 +205,7 @@ public class PDInfoActivity extends BaseActivity {
             observer = new ProductObserver(PD_INFO_ACTIVITY, showHandler);
             MyApplication.productSubject.attach(observer);
         }
+
         dragLayout = findViewById(R.id.parent);
         draggableLinearLayout = dragLayout;
         scrollView = findViewById(R.id.closableScrollView);
@@ -288,6 +289,8 @@ public class PDInfoActivity extends BaseActivity {
 
     }
     public void loadProduct(Product product) {
+
+        Log.d("loadProduct", product.toString());
 
         watcher.setShouldWatch(false);
 

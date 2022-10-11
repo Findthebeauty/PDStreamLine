@@ -13,7 +13,7 @@ import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 import static com.shepherdboy.pdstreamline.MyApplication.drawableFirstLevel;
 import static com.shepherdboy.pdstreamline.MyApplication.drawableSecondLevel;
 import static com.shepherdboy.pdstreamline.MyApplication.getAllProducts;
-import static com.shepherdboy.pdstreamline.MyApplication.getContext;
+import static com.shepherdboy.pdstreamline.MyApplication.getCurrentActivityContext;
 import static com.shepherdboy.pdstreamline.MyApplication.handlers;
 import static com.shepherdboy.pdstreamline.MyApplication.initActionBar;
 import static com.shepherdboy.pdstreamline.MyApplication.intentProductCode;
@@ -57,7 +57,6 @@ import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Row;
 import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
-import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.beanview.BeanView;
 import com.shepherdboy.pdstreamline.beanview.CellHeadView;
 import com.shepherdboy.pdstreamline.beanview.ProductLoader;
@@ -76,7 +75,6 @@ import com.shepherdboy.pdstreamline.view.ShelfAdapter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -180,39 +178,10 @@ public class TraversalTimestreamActivity extends BaseActivity {
             case DRAG_RIGHT:
 
 //                ts = MyApplication.unloadTimestream((LinearLayout) releasedChild);
+                draggableLinearLayout.putBack(releasedChild);
                 ts = onShowTimeStreamsHashMap.get(releasedChild.getId());
 
-                draggableLinearLayout.putBack(releasedChild);
-                if (ts == null) return;
-                PDInfoWrapper.deleteTimestream(sqLiteDatabase, ts.getId());
-
-                if (ts.getSiblingPromotionId() != null) {
-
-                    TimestreamCombination comb = MyApplication.getCombinationHashMap().get(ts.getId());
-                    List<Timestream> unpackedTimestreams = comb.unpack();
-
-                    for (Timestream t : unpackedTimestreams) {
-
-                        if (t.getTimeStreamStateCode() == Timestream.FRESH) return;
-                        basket.put(t.getId(), t);
-                        t.setInBasket(true);
-                    }
-
-                    Streamline.reposition(unpackedTimestreams);
-
-                } else {
-
-                    if (ts.getTimeStreamStateCode() != Timestream.FRESH) {
-
-                        basket.put(ts.getId(), ts);
-                        ts.setInBasket(true);
-
-                    }
-
-                    Streamline.update(ts);
-                }
-
-                MyApplication.productSubject.notify(ts.getProductCode());
+                Streamline.pickOut(ts);
                 break;
 
             default:
@@ -788,7 +757,7 @@ public class TraversalTimestreamActivity extends BaseActivity {
 
     public static void actionStart(String code) {
 
-        Context c = getContext();
+        Context c = getCurrentActivityContext();
 
         Intent i = new Intent(c, TraversalTimestreamActivity.class);
 
@@ -821,6 +790,7 @@ public class TraversalTimestreamActivity extends BaseActivity {
     @Override
     protected void onStart() {
         super.onStart();
+
         initTransaction();
         initHandler();
     }

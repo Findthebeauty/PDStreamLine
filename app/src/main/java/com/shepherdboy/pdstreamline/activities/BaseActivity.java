@@ -4,6 +4,8 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.shepherdboy.pdstreamline.MyApplication;
+
 public class BaseActivity extends AppCompatActivity {
 
     @Override
@@ -11,6 +13,13 @@ public class BaseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         ActivityManager.getInstance().addActivity(this);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        MyApplication.setCurrentActivityContext(this);
     }
 
     @Override

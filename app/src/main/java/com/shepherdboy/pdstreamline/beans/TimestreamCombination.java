@@ -15,8 +15,6 @@ public class TimestreamCombination {
 
     private Timestream giveawayTimestream;
 
-    private boolean selfPromotion;//同一种产品自身买一赠一
-
     private int packageCount;
 
     public TimestreamCombination() {
@@ -24,15 +22,17 @@ public class TimestreamCombination {
 
     public TimestreamCombination(Timestream t) {
 
-        buyProductName = PDInfoWrapper.getProductName(t.getProductCode(),
-                MyApplication.sqLiteDatabase);
-        giveawayProductName = buyProductName;
-        buyTimestream = t;
-        giveawayTimestream = t;
-        selfPromotion = true;
-        packageCount = Integer.parseInt(t.getProductInventory()) / 2;
+        this(t, null);
     }
     public TimestreamCombination(Timestream buyTimestream, Timestream giveawayTimestream) {
+
+        if(giveawayTimestream == null) {
+            giveawayTimestream = new Timestream(buyTimestream);
+
+            String inventory = String.valueOf(Integer.parseInt(buyTimestream.getProductInventory()) / 2);
+            buyTimestream.setProductInventory(inventory);
+            giveawayTimestream.setProductInventory(inventory);
+        }
 
         buyProductName = PDInfoWrapper.getProductName(buyTimestream.getProductCode(),
                 MyApplication.sqLiteDatabase);
@@ -40,7 +40,6 @@ public class TimestreamCombination {
                 MyApplication.sqLiteDatabase);
         this.buyTimestream = buyTimestream;
         this.giveawayTimestream = giveawayTimestream;
-        selfPromotion = false;
         packageCount = Integer.parseInt(buyTimestream.getProductInventory());
 
         buyTimestream.setBuySpecs("1");
@@ -51,6 +50,7 @@ public class TimestreamCombination {
         giveawayTimestream.setGiveawaySpecs("1");
         giveawayTimestream.setDiscountRate("0");
         giveawayTimestream.setSiblingPromotionId(buyTimestream.getId());
+
     }
 
     public int getPackageCount() {
@@ -59,14 +59,6 @@ public class TimestreamCombination {
 
     public void setPackageCount(int packageCount) {
         this.packageCount = packageCount;
-    }
-
-    public boolean isSelfPromotion() {
-        return selfPromotion;
-    }
-
-    public void setSelfPromotion(boolean selfPromotion) {
-        this.selfPromotion = selfPromotion;
     }
 
     public String getBuyProductName() {
@@ -112,11 +104,8 @@ public class TimestreamCombination {
         Timestream.refresh(buyTimestream);
         list.add(buyTimestream);
 
-        if (!selfPromotion) {
-
-            Timestream.refresh(giveawayTimestream);
-            list.add(giveawayTimestream);
-        }
+        Timestream.refresh(giveawayTimestream);
+        list.add(giveawayTimestream);
 
         return list;
     }
@@ -128,7 +117,6 @@ public class TimestreamCombination {
                 ", giveawayProductName='" + giveawayProductName + '\'' +
                 ", buyTimestream=" + buyTimestream +
                 ", giveawayTimestream=" + giveawayTimestream +
-                ", selfPromotion=" + selfPromotion +
                 ", packageCount=" + packageCount +
                 '}';
     }

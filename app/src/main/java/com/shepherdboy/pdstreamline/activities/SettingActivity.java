@@ -1022,12 +1022,12 @@ public class SettingActivity extends BaseActivity {
 
     public static String readSingleDefaultSetting(String tagName) {
 
-        String packageName = MyApplication.getContext().getPackageName();
+        String packageName = MyApplication.getMyApplicationContext().getPackageName();
         Resources resources = null;
 
         try {
 
-            resources = MyApplication.getContext().getPackageManager().getResourcesForApplication(packageName);
+            resources = MyApplication.getMyApplicationContext().getPackageManager().getResourcesForApplication(packageName);
 
         } catch (PackageManager.NameNotFoundException e) {
 
@@ -1058,11 +1058,11 @@ public class SettingActivity extends BaseActivity {
     public static void getDefaultEXPSetting() {
 
         List<DateScope> setting = new ArrayList<>();
-        String packageName = MyApplication.getContext().getPackageName();
+        String packageName = MyApplication.getMyApplicationContext().getPackageName();
         Resources resources = null;
 
         try {
-            resources = MyApplication.getContext().getPackageManager().getResourcesForApplication(packageName);
+            resources = MyApplication.getMyApplicationContext().getPackageManager().getResourcesForApplication(packageName);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
@@ -1165,6 +1165,6 @@ public class SettingActivity extends BaseActivity {
     }
 
     public static void actionStart() {
-        MyApplication.getContext().startActivity(new Intent(MyApplication.getContext(), SettingActivity.class));
+        MyApplication.getCurrentActivityContext().startActivity(new Intent(MyApplication.getCurrentActivityContext(), SettingActivity.class));
     }
 }

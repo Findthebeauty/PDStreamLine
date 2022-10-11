@@ -284,11 +284,17 @@ public class Timestream {
                 ", updated=" + updated +
                 ", boundLayoutId='" + boundLayoutId + '\'' +
                 ", productCode='" + productCode + '\'' +
+                ", productName='" + productName + '\'' +
                 ", productDOP=" + productDOP +
                 ", productPromotionDate=" + productPromotionDate +
                 ", productExpireDate=" + productExpireDate +
                 ", productCoordinate='" + productCoordinate + '\'' +
                 ", productInventory='" + productInventory + '\'' +
+                ", buySpecs='" + buySpecs + '\'' +
+                ", giveawaySpecs='" + giveawaySpecs + '\'' +
+                ", discountRate='" + discountRate + '\'' +
+                ", siblingPromotionId='" + siblingPromotionId + '\'' +
+                ", inBasket=" + inBasket +
                 ", promoting=" + promoting +
                 '}';
     }

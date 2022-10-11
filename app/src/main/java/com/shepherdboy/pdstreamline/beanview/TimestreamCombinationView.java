@@ -255,7 +255,6 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
                 mapping(activityIndex, timestream);
                 break;
 
-            case "0.5":
             case "1":
 
                 for (View v : giveAwayViews) {
@@ -268,12 +267,17 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
             case "0":
 
+                timestreamCombination = MyApplication.getCombinationHashMap().get(timestream.getSiblingPromotionId());
+
+                if(timestreamCombination.getBuyTimestream().getProductCode()
+                        .equals(timestreamCombination.getGiveawayTimestream().getProductCode()))
+                    this.setVisibility(GONE);
+
                 for (View v : giveAwayViews) {
 
                     v.setVisibility(View.VISIBLE);
                 }
 
-                timestreamCombination = MyApplication.getCombinationHashMap().get(timestream.getSiblingPromotionId());
 
                 break;
 

@@ -88,7 +88,7 @@ public class ProductLoader {
                                     int size,
                                     int index) {
 
-        if(size == 0) return;
+//        if(size == 0) return;
 
         int startIndex = index;
         int combCount = 0;
@@ -140,6 +140,7 @@ public class ProductLoader {
                     container.addView(new TimestreamCombinationView(activityIndex, container.getContext()), startIndex);
                     combCount++;
                 }
+
                 break;
         }
 

@@ -142,7 +142,8 @@ public class MyApplication extends Application {
 
     static Point originalPosition;
 
-    private static Context context;
+    private static Context applicationContext;
+    private static Context currentActivityContext;
 
     static LinearLayout temp;
 
@@ -160,8 +161,8 @@ public class MyApplication extends Application {
 
     public static Date today = DateUtil.getStartPointToday();
 
-    public static void setContext(Context context) {
-        MyApplication.context = context;
+    public static void setCurrentActivityContext(Context context) {
+        MyApplication.currentActivityContext = context;
     }
 
     public static void initActionBar(ActionBar actionBar) {
@@ -176,7 +177,7 @@ public class MyApplication extends Application {
             @Override
             public void onClick(View v) {
 
-                MainActivity.actionStart();
+                MainActivity.actionStart(getCurrentActivityContext());
             }
         });
 
@@ -184,7 +185,7 @@ public class MyApplication extends Application {
             @Override
             public void onClick(View v) {
 
-                MainActivity.actionStart();
+                MainActivity.actionStart(getCurrentActivityContext());
                 SettingActivity.actionStart();
             }
         });
@@ -535,7 +536,7 @@ public class MyApplication extends Application {
 
                 } else {
 
-                    Toast.makeText(getContext(), "货架行数不合法", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getMyApplicationContext(), "货架行数不合法", Toast.LENGTH_SHORT).show();
                     ActivityInfoChangeWatcher.getActivityWatcher(activityIndex).setShouldWatch(false);
                     watchedEditText.setText(String.valueOf(shelf.getMaxRowCount()));
                     ActivityInfoChangeWatcher.getActivityWatcher(activityIndex).setShouldWatch(true);
@@ -662,9 +663,9 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        context = getApplicationContext();
+        applicationContext = getApplicationContext();
         productSubject = new ProductSubject();
-        initDatabase(context);
+        initDatabase(applicationContext);
         SettingActivity.initSetting();
         syncProductInfoFromServer(settingInstance.getLastSyncTime());
     }
@@ -705,7 +706,7 @@ public class MyApplication extends Application {
                 long interval = endTime - HttpDao.getStartTime();
 
                 if (count > 0) {
-                    Toast.makeText(MyApplication.getContext(), "更新了" + count + "条商品信息，用时" +
+                    Toast.makeText(MyApplication.getMyApplicationContext(), "更新了" + count + "条商品信息，用时" +
                             interval + "毫秒", Toast.LENGTH_LONG).show();
                 }
                 settingInstance.setLastSyncTime(String.valueOf(new Timestamp(System.currentTimeMillis())));
@@ -716,8 +717,12 @@ public class MyApplication extends Application {
         }).start();
     }
 
-    public static Context getContext() {
-        return context;
+    public static Context getCurrentActivityContext() {
+        return currentActivityContext;
+    }
+
+    public static Context getMyApplicationContext() {
+        return applicationContext;
     }
 
     // 将改变的信息保存到thingsToSaveList里面
@@ -1235,6 +1240,28 @@ public class MyApplication extends Application {
             case TIMESTREAM_DOP:
 
                 synchronizeSingleTimestream(activityIndex, timestream);
+
+                break;
+
+            case TIMESTREAM_INVENTORY:
+
+                if(timestream.getSiblingPromotionId() != null) {
+                    TimestreamCombination combination = combinationHashMap.get(timestream.getId());
+                    Timestream buyTimestream = combination.getBuyTimestream();
+                    Timestream giveawayTimestream = combination.getGiveawayTimestream();
+                    buyTimestream.setProductInventory(timestream.getProductInventory());
+                    giveawayTimestream.setProductInventory(timestream.getProductInventory());
+                    combination.setPackageCount(Integer.parseInt(timestream.getProductInventory()));
+
+                    PDInfoWrapper.updateInfo(sqLiteDatabase, MyDatabaseHelper.PRODUCT_INVENTORY_SELECTION,
+                            timestream.getProductInventory(), buyTimestream.getId(), MyDatabaseHelper.PROMOTION_TIMESTREAM_TABLE_NAME);
+                    PDInfoWrapper.updateInfo(sqLiteDatabase, MyDatabaseHelper.PRODUCT_INVENTORY_SELECTION,
+                            timestream.getProductInventory(), giveawayTimestream.getId(), MyDatabaseHelper.PROMOTION_TIMESTREAM_TABLE_NAME);
+
+                    timestream.setUpdated(true);
+                    buyTimestream.setUpdated(true);
+                    giveawayTimestream.setUpdated(true);
+                }
 
                 break;
 

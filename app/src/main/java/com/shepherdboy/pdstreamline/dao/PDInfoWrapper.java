@@ -69,7 +69,7 @@ public class PDInfoWrapper {
 
         LinkedHashMap<String, Timestream> timeStreamHashMap = new LinkedHashMap<>();
 
-//        sqLiteDatabase.beginTransaction();
+        sqLiteDatabase.beginTransaction();
 
         Cursor cursor = MyDatabaseHelper.query(sqLiteDatabase, MyDatabaseHelper.PRODUCT_INFO_TABLE_NAME,
                 new String[]{"*"}, "product_code=?", new String[]{productCode});
@@ -123,8 +123,8 @@ public class PDInfoWrapper {
         }
 
         cursor.close();
-//        sqLiteDatabase.setTransactionSuccessful();
-//        sqLiteDatabase.endTransaction();
+        sqLiteDatabase.setTransactionSuccessful();
+        sqLiteDatabase.endTransaction();
 
         product.setTimeStreams(timeStreamHashMap);
 
@@ -138,6 +138,14 @@ public class PDInfoWrapper {
         }).start();
 
         return product;
+    }
+
+    public static void updateInfo(SQLiteDatabase sqLiteDatabase, String selection, String arg, String id,
+                                  String tableName) {
+
+        String sql = "update " + tableName + " set " + selection + "=" + arg + " where id='" + id + "'";
+        sqLiteDatabase.execSQL(sql);
+        Log.d("updateInfo", sql);
     }
 
 
@@ -265,26 +273,11 @@ public class PDInfoWrapper {
 
             discountRate = discountRate == null ? "" : discountRate;
 
-            switch (discountRate) {
-
-                case "0.5":
-
-                    combs.put(timestream.getId(), new TimestreamCombination(timestream));
-                    break;
-
-                case "1":
-
-                    Timestream giveawayTimestream = promotingTimestreams.get(timestream.getSiblingPromotionId());
-                    combs.put(timestream.getId(), new TimestreamCombination(timestream, giveawayTimestream));
-                    break;
-
-                default:
-                    break;
-
+            if ("1".equals(discountRate)) {
+                Timestream giveawayTimestream = promotingTimestreams.get(timestream.getSiblingPromotionId());
+                combs.put(timestream.getId(), new TimestreamCombination(timestream, giveawayTimestream));
             }
-
         }
-
     }
 
     /**

@@ -2,8 +2,10 @@ package com.shepherdboy.pdstreamline.activities;
 
 import static com.shepherdboy.pdstreamline.MyApplication.PROMOTION_TIMESTREAM_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.PROMOTION_TIMESTREAM_ACTIVITY_COMBINE;
-import static com.shepherdboy.pdstreamline.MyApplication.getContext;
+import static com.shepherdboy.pdstreamline.MyApplication.getCurrentActivityContext;
+import static com.shepherdboy.pdstreamline.MyApplication.getMyApplicationContext;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
+import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.basket;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -28,12 +30,12 @@ import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
 import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService;
-import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
 import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class PromotionActivity extends BaseActivity {
 
@@ -211,19 +213,7 @@ public class PromotionActivity extends BaseActivity {
 
         for (TimestreamCombination combination : combinations.values()) {
 
-            ProductLoss productLoss = new ProductLoss();
-
-            Timestream buyTimestream = combination.getBuyTimestream();
-            Timestream giveawayTimestream = combination.getGiveawayTimestream();
-
-            productLoss.setSiblingProductCode(buyTimestream.getProductCode());
-            productLoss.setSiblingProductDOP(DateUtil.typeMach(buyTimestream.getProductDOP()));
-            productLoss.setLossProductCode(giveawayTimestream.getProductCode());
-            productLoss.setLossProductDOP(DateUtil.typeMach(giveawayTimestream.getProductDOP()));
-            productLoss.setLossType("赠品");
-            productLoss.setLossInventory(String.valueOf(combination.getPackageCount()));
-            productLoss.setProcessAccount("管理员");
-            productLoss.setProcessPhotoId("todo");
+            ProductLoss productLoss = new ProductLoss(combination);
 
             PDInfoWrapper.deleteTimestream(sqLiteDatabase, combination.getBuyTimestream().getId());
             PDInfoWrapper.deleteTimestream(sqLiteDatabase, combination.getGiveawayTimestream().getId());
@@ -235,8 +225,8 @@ public class PromotionActivity extends BaseActivity {
         combinations.clear();
         oddments.clear();
 
-        MainActivity.actionStart();
-        Toast.makeText(getContext(), "已提交处理信息", Toast.LENGTH_SHORT).show();
+        MainActivity.actionStart(getCurrentActivityContext());
+        Toast.makeText(getMyApplicationContext(), "已提交处理信息", Toast.LENGTH_SHORT).show();
     }
 
     private void initHandler() {
@@ -265,7 +255,7 @@ public class PromotionActivity extends BaseActivity {
                 break;
 
             default:
-                MainActivity.actionStart();
+                MainActivity.actionStart(getCurrentActivityContext());
                 break;
         }
     }
@@ -410,12 +400,6 @@ public class PromotionActivity extends BaseActivity {
 
         int inventory = Integer.parseInt(t.getProductInventory());
 
-        evenTimestream.setSiblingPromotionId(t.getId());
-        evenTimestream.setBuySpecs("1");
-        evenTimestream.setGiveawaySpecs("1");
-        evenTimestream.setDiscountRate("0.5");
-        evenTimestream.setInBasket(false);
-
         if (inventory % 2 == 1) {
 
             inventory -= 1;
@@ -430,10 +414,33 @@ public class PromotionActivity extends BaseActivity {
         return new TimestreamCombination(evenTimestream);
     }
 
+    /**
+     * 对已经捆绑的商品解绑
+     * @param combination
+     */
+    public static void unCombine(TimestreamCombination combination) {
+// todo 下架记录，删除timestream
+        List<Timestream> unpackedTimestreams = combination.unpack();
+
+        for (Timestream t : unpackedTimestreams) {
+
+            if(t.getDiscountRate().equals("0")) {
+
+                ProductLoss productLoss = new ProductLoss(combination, "解绑", "-" + t.getProductInventory());
+                PDInfoWrapper.updateInfo(sqLiteDatabase, productLoss);
+            }
+
+            if(t.getTimeStreamStateCode() == Timestream.FRESH) return;
+            basket.put(t.getId(), t);
+            t.setInBasket(true);
+        }
+
+        Streamline.reposition(unpackedTimestreams);
+    }
 
     public static void actionStart(Timestream timestream) {
 
         giveawayTimestream = timestream;
-        MyApplication.getContext().startActivity(new Intent(MyApplication.getContext(), PromotionActivity.class));
+        getCurrentActivityContext().startActivity(new Intent(getCurrentActivityContext(), PromotionActivity.class));
     }
 }

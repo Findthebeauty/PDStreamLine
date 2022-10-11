@@ -1,8 +1,12 @@
 package com.shepherdboy.pdstreamline.activities.transaction;
 
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
+import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.basket;
 
+import com.shepherdboy.pdstreamline.MyApplication;
+import com.shepherdboy.pdstreamline.activities.PromotionActivity;
 import com.shepherdboy.pdstreamline.beans.Timestream;
+import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 
@@ -18,6 +22,31 @@ public class Streamline {
     public static final Set<Timestream> giveawayTimestreams = new HashSet<>();
 
     public static final Set<Timestream> offShelvesTimestreams = new HashSet<>();
+
+
+    public static void pickOut(Timestream ts) {
+
+        if (ts == null) return;
+        PDInfoWrapper.deleteTimestream(sqLiteDatabase, ts.getId());
+
+        if (ts.getSiblingPromotionId() != null) {
+
+            TimestreamCombination comb = MyApplication.getCombinationHashMap().get(ts.getId());
+            PromotionActivity.unCombine(comb);
+
+        } else {
+
+            if (ts.getTimeStreamStateCode() != Timestream.FRESH) {
+
+                basket.put(ts.getId(), ts);
+                ts.setInBasket(true);
+            }
+
+            update(ts);
+        }
+
+        MyApplication.productSubject.notify(ts.getProductCode());
+    }
 
     /**
      * 将解绑的商品根据商品所处的生命周期{fresh,close to expire(promotion),expired}

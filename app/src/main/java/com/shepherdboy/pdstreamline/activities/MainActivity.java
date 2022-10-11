@@ -4,6 +4,7 @@ import static com.shepherdboy.pdstreamline.MyApplication.MAIN_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.currentProduct;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -58,7 +59,7 @@ public class MainActivity extends BaseActivity {
 
         MyApplication.initActionBar(getSupportActionBar());
 
-        MyApplication.setContext(this);
+        MyApplication.setCurrentActivityContext(this);
 
 
 //        databasePath = this.getFilesDir().getPath().replaceAll("files", "databases/ProductDateStreamline.db");
@@ -234,8 +235,10 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    public static void actionStart() {
+    public static void actionStart(Context context) {
 
-        MyApplication.getContext().startActivity(new Intent(MyApplication.getContext(), MainActivity.class));
+        Intent intent = new Intent(context, MainActivity.class);
+
+        context.startActivity(intent);
     }
 }

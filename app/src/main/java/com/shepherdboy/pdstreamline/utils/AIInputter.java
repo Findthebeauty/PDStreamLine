@@ -469,7 +469,7 @@ public class AIInputter {
 
                     if (temp.getName().equals(currentInf)) {
 
-                        Toast.makeText(MyApplication.getContext(), "货架名称已存在",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MyApplication.getMyApplicationContext(), "货架名称已存在",Toast.LENGTH_SHORT).show();
                         return false;
                     }
                 }
@@ -479,14 +479,14 @@ public class AIInputter {
 
                 if (!(currentInf.length() > 0 && currentInf.length() < 8)) {
 
-                    Toast.makeText(MyApplication.getContext(), "类别不合法请输入1-7位的类别名称", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MyApplication.getMyApplicationContext(), "类别不合法请输入1-7位的类别名称", Toast.LENGTH_SHORT).show();
 
                     return false;
                 }
 
                 if (TraversalTimestreamActivity.getClassifyList().contains(currentInf)) {
 
-                    Toast.makeText(MyApplication.getContext(), "类别名称已存在", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MyApplication.getMyApplicationContext(), "类别名称已存在", Toast.LENGTH_SHORT).show();
                     return false;
                 }
 

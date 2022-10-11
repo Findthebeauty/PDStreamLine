@@ -339,7 +339,7 @@ public class PossiblePromotionTimestreamActivity extends BaseActivity {
     public static void actionStart() {
 
         pickOutPossibleStaleTimestream();
-        MyApplication.getContext().startActivity(new Intent(MyApplication.getContext(), PossiblePromotionTimestreamActivity.class));
+        MyApplication.getCurrentActivityContext().startActivity(new Intent(MyApplication.getCurrentActivityContext(), PossiblePromotionTimestreamActivity.class));
     }
 
 
