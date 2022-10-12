@@ -79,6 +79,7 @@ public class PDInfoWrapper {
         product = new Product();
         product.setProductCode(productCode);
 
+        MyApplication.getAllProducts().put(productCode, product);
         if (cursor.getCount() > 0) {
 
             cursor.moveToNext();

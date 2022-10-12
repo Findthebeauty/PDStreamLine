@@ -181,6 +181,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
      */
     public void bindData(int activityIndex, Object o) {
 
+        setVisibility(VISIBLE);
         timestreamCombination = null;
         timestreamId = null;
         productCode = null;
@@ -229,7 +230,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
                     v.setVisibility(GONE);
                 }
 
-                buyProductNameTv.setText(timestream.getProductName());
+                buyProductNameTv.setText(MyApplication.getAllProducts().get(timestream.getProductCode()).getProductName());
                 switch (activityIndex) {
 
                     case POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY:
@@ -287,8 +288,6 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
                     v.setVisibility(View.VISIBLE);
                 }
-
-
                 break;
 
             default:
@@ -352,7 +351,6 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
             watcher.watch(inventory,timestream,MyApplication.TIMESTREAM_INVENTORY,true);
         }
 
-        setVisibility(VISIBLE);
     }
 
     private void mapping(int activityIndex, Timestream timestream) {

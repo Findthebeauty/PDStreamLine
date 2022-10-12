@@ -23,6 +23,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
@@ -129,9 +130,6 @@ public class PossiblePromotionTimestreamActivity extends BaseActivity {
 
         if (onShowTimeStreamsHashMap.size() == 0) {
 
-            for(Timestream t : basket.values()) {
-
-            }
             Toast.makeText(draggableLinearLayout.getContext(), "新增临期商品已全部捡出!", Toast.LENGTH_LONG).show();
         }
     }
@@ -194,7 +192,8 @@ public class PossiblePromotionTimestreamActivity extends BaseActivity {
         handler = new Handler() {
             @Override
             public void handleMessage(@NonNull Message msg) {
-                loadTimestreams();
+
+                checkTimestreams();
             }
         };
         MyApplication.handlers.add(handler);
@@ -226,23 +225,34 @@ public class PossiblePromotionTimestreamActivity extends BaseActivity {
 
     private void loadTimestreams() {
 
-        possiblePromotionTimestreams = PDInfoWrapper.getStaleTimestreams(sqLiteDatabase,
-                MyDatabaseHelper.TIMESTREAM_TO_CHECK);
-
-        LinkedList<Timestream> uncheckedTimestreams = filterTimestream(possiblePromotionTimestreams);
-
-        if (uncheckedTimestreams.size() == 0) {
-
-            Toast.makeText(this,"所有临期商品已捡出!", Toast.LENGTH_LONG).show();
-            PromotionActivity.actionStart(null);
-            return;
-        }
+        LinkedList<Timestream> uncheckedTimestreams = checkTimestreams();
+        if (uncheckedTimestreams == null) return;
 
         initTimestreamsView(uncheckedTimestreams.size());
 
         loadTimestreams(uncheckedTimestreams);
 
         cancelTimerTask();
+    }
+
+    @Nullable
+    private LinkedList<Timestream> checkTimestreams() {
+        LinkedList<Timestream> uncheckedTimestreams = collectUncheckedTimestream();
+        if (uncheckedTimestreams.size() == 0) {
+
+            Toast.makeText(this,"所有临期商品已捡出!", Toast.LENGTH_LONG).show();
+            PromotionActivity.actionStart(null);
+            return null;
+        }
+        return uncheckedTimestreams;
+    }
+
+    @Nullable
+    private LinkedList<Timestream> collectUncheckedTimestream() {
+        possiblePromotionTimestreams = PDInfoWrapper.getStaleTimestreams(sqLiteDatabase,
+                MyDatabaseHelper.TIMESTREAM_TO_CHECK);
+
+        return filterTimestream(possiblePromotionTimestreams);
     }
 
     /**

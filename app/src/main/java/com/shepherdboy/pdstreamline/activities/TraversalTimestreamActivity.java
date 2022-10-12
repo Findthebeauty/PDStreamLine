@@ -31,7 +31,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -116,6 +115,7 @@ public class TraversalTimestreamActivity extends BaseActivity {
 
     public static void onCombViewReleased(View releasedChild, float horizontalDistance, float verticalDistance) {
 
+        recordCurrentProduct(releasedChild);
         if (!loadFinished) {
 
             postLoadViews();
@@ -143,17 +143,16 @@ public class TraversalTimestreamActivity extends BaseActivity {
             beanView = dragLayout.viewDragHelper.findTopChildUnder((int) event.getX(), (int) (event.getY()));
         }
 
-        if (beanView instanceof LinearLayout) {
+        recordCurrentProduct(beanView);
+    }
 
-            intentProductCode = ((BeanView)beanView).getProductCode();
+    public static void recordCurrentProduct(View beanView) {
+        if (beanView instanceof BeanView) {
+
+            intentProductCode = ((BeanView) beanView).getProductCode();
             if(currentProduct == null || !intentProductCode.equals(currentProduct.getProductCode()))
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    currentProduct = PDInfoWrapper.getProduct(intentProductCode,
-                            sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
-                }
-            }).start();
+            currentProduct = PDInfoWrapper.getProduct(intentProductCode,
+                    sqLiteDatabase, MyDatabaseHelper.ENTIRE_TIMESTREAM);
         }
     }
 

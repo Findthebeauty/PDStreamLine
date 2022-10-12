@@ -585,7 +585,18 @@ public class MyApplication extends Application {
         Product product = (Product) result[1];
 
         if (product != null) {
-            allProducts.put(productCode, product);
+            Product origin = allProducts.get(productCode);
+            origin.setProductName(product.getProductName());
+
+            if(product.getProductEXP() != null &&
+                    !product.getProductEXP().equals("") &&
+                    !product.getProductEXP().equals("0")) {
+
+                origin.setProductEXP(product.getProductEXP());
+                origin.setProductEXPTimeUnit(product.getProductEXPTimeUnit());
+
+                synchronize(origin, null, PRODUCT_EXP, MAIN_ACTIVITY);
+            }
         }
 
         switch (activityIndex) {
@@ -594,7 +605,7 @@ public class MyApplication extends Application {
 
                 if (product == null) allProducts.get(productCode).setProductName("新商品，请输入商品名");
                 if(currentProduct != null && productCode.equals(currentProduct.getProductCode()))
-                PDInfoActivity.postLoadProduct(product);
+                PDInfoActivity.postLoadProduct(allProducts.get(productCode));
                 break;
 
             case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
@@ -917,7 +928,6 @@ public class MyApplication extends Application {
             case DRAG_RIGHT:
 
                 Streamline.pickOut(releasedChild, draggableLinearLayout);
-
                 break;
 
             default:

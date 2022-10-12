@@ -1,5 +1,7 @@
 package com.shepherdboy.pdstreamline.activities.transaction;
 
+import static com.shepherdboy.pdstreamline.MyApplication.POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY;
+import static com.shepherdboy.pdstreamline.MyApplication.activityIndex;
 import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.basket;
@@ -29,7 +31,6 @@ public class Streamline {
 
     public static final Set<Timestream> offShelvesTimestreams = new HashSet<>();
 
-
     public static void pickOut(View releasedChild, DraggableLinearLayout draggableLinearLayout) {
 
         if(releasedChild instanceof TimestreamCombinationView) {
@@ -45,7 +46,8 @@ public class Streamline {
                     return;
                 }
 
-                if(ts.getTimeStreamStateCode() == Timestream.EXPIRED)
+                if(ts.getTimeStreamStateCode() == Timestream.EXPIRED
+                        || activityIndex == POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY)
                     releasedChild.setVisibility(View.GONE);
 
                 Streamline.pickOutByStateCode(ts);
@@ -56,10 +58,13 @@ public class Streamline {
 
                 Timestream[] timestreams = PromotionActivity.unCombine(comb);
 
-                if(timestreams[0].getTimeStreamStateCode() == Timestream.EXPIRED
+                if((timestreams[0].getTimeStreamStateCode() == Timestream.EXPIRED
                         && timestreams[1].getTimeStreamStateCode() == Timestream.EXPIRED)
+                        || activityIndex == POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY) {
                     releasedChild.setVisibility(View.GONE);
-                else MyApplication.draggableLinearLayout.putBack(releasedChild);
+                } else {
+                    MyApplication.draggableLinearLayout.putBack(releasedChild);
+                }
 
                 for (Timestream t : timestreams) Streamline.pickOutByStateCode(t);
 

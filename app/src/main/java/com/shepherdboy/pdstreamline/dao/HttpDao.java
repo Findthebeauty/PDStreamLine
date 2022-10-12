@@ -72,6 +72,7 @@ public class HttpDao {
 
                     product = parseProduct(object);
 
+                    product.setUpdated(false);
                     MyApplication.getAllProducts().put(productCode, product);
                 }
 
