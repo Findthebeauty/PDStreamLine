@@ -65,6 +65,7 @@ public class PDInfoWrapper {
 
         Product pr = MyApplication.getAllProducts().get(productCode);
         if(pr != null) return pr;
+
         Product product;
 
         LinkedHashMap<String, Timestream> timeStreamHashMap = new LinkedHashMap<>();

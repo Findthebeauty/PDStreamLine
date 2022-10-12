@@ -6,7 +6,6 @@ import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -33,7 +32,6 @@ import com.shepherdboy.pdstreamline.beanview.ProductLoader;
 import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
 import com.shepherdboy.pdstreamline.binder.ProductObserver;
 import com.shepherdboy.pdstreamline.binder.ProductSubject;
-import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 import com.shepherdboy.pdstreamline.utils.ScanEventReceiver;
 import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
 import com.shepherdboy.pdstreamline.view.ClosableScrollView;
@@ -370,90 +368,6 @@ public class PDInfoActivity extends BaseActivity {
 
         }
 
-    }
-
-    public static int getViewState(View draggedView, double draggedRadius) {
-
-        // 根据拖拽的距离判断是复制还是删除控件
-        float viewHeight = draggedView.getHeight();
-
-        boolean isDragToCopy = draggedRadius >= viewHeight * 0.5 && draggedRadius <= viewHeight * 1.6;
-        boolean isDragToDelete = draggedRadius > viewHeight * 1.6;
-
-        if (isDragToCopy) {
-
-            return ADD_TIMESTREAM_LAYOUT;
-
-        } else if (isDragToDelete) {
-
-            return REMOVE_TIMESTREAM_LAYOUT;
-
-        } else {
-
-            return 0;
-
-        }
-
-    }
-
-    public static void onTimestreamViewPositionChanged(View changedView, float horizontalDistance, float verticalDistance) {
-
-        double dragRadius = Math.sqrt(horizontalDistance * horizontalDistance + verticalDistance * verticalDistance);
-
-        int viewState = getViewState(changedView, dragRadius);
-
-        switch (viewState) {
-
-            case ADD_TIMESTREAM_LAYOUT:
-
-                changedView.setBackgroundColor(Color.parseColor("#8BC34A"));
-                break;
-
-            case REMOVE_TIMESTREAM_LAYOUT:
-
-                changedView.setBackgroundColor(Color.parseColor("#FF0000"));
-                break;
-
-            default:
-
-                MyApplication.setTimeStreamViewOriginalBackground((LinearLayout) changedView);
-        }
-    }
-
-    public static void onTimestreamViewReleased(View releasedChild, float horizontalDistance, float verticalDistance) {
-
-        double dragRadius = Math.sqrt(horizontalDistance * horizontalDistance + verticalDistance * verticalDistance);
-
-        int viewState = getViewState(releasedChild, dragRadius);
-
-        switch (viewState) {
-
-
-            case REMOVE_TIMESTREAM_LAYOUT:
-
-                Timestream rmTs = MyApplication.unloadTimestream((LinearLayout) releasedChild);
-
-                if (rmTs == null) {
-                    dragLayout.putBack(releasedChild);
-                    return;
-                }
-                PDInfoWrapper.deleteTimestream(MyApplication.sqLiteDatabase, rmTs.getId());
-
-                currentProduct.getTimeStreams().remove(rmTs.getId());
-
-                MyApplication.productSubject.notify(currentProduct.getProductCode());
-                break;
-
-            case ADD_TIMESTREAM_LAYOUT:
-//todo bug 空timestreamView复制时时间不为0点
-//                addTimestream();
-//                setTimeStreamViewOriginalBackgroundColor((LinearLayout) releasedChild);
-            default:
-                dragLayout.putBack(releasedChild);
-                MyApplication.setTimeStreamViewOriginalBackground((LinearLayout) releasedChild);
-
-                break;
-        }
     }
 
     public static DraggableLinearLayout getDragLayout() {

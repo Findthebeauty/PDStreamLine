@@ -34,6 +34,9 @@ import java.util.TimerTask;
 
 public class DraggableLinearLayout extends LinearLayout {
 
+    public static final int DRAG_LEFT = 200;
+    public static final int DRAG_RIGHT = 201;
+    private static final int dragThreshold = 105;
     private LinearLayout draggableView;
 
     final boolean initHorizontalDraggable;
@@ -103,7 +106,8 @@ public class DraggableLinearLayout extends LinearLayout {
 
                 releasedChild = draggableView;
 
-                MyApplication.onTimestreamViewReleased(releasedChild, horizontalDistance, verticalDistance, xvel, yvel);
+                MyApplication.onViewReleased(releasedChild, horizontalDistance, verticalDistance, xvel, yvel,
+                        DraggableLinearLayout.this);
 
                 invalidate();
 
@@ -152,6 +156,42 @@ public class DraggableLinearLayout extends LinearLayout {
         });
 
 
+    }
+
+    public static int getViewState(View changedView, float horizontalDistance) {
+
+        if (horizontalDistance < 0 && Math.abs(horizontalDistance) > dragThreshold)
+            return DRAG_LEFT;
+
+        if (horizontalDistance > 0 && Math.abs(horizontalDistance) > dragThreshold)
+            return DRAG_RIGHT;
+
+        return 0;
+    }
+
+    public static void changeViewStateByDistance(View changedView, float horizontalDistance) {
+
+        int viewState = getViewState(changedView, horizontalDistance);
+
+        switch (viewState) {
+
+            case DRAG_RIGHT:
+
+                changedView.setBackground(MyApplication.drawableFirstLevel);
+//                changedView.setBackgroundColor(Color.parseColor("#8BC34A"));
+                break;
+
+            case DRAG_LEFT:
+                changedView.setBackground(MyApplication.drawableSecondLevel);
+
+//                changedView.setBackgroundColor(Color.parseColor("#FF0000"));
+                break;
+
+            default:
+                changedView.setBackground(MyApplication.originalBackgroundHashMap.get(changedView.getId()));
+
+//                changedView.setBackgroundColor(0);
+        }
     }
 
     public float getHorizontalDistance() {

@@ -5,7 +5,6 @@ import static com.shepherdboy.pdstreamline.MyApplication.PROMOTION_TIMESTREAM_AC
 import static com.shepherdboy.pdstreamline.MyApplication.getCurrentActivityContext;
 import static com.shepherdboy.pdstreamline.MyApplication.getMyApplicationContext;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
-import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.basket;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -35,7 +34,6 @@ import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 public class PromotionActivity extends BaseActivity {
 
@@ -418,24 +416,16 @@ public class PromotionActivity extends BaseActivity {
      * 对已经捆绑的商品解绑
      * @param combination
      */
-    public static void unCombine(TimestreamCombination combination) {
-// todo 下架记录，删除timestream
-        List<Timestream> unpackedTimestreams = combination.unpack();
+    public static Timestream[] unCombine(TimestreamCombination combination) {
 
-        for (Timestream t : unpackedTimestreams) {
+        MyApplication.getCombinationHashMap().remove(combination.getBuyTimestream().getId());
 
-            if(t.getDiscountRate().equals("0")) {
+        Timestream[] unpackedTimestreams = combination.unpack();
 
-                ProductLoss productLoss = new ProductLoss(combination, "解绑", "-" + t.getProductInventory());
-                PDInfoWrapper.updateInfo(sqLiteDatabase, productLoss);
-            }
+        ProductLoss productLoss = new ProductLoss(combination, "解绑", "-" + unpackedTimestreams[1].getProductInventory());
+        PDInfoWrapper.updateInfo(sqLiteDatabase, productLoss);
 
-            if(t.getTimeStreamStateCode() == Timestream.FRESH) return;
-            basket.put(t.getId(), t);
-            t.setInBasket(true);
-        }
-
-        Streamline.reposition(unpackedTimestreams);
+        return unpackedTimestreams;
     }
 
     public static void actionStart(Timestream timestream) {

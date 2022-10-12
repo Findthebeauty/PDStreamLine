@@ -3,8 +3,6 @@ package com.shepherdboy.pdstreamline.beans;
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
 
-import java.util.LinkedList;
-
 public class TimestreamCombination {
 
     private String buyProductName;
@@ -97,17 +95,17 @@ public class TimestreamCombination {
      * 将捆绑商品分解
      * @return
      */
-    public LinkedList<Timestream> unpack() {
+    public Timestream[] unpack() {
 
-        LinkedList<Timestream> list = new LinkedList<>();
+        Timestream[] timestreams = new Timestream[2];
 
         Timestream.refresh(buyTimestream);
-        list.add(buyTimestream);
+        timestreams[0] = buyTimestream;
 
         Timestream.refresh(giveawayTimestream);
-        list.add(giveawayTimestream);
+        timestreams[1] = giveawayTimestream;
 
-        return list;
+        return timestreams;
     }
 
     @Override

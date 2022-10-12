@@ -10,6 +10,9 @@ import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerSer
 import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.timestreamRestoreHandler;
 import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.timestreamRestoreTask;
 import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.timestreamRestoreTimer;
+import static com.shepherdboy.pdstreamline.view.DraggableLinearLayout.DRAG_LEFT;
+import static com.shepherdboy.pdstreamline.view.DraggableLinearLayout.DRAG_RIGHT;
+import static com.shepherdboy.pdstreamline.view.DraggableLinearLayout.getViewState;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -23,6 +26,7 @@ import androidx.annotation.NonNull;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
+import com.shepherdboy.pdstreamline.activities.transaction.Streamline;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
 import com.shepherdboy.pdstreamline.binder.ProductObserver;
@@ -37,9 +41,6 @@ import java.util.TimerTask;
 
 
 public class PossiblePromotionTimestreamActivity extends BaseActivity {
-
-    private static final int PICK_OUT = 1;
-    private static final int DELETE = 2;
 
     private LinkedList<Timestream> possiblePromotionTimestreams;
 
@@ -108,16 +109,13 @@ public class PossiblePromotionTimestreamActivity extends BaseActivity {
 
         switch (viewState) {
 
-            case PICK_OUT:
+            case DRAG_RIGHT:
 
                 rmTs = MyApplication.unloadTimestream((LinearLayout) releasedChild);
-                basket.put(rmTs.getId(), rmTs);
-                rmTs.setInBasket(true);
-                PDInfoWrapper.updateInfo(MyApplication.sqLiteDatabase, rmTs,
-                        MyDatabaseHelper.UPDATE_BASKET);
+                Streamline.pickOutByStateCode(rmTs);
                 break;
 
-            case DELETE:
+            case DRAG_LEFT:
 
                 rmTs = MyApplication.unloadTimestream((LinearLayout) releasedChild);
                 PDInfoWrapper.deleteTimestream(MyApplication.sqLiteDatabase, rmTs.getId());
@@ -146,25 +144,6 @@ public class PossiblePromotionTimestreamActivity extends BaseActivity {
         return dragLayout;
     }
 
-    /** 根据左右拖动的距离返回int值*/
-    public static int getViewState(View draggedView, double horizontalDraggedDistance) {
-
-        boolean isDragToPickOut = horizontalDraggedDistance >= 160;
-        boolean isDragToDelete = horizontalDraggedDistance < 0 && -horizontalDraggedDistance >= 160;
-
-        if (isDragToPickOut) {
-
-            return PICK_OUT;
-
-        } else if (isDragToDelete) {
-
-            return DELETE;
-
-        } else {
-
-            return 0;
-        }
-    }
 
     /**根据拖拽的距离改变timestream显示的颜色*/
     public static void onTimestreamViewPositionChanged(View changedView, float horizontalDistance) {
@@ -173,13 +152,13 @@ public class PossiblePromotionTimestreamActivity extends BaseActivity {
 
         switch (viewState) {
 
-            case PICK_OUT:
+            case DRAG_RIGHT:
 
                 changedView.setBackground(drawableFirstLevel);
 
                 break;
 
-            case DELETE:
+            case DRAG_LEFT:
 
                 changedView.setBackground(drawableSecondLevel);
 

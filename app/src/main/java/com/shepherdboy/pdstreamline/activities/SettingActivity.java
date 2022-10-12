@@ -4,6 +4,9 @@ import static com.shepherdboy.pdstreamline.MyApplication.SETTING_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.activityIndex;
 import static com.shepherdboy.pdstreamline.MyApplication.currentProduct;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
+import static com.shepherdboy.pdstreamline.view.DraggableLinearLayout.DRAG_LEFT;
+import static com.shepherdboy.pdstreamline.view.DraggableLinearLayout.DRAG_RIGHT;
+import static com.shepherdboy.pdstreamline.view.DraggableLinearLayout.getViewState;
 
 import android.content.Context;
 import android.content.Intent;
@@ -93,9 +96,6 @@ public class SettingActivity extends BaseActivity {
 
     private static DraggableLinearLayout draglayout;
 
-    private static final int ADD_SCOPE = 1;
-    private static final int DELETE_SCOPE = 2;
-
     public static final String DATE_OFFSET_INDEX = "dateOffset";
     public static final String SETTING_SINGLETON_INDEX_NAME = "settingSingleton";
 
@@ -109,28 +109,6 @@ public class SettingActivity extends BaseActivity {
     private static boolean expSettingChanged = false;
 
     private static SettingActivity instance;
-
-    public static void onScopeViewPositionChanged(View changedView, float horizontalDistance) {
-
-        int viewState = getViewState(changedView, horizontalDistance);
-
-        switch (viewState) {
-
-            case ADD_SCOPE:
-
-                changedView.setBackgroundColor(Color.parseColor("#8BC34A"));
-                break;
-
-            case DELETE_SCOPE:
-
-                changedView.setBackgroundColor(Color.parseColor("#FF0000"));
-                break;
-
-            default:
-
-                changedView.setBackgroundColor(0);
-        }
-    }
 
     public static long getUpperBoundMls(DateScope scope) {
 
@@ -168,36 +146,19 @@ public class SettingActivity extends BaseActivity {
     }
 
 
-    /** 根据左右拖动的距离返回int值*/
-    public static int getViewState(View draggedView, double horizontalDraggedDistance) {
-
-        boolean isDragToADD = horizontalDraggedDistance > 0 && horizontalDraggedDistance >= draggedView.getHeight() * 1.6;
-        boolean isDragToDelete = horizontalDraggedDistance < 0 && -horizontalDraggedDistance >= draggedView.getHeight() * 1.6;
-
-        if (isDragToADD) {
-
-            return ADD_SCOPE;
-        } else if (isDragToDelete) {
-
-            return DELETE_SCOPE;
-        } else {
-            return 0;
-        }
-    }
-
     public static void onScopeViewReleased(View releasedChild, float horizontalDistance) {
 
         int stateCode = getViewState(releasedChild, horizontalDistance);
 
         switch (stateCode) {
 
-            case ADD_SCOPE:
+            case DRAG_RIGHT:
 
                 addScopeBeyond(releasedChild);
                 releasedChild.setBackgroundColor(0);
                 break;
 
-            case DELETE_SCOPE:
+            case DRAG_LEFT:
 
                 deleteScope(releasedChild);
                 break;

@@ -1,6 +1,10 @@
 package com.shepherdboy.pdstreamline;
 
 import static com.shepherdboy.pdstreamline.activities.SettingActivity.settingInstance;
+import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.basket;
+import static com.shepherdboy.pdstreamline.view.DraggableLinearLayout.DRAG_LEFT;
+import static com.shepherdboy.pdstreamline.view.DraggableLinearLayout.DRAG_RIGHT;
+import static com.shepherdboy.pdstreamline.view.DraggableLinearLayout.getViewState;
 
 import android.app.Activity;
 import android.app.Application;
@@ -863,27 +867,24 @@ public class MyApplication extends Application {
 
     }
 
-    public static void onTimestreamViewReleased(View releasedChild, float horizontalDistance, float verticalDistance, float xvel, float yvel) {
+    public static void onViewReleased(View releasedChild, float horizontalDistance, float verticalDistance, float xvel, float yvel, DraggableLinearLayout draggableLinearLayout) {
 
         switch (MyApplication.activityIndex) {
 
             case PD_INFO_ACTIVITY:
-
-                PDInfoActivity.onTimestreamViewReleased(releasedChild, horizontalDistance, verticalDistance);
-
+            case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
+                onCombViewReleased(releasedChild, horizontalDistance, verticalDistance, draggableLinearLayout);
                 break;
 
-            case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
-                PossiblePromotionTimestreamActivity.onTimestreamViewReleased(releasedChild, horizontalDistance);
+            case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
+                onCombViewReleased(releasedChild, horizontalDistance, verticalDistance, draggableLinearLayout);
+                TraversalTimestreamActivity.onCombViewReleased(releasedChild,horizontalDistance,verticalDistance);
                 break;
 
             case SETTING_ACTIVITY:
                 SettingActivity.onScopeViewReleased(releasedChild, horizontalDistance);
                 break;
 
-            case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
-                TraversalTimestreamActivity.onViewReleased(releasedChild, horizontalDistance, verticalDistance);
-                break;
 
             default:
                 DraggableLinearLayout container = DraggableLinearLayout.getContainer(releasedChild);
@@ -892,7 +893,39 @@ public class MyApplication extends Application {
 
         }
     }
+    public static void onCombViewReleased(View releasedChild, float horizontalDistance, float verticalDistance, DraggableLinearLayout draggableLinearLayout) {
 
+//        DraggableLinearLayout.setFocus(releasedChild);
+
+        int stateCode = getViewState(releasedChild, horizontalDistance);
+
+        switch (stateCode) {
+
+            case DRAG_LEFT:
+
+                Timestream ts = unloadTimestream((LinearLayout) releasedChild);
+                if (ts == null) {
+                    draggableLinearLayout.putBack(releasedChild);
+                    return;
+                }
+                deleteTimestream(ts);
+                ts.setInBasket(false);
+                basket.remove(ts.getId());
+                MyApplication.productSubject.notify(ts.getProductCode());
+                break;
+
+            case DRAG_RIGHT:
+
+                Streamline.pickOut(releasedChild, draggableLinearLayout);
+
+                break;
+
+            default:
+                draggableLinearLayout.putBack(releasedChild);
+                break;
+        }
+
+    }
     public static void makeToast(Context context, String info, int duration) {
 
         Toast.makeText(context,info, duration).show();
@@ -1362,21 +1395,9 @@ public class MyApplication extends Application {
 
     public static void onViewPositionChanged(View changedView, float horizontalDistance, float verticalDistance) {
 
+        DraggableLinearLayout.changeViewStateByDistance(changedView, horizontalDistance);
+
         switch (activityIndex) {
-
-            case PD_INFO_ACTIVITY:
-
-                PDInfoActivity.onTimestreamViewPositionChanged(changedView, horizontalDistance, verticalDistance);
-                break;
-
-            case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
-
-                PossiblePromotionTimestreamActivity.onTimestreamViewPositionChanged(changedView, horizontalDistance);
-                break;
-
-            case SETTING_ACTIVITY:
-                SettingActivity.onScopeViewPositionChanged(changedView, horizontalDistance);
-                break;
 
             case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
                 TraversalTimestreamActivity.onViewPositionChanged(changedView, horizontalDistance, verticalDistance);
@@ -1385,6 +1406,7 @@ public class MyApplication extends Application {
             default:
                 break;
         }
+
     }
 
     public static Timestream unloadTimestream(LinearLayout releasedChild) {
@@ -1393,7 +1415,7 @@ public class MyApplication extends Application {
 
         if (mT == null) return null;
 
-        onShowCombsHashMap.remove(mT.getId());
+        onShowCombsHashMap.remove(releasedChild.getId());
 
         originalPositionHashMap.remove(releasedChild.getId());
         originalBackgroundHashMap.remove(releasedChild.getId());
@@ -1407,8 +1429,9 @@ public class MyApplication extends Application {
             if (o instanceof EditText) ActivityInfoChangeWatcher.getActivityWatcher(activityIndex).removeWatcher((EditText) o);
         }
 
-        draggableLinearLayout.removeView(releasedChild);
+//        draggableLinearLayout.removeView(releasedChild);
 
+        releasedChild.setVisibility(View.GONE);
         return mT;
     }
 

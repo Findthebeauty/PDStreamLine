@@ -1,14 +1,20 @@
 package com.shepherdboy.pdstreamline.activities.transaction;
 
+import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
 import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.basket;
 
+import android.view.View;
+
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.activities.PromotionActivity;
+import com.shepherdboy.pdstreamline.beans.ProductLoss;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
+import com.shepherdboy.pdstreamline.beanview.TimestreamCombinationView;
 import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
+import com.shepherdboy.pdstreamline.view.DraggableLinearLayout;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,28 +30,72 @@ public class Streamline {
     public static final Set<Timestream> offShelvesTimestreams = new HashSet<>();
 
 
-    public static void pickOut(Timestream ts) {
+    public static void pickOut(View releasedChild, DraggableLinearLayout draggableLinearLayout) {
 
-        if (ts == null) return;
-        PDInfoWrapper.deleteTimestream(sqLiteDatabase, ts.getId());
+        if(releasedChild instanceof TimestreamCombinationView) {
+            TimestreamCombination comb = ((TimestreamCombinationView) releasedChild)
+                    .getTimestreamCombination();
+            if(comb == null) {
 
-        if (ts.getSiblingPromotionId() != null) {
+                Timestream ts = onShowTimeStreamsHashMap.get(releasedChild.getId());
 
-            TimestreamCombination comb = MyApplication.getCombinationHashMap().get(ts.getId());
-            PromotionActivity.unCombine(comb);
+                if(ts == null) {
 
+                    draggableLinearLayout.putBack(releasedChild);
+                    return;
+                }
+
+                if(ts.getTimeStreamStateCode() == Timestream.EXPIRED)
+                    releasedChild.setVisibility(View.GONE);
+
+                Streamline.pickOutByStateCode(ts);
+
+                MyApplication.productSubject.notify(ts.getProductCode());
+
+            } else {
+
+                Timestream[] timestreams = PromotionActivity.unCombine(comb);
+
+                if(timestreams[0].getTimeStreamStateCode() == Timestream.EXPIRED
+                        && timestreams[1].getTimeStreamStateCode() == Timestream.EXPIRED)
+                    releasedChild.setVisibility(View.GONE);
+                else MyApplication.draggableLinearLayout.putBack(releasedChild);
+
+                for (Timestream t : timestreams) Streamline.pickOutByStateCode(t);
+
+                MyApplication.productSubject.notify(timestreams[0].getProductCode());
+                MyApplication.productSubject.notify(timestreams[1].getProductCode());
+            }
         } else {
 
-            if (ts.getTimeStreamStateCode() != Timestream.FRESH) {
+            draggableLinearLayout.putBack(releasedChild);
+        }
+
+    }
+
+    public static void pickOutByStateCode(Timestream ts) {
+
+        switch (ts.getTimeStreamStateCode()) {
+
+            case Timestream.EXPIRED:
+
+                ProductLoss productLoss = new ProductLoss(ts);
+                MyApplication.deleteTimestream(ts);
+                PDInfoWrapper.updateInfo(sqLiteDatabase, productLoss);
+
+                break;
+
+            case Timestream.CLOSE_TO_EXPIRE:
 
                 basket.put(ts.getId(), ts);
                 ts.setInBasket(true);
-            }
+                update(ts);
+                break;
 
-            update(ts);
+            default:
+                update(ts);
+                break;
         }
-
-        MyApplication.productSubject.notify(ts.getProductCode());
     }
 
     /**
@@ -57,6 +107,7 @@ public class Streamline {
 
         for(Timestream t : unpackedTimestreams) {
 
+
             update(t);
         }
     }
@@ -66,6 +117,9 @@ public class Streamline {
      * @param t
      */
     public static void update(Timestream t) {
+
+        MyApplication.getAllProducts().get(t.getProductCode()).getTimeStreams().put(t.getId(), t); // product缓存同步
+
         if(t.getSiblingPromotionId() == null) {
 
             int state = t.getTimeStreamStateCode();

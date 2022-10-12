@@ -25,6 +25,17 @@ public class ProductLoss {
         this.processDate = DateUtil.typeMach(new Date());
     }
 
+    public ProductLoss(Timestream timestream) {
+
+        this();
+        setLossProductCode(timestream.getProductCode());
+        setLossProductDOP(DateUtil.typeMach(timestream.getProductDOP()));
+        setLossType("到期下架");
+        setLossInventory(timestream.getProductInventory());
+        setProcessAccount("管理员");
+        setProcessPhotoId("todo");
+    }
+
     public ProductLoss(TimestreamCombination combination) {
 
         this(combination, "赠品", String.valueOf(combination.getPackageCount()));

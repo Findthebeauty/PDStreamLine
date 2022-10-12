@@ -8,20 +8,14 @@ import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_AC
 import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
 import static com.shepherdboy.pdstreamline.MyApplication.activityIndex;
 import static com.shepherdboy.pdstreamline.MyApplication.currentProduct;
-import static com.shepherdboy.pdstreamline.MyApplication.deleteTimestream;
 import static com.shepherdboy.pdstreamline.MyApplication.draggableLinearLayout;
-import static com.shepherdboy.pdstreamline.MyApplication.drawableFirstLevel;
-import static com.shepherdboy.pdstreamline.MyApplication.drawableSecondLevel;
 import static com.shepherdboy.pdstreamline.MyApplication.getAllProducts;
 import static com.shepherdboy.pdstreamline.MyApplication.getCurrentActivityContext;
 import static com.shepherdboy.pdstreamline.MyApplication.handlers;
 import static com.shepherdboy.pdstreamline.MyApplication.initActionBar;
 import static com.shepherdboy.pdstreamline.MyApplication.intentProductCode;
-import static com.shepherdboy.pdstreamline.MyApplication.onShowTimeStreamsHashMap;
-import static com.shepherdboy.pdstreamline.MyApplication.setTimeStreamViewOriginalBackground;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
-import static com.shepherdboy.pdstreamline.MyApplication.unloadTimestream;
-import static com.shepherdboy.pdstreamline.services.MidnightTimestreamManagerService.basket;
+import static com.shepherdboy.pdstreamline.view.DraggableLinearLayout.selectAll;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -51,7 +45,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
-import com.shepherdboy.pdstreamline.activities.transaction.Streamline;
 import com.shepherdboy.pdstreamline.beans.Cell;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Row;
@@ -79,10 +72,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class TraversalTimestreamActivity extends BaseActivity {
-
-    private static int dragThreshold = 105;
-    private static final int DRAG_LEFT = 200;
-    private static final int DRAG_RIGHT = 201;
 
     private static ClosableScrollView container;
     private static DraggableLinearLayout dragLayout;
@@ -123,72 +112,9 @@ public class TraversalTimestreamActivity extends BaseActivity {
 
         continueProcess[0] = false;
 
-        int viewState = getViewState(changedView, horizontalDistance);
-
-        switch (viewState) {
-
-            case DRAG_LEFT:
-
-                changedView.setBackground(drawableSecondLevel);
-                break;
-
-            case DRAG_RIGHT:
-
-                changedView.setBackground(drawableFirstLevel);
-                break;
-
-            default:
-
-                setTimeStreamViewOriginalBackground((LinearLayout) changedView);
-                break;
-        }
     }
 
-    private static int getViewState(View changedView, float horizontalDistance) {
-
-        if (horizontalDistance < 0 && Math.abs(horizontalDistance) > dragThreshold)
-            return DRAG_LEFT;
-
-        if (horizontalDistance > 0 && Math.abs(horizontalDistance) > dragThreshold)
-            return DRAG_RIGHT;
-
-        return 0;
-    }
-
-    public static void onViewReleased(View releasedChild, float horizontalDistance, float verticalDistance) {
-
-        int stateCode = getViewState(releasedChild, horizontalDistance);
-
-        switch (stateCode) {
-
-            case DRAG_LEFT:
-
-                Timestream ts = unloadTimestream((LinearLayout) releasedChild);
-                if (ts == null) {
-                    draggableLinearLayout.putBack(releasedChild);
-                    return;
-                }
-                deleteTimestream(ts);
-                ts.setInBasket(false);
-                basket.remove(ts.getId());
-                DraggableLinearLayout.setFocus(headViews.get(ts.getProductCode()));
-                MyApplication.productSubject.notify(ts.getProductCode());
-                break;
-
-            case DRAG_RIGHT:
-
-//                ts = MyApplication.unloadTimestream((LinearLayout) releasedChild);
-                draggableLinearLayout.putBack(releasedChild);
-                ts = onShowTimeStreamsHashMap.get(releasedChild.getId());
-
-                Streamline.pickOut(ts);
-                break;
-
-            default:
-                draggableLinearLayout.putBack(releasedChild);
-                break;
-        }
-
+    public static void onCombViewReleased(View releasedChild, float horizontalDistance, float verticalDistance) {
 
         if (!loadFinished) {
 
@@ -469,7 +395,7 @@ public class TraversalTimestreamActivity extends BaseActivity {
             }
         });
 
-        DraggableLinearLayout.selectAll(nameEt);
+        selectAll(nameEt);
     }
 
     private void exitModifyShelf() {
