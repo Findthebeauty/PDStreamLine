@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.beans.Product;
+import com.shepherdboy.pdstreamline.beans.ProductLoss;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.dao.MyDatabaseHelper;
 import com.shepherdboy.pdstreamline.dao.PDInfoWrapper;
@@ -73,6 +74,16 @@ public class ProductLoader {
                     (TimestreamCombinationView) container.getChildAt(index);
 
             combView.bindData(activityIndex, t);
+            index++;
+        }
+    }
+
+    public static void loadProductLosses(ViewGroup container, HashMap<String, ProductLoss> losses, int index) {
+
+        for (ProductLoss loss : losses.values()) {
+
+            TimestreamCombinationView combView = (TimestreamCombinationView) container.getChildAt(index);
+            combView.bindData(loss);
             index++;
         }
     }

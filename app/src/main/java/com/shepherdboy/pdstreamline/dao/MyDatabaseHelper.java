@@ -38,6 +38,8 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
     public static final String PRODUCT_INVENTORY_SELECTION = "product_inventory";
 
+    public static final String PROCESS_DATE_SELECTION = "process_date";
+
     public static final String PRODUCT_INFO_TABLE_NAME = "product_inf";
 
     public static final String PRODUCT_TO_CHECK_TABLE_NAME = "product_to_check";

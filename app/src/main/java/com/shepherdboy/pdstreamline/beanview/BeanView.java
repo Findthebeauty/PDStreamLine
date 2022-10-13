@@ -5,5 +5,5 @@ package com.shepherdboy.pdstreamline.beanview;
  */
 public interface BeanView {
     String getProductCode();
-    void bindData(int activityIndex, Object o);
+//    void bindData(int activityIndex, Object o);
 }

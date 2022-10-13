@@ -20,6 +20,7 @@ import androidx.annotation.Nullable;
 
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.activities.PDInfoActivity;
+import com.shepherdboy.pdstreamline.activities.ProductLossLogActivity;
 import com.shepherdboy.pdstreamline.activities.SettingActivity;
 import com.shepherdboy.pdstreamline.beans.DateScope;
 import com.shepherdboy.pdstreamline.beans.Shelf;
@@ -585,6 +586,12 @@ public class ActivityInfoChangeWatcher {
 
                 MyApplication.afterInfoChanged(watcher.shelf, watcher.currentInf, watcher.watchedEditText, watcher.filedIndex);
                 watcher.preInf = watcher.currentInf;
+                break;
+
+            case MyApplication.PRODUCT_LOSS_LOG_ACTIVITY:
+
+                ProductLossLogActivity.afterInfoChanged(watcher.currentInf, watcher.watchedEditText,
+                        watcher.filedIndex);
                 break;
 
             default:

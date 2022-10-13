@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.ProductLossLogActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/date_scope_flag"
+        android:text="处理日期: "
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBaseline_toBaselineOf="@id/start_date_measure"/>
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/start_date_measure"
+        app:layout_constraintLeft_toRightOf="@id/date_scope_flag"
+        app:layout_constraintTop_toTopOf="parent"
+        android:text="2022-10-14"
+        android:visibility="invisible"/>
+    <EditText
+        android:layout_width="0sp"
+        android:layout_height="0sp"
+        android:id="@+id/start_date"
+        android:inputType="number"
+        app:layout_constraintTop_toTopOf="@id/start_date_measure"
+        app:layout_constraintLeft_toLeftOf="@id/start_date_measure"
+        app:layout_constraintRight_toRightOf="@id/start_date_measure"
+        app:layout_constraintBottom_toBottomOf="@id/start_date_measure"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/connector"
+        app:layout_constraintLeft_toRightOf="@id/start_date_measure"
+        app:layout_constraintBaseline_toBaselineOf="@id/start_date_measure"
+        android:text="至"
+        android:layout_marginStart="1sp"
+        android:layout_marginEnd="1sp"/>
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/end_date_measure"
+        app:layout_constraintLeft_toRightOf="@id/connector"
+        app:layout_constraintTop_toTopOf="parent"
+        android:text="2022-10-14"
+        android:visibility="invisible"/>
+    <EditText
+        android:layout_width="0sp"
+        android:layout_height="0sp"
+        android:id="@+id/end_date"
+        android:inputType="number"
+        app:layout_constraintTop_toTopOf="@id/end_date_measure"
+        app:layout_constraintLeft_toLeftOf="@id/end_date_measure"
+        app:layout_constraintRight_toRightOf="@id/end_date_measure"
+        app:layout_constraintBottom_toBottomOf="@id/end_date_measure"/>
+    <Button
+        android:layout_width="65sp"
+        android:layout_height="wrap_content"
+        android:id="@+id/search"
+        android:text="查询"
+        app:layout_constraintLeft_toRightOf="@id/end_date_measure"
+        app:layout_constraintBaseline_toBaselineOf="@id/start_date_measure"/>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/start_date_measure">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/container"
+            android:orientation="vertical">
+
+        </LinearLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

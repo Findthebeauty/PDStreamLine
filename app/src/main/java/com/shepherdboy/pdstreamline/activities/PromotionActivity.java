@@ -76,7 +76,7 @@ public class PromotionActivity extends BaseActivity {
         int buyInventory = Integer.parseInt(buyTimestream.getProductInventory());
         int giveawayInventory = Integer.parseInt(giveawayTimestream.getProductInventory());
 
-        int stateCode = giveawayTimestream.getTimeStreamStateCode();
+        int stateCode = giveawayTimestream.getTimestreamStateCode();
 
         switch (stateCode) {
 
@@ -327,7 +327,7 @@ public class PromotionActivity extends BaseActivity {
 
         for(Timestream t : MidnightTimestreamManagerService.basket.values()) {
 
-            if (t.getTimeStreamStateCode() == Timestream.CLOSE_TO_EXPIRE)
+            if (t.getTimestreamStateCode() == Timestream.CLOSE_TO_EXPIRE)
                 oddments.put(t.getId(), t);
         }
     }
@@ -368,7 +368,7 @@ public class PromotionActivity extends BaseActivity {
 
         for (Timestream t : basket.values()) {
 
-            if(t.getTimeStreamStateCode() == Timestream.CLOSE_TO_EXPIRE) {
+            if(t.getTimestreamStateCode() == Timestream.CLOSE_TO_EXPIRE) {
 
                 TimestreamCombination comb = combine(t);
                 if(comb != null) {

@@ -110,6 +110,7 @@ public class MyApplication extends Application {
     public static final int TRAVERSAL_TIMESTREAM_ACTIVITY = 8;
     public static final int TRAVERSAL_TIMESTREAM_ACTIVITY_MODIFY_SHELF = 9;
     public static final int TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF = 10;
+    public static final int PRODUCT_LOSS_LOG_ACTIVITY = 11;
 
     public static final int ITEM_SELECTED = 100;
 
@@ -668,7 +669,8 @@ public class MyApplication extends Application {
 
         return product;
     }
-//
+
+    //
 //    static {
 //
 //        TimeZone.setDefault(MyApplication.timeZone);
@@ -1370,12 +1372,12 @@ public class MyApplication extends Application {
 
                 ((TimestreamCombinationView) tsView).getBuyBackground()
                         .setBackgroundColor(getColorByTimestreamStateCode(
-                                timestream.getTimeStreamStateCode()
+                                timestream.getTimestreamStateCode()
                         ));
 
             } else {
 
-                tsView.setBackgroundColor(getColorByTimestreamStateCode(timestream.getTimeStreamStateCode()));
+                tsView.setBackgroundColor(getColorByTimestreamStateCode(timestream.getTimestreamStateCode()));
             }
         }
 
@@ -1405,15 +1407,20 @@ public class MyApplication extends Application {
 
     public static void onViewPositionChanged(View changedView, float horizontalDistance, float verticalDistance) {
 
-        DraggableLinearLayout.changeViewStateByDistance(changedView, horizontalDistance);
 
         switch (activityIndex) {
 
+            case SETTING_ACTIVITY:
+                SettingActivity.changeViewStateByDistance(changedView, horizontalDistance);
+                break;
+
             case TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF:
+                DraggableLinearLayout.changeViewStateByDistance(changedView, horizontalDistance);
                 TraversalTimestreamActivity.onViewPositionChanged(changedView, horizontalDistance, verticalDistance);
                 break;
 
             default:
+                DraggableLinearLayout.changeViewStateByDistance(changedView, horizontalDistance);
                 break;
         }
 

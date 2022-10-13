@@ -129,6 +129,7 @@ public class MainActivity extends BaseActivity {
         Button startPDInfoActivityBT = findViewById(R.id.pd_info_activity);
         Button stopMNSBT = findViewById(R.id.stop_midnight_manager_service);
         Button startPossiblePromotionActivityBT = findViewById(R.id.find_possible_promotion_timestream);
+        Button startProductLossActivityBT = findViewById(R.id.product_loss_log);
 
         startTraversalTimestreamBT.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -160,6 +161,12 @@ public class MainActivity extends BaseActivity {
             }
         });
 
+        startProductLossActivityBT.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ProductLossLogActivity.actionStart(MainActivity.this);
+            }
+        });
     }
 
     @Override

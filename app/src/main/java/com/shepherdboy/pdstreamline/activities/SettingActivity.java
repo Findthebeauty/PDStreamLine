@@ -146,6 +146,28 @@ public class SettingActivity extends BaseActivity {
     }
 
 
+    public static void changeViewStateByDistance(View changedView, float horizontalDistance) {
+
+        int viewState = getViewState(changedView, horizontalDistance);
+
+        switch (viewState) {
+
+            case DRAG_RIGHT:
+
+                changedView.setBackgroundColor(Color.parseColor("#8BC34A"));
+                break;
+
+            case DRAG_LEFT:
+
+                changedView.setBackgroundColor(Color.parseColor("#FF0000"));
+                break;
+
+            default:
+
+                changedView.setBackgroundColor(0);
+        }
+    }
+
     public static void onScopeViewReleased(View releasedChild, float horizontalDistance) {
 
         int stateCode = getViewState(releasedChild, horizontalDistance);

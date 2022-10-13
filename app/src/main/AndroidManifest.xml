@@ -27,6 +27,12 @@
         android:theme="@style/customAnimation"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".activities.ProductLossInfoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.ProductLossLogActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.BaseActivity"
             android:exported="false" />
         <activity

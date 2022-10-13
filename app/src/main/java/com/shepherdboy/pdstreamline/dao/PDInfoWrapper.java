@@ -53,7 +53,6 @@ public class PDInfoWrapper {
 
     }
 
-
     /**
      * 获取Product的完整信息，包含所有的Timestream
      * @param productCode
@@ -666,6 +665,67 @@ public class PDInfoWrapper {
                 productLoss.getProcessPhotoId() + "')";
 
         sqLiteDatabase.execSQL(sql);
+    }
+
+    public static LinkedHashMap<String, ProductLoss> getProductLoss(SQLiteDatabase sqLiteDatabase, String startDate,
+                                                         String endDate) {
+
+        LinkedHashMap<String, ProductLoss> lossMap = new LinkedHashMap<>();
+
+        StringBuilder sqlBuilder = new StringBuilder("select * from " + MyDatabaseHelper.PRODUCT_LOSS_LOG_TABLE_NAME );
+        if (startDate != null) {
+            sqlBuilder.append(" where ")
+                    .append(MyDatabaseHelper.PROCESS_DATE_SELECTION)
+                    .append(">'")
+                    .append(startDate)
+                    .append("'");
+
+            if(endDate != null) {
+
+                sqlBuilder.append(" and ")
+                        .append(MyDatabaseHelper.PROCESS_DATE_SELECTION)
+                        .append("<'")
+                        .append(endDate)
+                        .append("'");
+            }
+        } else {
+
+            if(endDate != null) {
+
+                sqlBuilder.append(" where ")
+                        .append(MyDatabaseHelper.PROCESS_DATE_SELECTION)
+                        .append("<'")
+                        .append(endDate)
+                        .append("'");
+            }
+        }
+//        String sql = "select * from " + MyDatabaseHelper.PRODUCT_LOSS_LOG_TABLE_NAME + " where " +
+//                MyDatabaseHelper.PROCESS_DATE_SELECTION + ">'" + DateUtil.typeMach(startDate) + "' and " +
+//                MyDatabaseHelper.PROCESS_DATE_SELECTION + "<'" + DateUtil.typeMach(endDate) + ",";
+        Cursor cursor = sqLiteDatabase.rawQuery(sqlBuilder.toString(), null);
+
+        if (cursor.moveToFirst()) {
+
+            do {
+
+                ProductLoss loss = new ProductLoss();
+                loss.setId(String.valueOf(cursor.getInt(0)));
+                loss.setSiblingProductCode(cursor.getString(1));
+                loss.setSiblingProductDOP(cursor.getString(2));
+                loss.setLossProductCode(cursor.getString(3));
+                loss.setLossProductDOP(cursor.getString(4));
+                loss.setLossInventory(cursor.getString(5));
+                loss.setLossType(cursor.getString(6));
+                loss.setProcessDate(cursor.getString(7));
+                loss.setProcessAccount(cursor.getString(8));
+                loss.setProcessPhotoId(cursor.getString(9));
+
+                lossMap.put(loss.getId(), loss);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        return lossMap;
     }
 
     public static void deleteTimestream(SQLiteDatabase sqLiteDatabase, String timeStreamId) {

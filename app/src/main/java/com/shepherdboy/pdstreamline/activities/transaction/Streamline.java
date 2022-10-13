@@ -46,7 +46,7 @@ public class Streamline {
                     return;
                 }
 
-                if(ts.getTimeStreamStateCode() == Timestream.EXPIRED
+                if(ts.getTimestreamStateCode() == Timestream.EXPIRED
                         || activityIndex == POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY)
                     releasedChild.setVisibility(View.GONE);
 
@@ -58,8 +58,8 @@ public class Streamline {
 
                 Timestream[] timestreams = PromotionActivity.unCombine(comb);
 
-                if((timestreams[0].getTimeStreamStateCode() == Timestream.EXPIRED
-                        && timestreams[1].getTimeStreamStateCode() == Timestream.EXPIRED)
+                if((timestreams[0].getTimestreamStateCode() == Timestream.EXPIRED
+                        && timestreams[1].getTimestreamStateCode() == Timestream.EXPIRED)
                         || activityIndex == POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY) {
                     releasedChild.setVisibility(View.GONE);
                 } else {
@@ -80,7 +80,7 @@ public class Streamline {
 
     public static void pickOutByStateCode(Timestream ts) {
 
-        switch (ts.getTimeStreamStateCode()) {
+        switch (ts.getTimestreamStateCode()) {
 
             case Timestream.EXPIRED:
 
@@ -127,7 +127,7 @@ public class Streamline {
 
         if(t.getSiblingPromotionId() == null) {
 
-            int state = t.getTimeStreamStateCode();
+            int state = t.getTimestreamStateCode();
 
             switch (state) {
 

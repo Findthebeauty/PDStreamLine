@@ -3,6 +3,7 @@ package com.shepherdboy.pdstreamline.beanview;
 import static com.shepherdboy.pdstreamline.MyApplication.PD_INFO_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY;
+import static com.shepherdboy.pdstreamline.MyApplication.PRODUCT_LOSS_LOG_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.PROMOTION_TIMESTREAM_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.PROMOTION_TIMESTREAM_ACTIVITY_COMBINE;
 import static com.shepherdboy.pdstreamline.MyApplication.TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF;
@@ -24,14 +25,19 @@ import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.activities.PDInfoActivity;
 import com.shepherdboy.pdstreamline.activities.PossiblePromotionTimestreamActivity;
+import com.shepherdboy.pdstreamline.activities.ProductLossInfoActivity;
 import com.shepherdboy.pdstreamline.activities.TraversalTimestreamActivity;
+import com.shepherdboy.pdstreamline.beans.Product;
+import com.shepherdboy.pdstreamline.beans.ProductLoss;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 import com.shepherdboy.pdstreamline.beans.TimestreamCombination;
 import com.shepherdboy.pdstreamline.binder.ProductObserver;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
 
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
@@ -40,7 +46,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
     private TextView buyProductNameTv;
     private TextView giveawayProductNameTv;
     private TextView buyDOPEt;
-    private EditText inventory;
+    private TextView inventory;
     private TextView unitTv;
     private TextView giveawayDOPTv;
     private TimestreamCombination timestreamCombination = null;
@@ -75,6 +81,10 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
             case PROMOTION_TIMESTREAM_ACTIVITY:
             case PROMOTION_TIMESTREAM_ACTIVITY_COMBINE:
                 combination = inflater.inflate(R.layout.comb_layout_uneditable, null).findViewById(R.id.combination);
+                break;
+
+            case PRODUCT_LOSS_LOG_ACTIVITY:
+                combination = inflater.inflate(R.layout.comb_layout_product_loss, null).findViewById(R.id.combination);
                 break;
 
             default:
@@ -175,9 +185,43 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
     }
 
+    public void bindData(ProductLoss loss) {
+
+        Product product = MyApplication.getAllProducts().get(loss.getLossProductCode());
+
+
+        buyDOPEt.setText(loss.getLossProductDOP().substring(0,10));
+        buyProductNameTv.setText(product.getProductName());
+        inventory.setText(loss.getLossInventory());
+
+        try {
+
+            Date DOP = DateUtil.typeMach(loss.getLossProductDOP());
+            Timestream timestream = new Timestream(product, DOP, loss.getLossInventory());
+
+            Date processDate = DateUtil.typeMach(loss.getProcessDate());
+
+            buyBackground.setBackgroundColor(
+                    MyApplication.getColorByTimestreamStateCode(
+                            timestream.getTimestreamStateCode(processDate))
+            );
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        this.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                ProductLossInfoActivity.actionStart(MyApplication.getCurrentActivityContext(),
+                        loss.getId());
+            }
+        });
+    }
+
     /**
      *
-     * @param o timestreamId
+     * @param o timestream,timestreamCombination
      */
     public void bindData(int activityIndex, Object o) {
 
@@ -251,7 +295,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
 
                 } else {
 
-                    int color = MyApplication.getColorByTimestreamStateCode(timestream.getTimeStreamStateCode());
+                    int color = MyApplication.getColorByTimestreamStateCode(timestream.getTimestreamStateCode());
                     buyBackground.setBackgroundColor(color);
                 }
 
@@ -309,11 +353,11 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
                     .getProductDOP()).substring(0,10));
 
 
-            int color = MyApplication.getColorByTimestreamStateCode(timestreamCombination.getBuyTimestream().getTimeStreamStateCode());
+            int color = MyApplication.getColorByTimestreamStateCode(timestreamCombination.getBuyTimestream().getTimestreamStateCode());
             buyBackground.setBackgroundColor(color);
 
 
-            color = MyApplication.getColorByTimestreamStateCode(timestreamCombination.getGiveawayTimestream().getTimeStreamStateCode());
+            color = MyApplication.getColorByTimestreamStateCode(timestreamCombination.getGiveawayTimestream().getTimestreamStateCode());
             giveawayBackground.setBackgroundColor(color);
 
             onShowTimeStreamsHashMap.put(this.getId(), timestreamCombination.getBuyTimestream()); //一个combination有3个背景，整体的、商品和赠品的，3个背景都要记录
@@ -332,23 +376,31 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
                     watcher.watch((EditText) buyDOPEt,timestreamCombination.getBuyTimestream(),MyApplication.TIMESTREAM_DOP,true);
                     break;
             }
-            watcher.watch(inventory,timestreamCombination.getBuyTimestream(),MyApplication.TIMESTREAM_INVENTORY,true);
+
+            watcher.watch((EditText) inventory,timestreamCombination.getBuyTimestream(),MyApplication.TIMESTREAM_INVENTORY,true);
 
         } else {
 
             switch (activityIndex) {
 
+                case PRODUCT_LOSS_LOG_ACTIVITY:
+                    break;
+
                 case POSSIBLE_EXPIRED_TIMESTREAM_ACTIVITY:
                 case POSSIBLE_PROMOTION_TIMESTREAM_ACTIVITY:
                 case PROMOTION_TIMESTREAM_ACTIVITY:
                 case PROMOTION_TIMESTREAM_ACTIVITY_COMBINE:
+                    watcher.watch((EditText) inventory,timestream,MyApplication.TIMESTREAM_INVENTORY,true);
                     break;
+
 
                 default:
                     watcher.watch((EditText) buyDOPEt,timestream,MyApplication.TIMESTREAM_DOP,true);
+                    watcher.watch((EditText) inventory,timestream,MyApplication.TIMESTREAM_INVENTORY,true);
                     break;
             }
-            watcher.watch(inventory,timestream,MyApplication.TIMESTREAM_INVENTORY,true);
+
+
         }
 
     }
@@ -394,7 +446,7 @@ public class TimestreamCombinationView extends LinearLayout implements BeanView{
     }
 
     public EditText getInventory() {
-        return inventory;
+        return (EditText) inventory;
     }
 
     public String getTimestreamId() {

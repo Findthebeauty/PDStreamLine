@@ -134,4 +134,20 @@ public class ProductLoss {
     public void setProcessPhotoId(String processPhotoId) {
         this.processPhotoId = processPhotoId;
     }
+
+    @Override
+    public String toString() {
+        return "ProductLoss{" +
+                "id='" + id + '\'' +
+                ", siblingProductCode='" + siblingProductCode + '\'' +
+                ", siblingProductDOP='" + siblingProductDOP + '\'' +
+                ", lossProductCode='" + lossProductCode + '\'' +
+                ", lossProductDOP='" + lossProductDOP + '\'' +
+                ", lossInventory='" + lossInventory + '\'' +
+                ", lossType='" + lossType + '\'' +
+                ", processDate='" + processDate + '\'' +
+                ", processAccount='" + processAccount + '\'' +
+                ", processPhotoId='" + processPhotoId + '\'' +
+                '}';
+    }
 }

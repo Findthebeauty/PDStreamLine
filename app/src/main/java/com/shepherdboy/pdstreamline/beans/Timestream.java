@@ -82,7 +82,7 @@ public class Timestream {
     }
 
     // todo bug 正常日期有几率显示颜色为过期灰
-    public int getTimeStreamStateCode() {
+    public int getTimestreamStateCode() {
 
         if (productExpireDate == null) return FRESH;
 
@@ -103,6 +103,11 @@ public class Timestream {
             calendar.add(Calendar.DATE, 1);
             target = calendar.getTime();
         }
+
+        return getTimestreamStateCode(target);
+    }
+
+    public int getTimestreamStateCode(Date target) {
 
         if (productExpireDate.before(target) || productExpireDate.equals(target)) {
 
@@ -263,6 +268,11 @@ public class Timestream {
     public Timestream(String productCode) {
         this();
         setProductCode(productCode);
+    }
+
+    public Timestream(Product product, Date productDOP, String inventory) {
+        this(product.getProductCode(), product.getProductEXP(), product.getProductEXPTimeUnit(), productDOP,
+                product.getDefaultCoordinate(), inventory);
     }
 
     public Timestream(String productCode, String productEXP, String productEXPTimeUnit, Date productDOP,

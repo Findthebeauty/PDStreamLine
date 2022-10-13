@@ -25,6 +25,12 @@
         android:text="未处理临期商品记录" />
 
     <Button
+        android:id="@+id/product_loss_log"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="商品处理记录" />
+
+    <Button
         android:id="@+id/stop_midnight_manager_service"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -14,6 +14,7 @@ import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.beans.Shelf;
 import com.shepherdboy.pdstreamline.beans.Timestream;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -294,7 +295,14 @@ public class AIInputter {
 
     }
 
-    public static String translate(Product product, Date productDOP, String after) throws Exception{
+    public static String translate(String after) {
+
+        Date date = DateUtil.getStartPointToday();
+
+        return translate(null, date, after);
+    }
+
+    public static String translate(Product product, Date productDOP, String after) {
 
         if (productDOP == null) {
 
@@ -312,16 +320,24 @@ public class AIInputter {
 
             }
 
-            result = DateUtil.parseDate(productDOP, after);
+            try {
 
-            Date DOP = DateUtil.typeMach(result + " 00:00:00");
+                result = DateUtil.parseDate(productDOP, after);
 
-            if (DOP.after(DateUtil.getStartPointToday())) {
+                Date DOP = DateUtil.typeMach(result + " 00:00:00");
 
-                DOP = DateUtil.getLastYear(DOP);
+                if (DOP.after(DateUtil.getStartPointToday())) {
 
-                result = DateUtil.typeMach(DOP).substring(0,10);
+                    DOP = DateUtil.getLastYear(DOP);
 
+                    result = DateUtil.typeMach(DOP).substring(0,10);
+
+                }
+
+            } catch (ParseException e) {
+
+                e.printStackTrace();
+                return after;
             }
 
 //            ArrayList<Date> possibleDOPs = new ArrayList<>();
@@ -342,7 +358,13 @@ public class AIInputter {
     }
 
     // todo 3个数字的日期对应的具体日期推断
-    private static String analysisAndDecorate(Product product, Date productDOP, String after) {
+    private static String analysisAndDecorate(@Nullable Product product, Date productDOP, String after) {
+
+        return "0" + after;
+
+    }
+    // todo 3个数字的日期对应的具体日期推断
+    private static String analysisAndDecorate(Date productDOP, String after) {
 
         return "0" + after;
 
@@ -501,4 +523,6 @@ public class AIInputter {
 
         }
     }
+
+
 }
