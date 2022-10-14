@@ -288,6 +288,7 @@ public class PDInfoActivity extends BaseActivity {
     }
     public void loadProduct(Product product) {
 
+        currentProduct = product;
         watcher.setShouldWatch(false);
 
         LinkedHashMap<String, Timestream> timeStreams = product.getTimeStreams();

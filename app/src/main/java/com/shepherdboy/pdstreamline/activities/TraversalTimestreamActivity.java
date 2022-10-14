@@ -217,7 +217,17 @@ public class TraversalTimestreamActivity extends BaseActivity {
 
         String code = product.getProductCode();
 
+        if(!headViews.containsKey(code)) {
+
+            Cell cell = new Cell(product);
+            prepareCellView(cell, dragLayout);
+            loadViews(dragLayout);
+
+            return;
+        }
+
         CellHeadView headView = headViews.get(code);
+
         headView.bindData(TRAVERSAL_TIMESTREAM_ACTIVITY_SHOW_SHELF, code);
 
         int index = dragLayout.indexOfChild(headView);
@@ -588,9 +598,9 @@ public class TraversalTimestreamActivity extends BaseActivity {
                 Cell cell = row.getCells().poll();
                 prepareCellView(cell, draggableLinearLayout);
 
-                if (!continueProcess[0]) {
-                    continue;
-                }
+//                if (!continueProcess[0]) {
+//                    continue;
+//                }
 
                 postMessage(MSG_LOAD_VIEWS,null);
             }

@@ -50,10 +50,21 @@ public class ProductLossLogActivity extends BaseActivity {
 
             case START_DATE:
 
+                if(after.equals("")) {
+
+                    setStartDate(null);
+                    return;
+                }
                 setStartDate(after + " 00:00:00");
                 break;
 
             case END_DATE:
+
+                if(after.equals("")) {
+
+                    setEndDate(null);
+                    return;
+                }
 
                 setEndDate(after + " 00:00:00");
                 break;
@@ -65,6 +76,8 @@ public class ProductLossLogActivity extends BaseActivity {
     }
 
     private static String apply(String after, EditText watchedEditText) {
+
+        if(after.equals("")) return after;
 
         after = AIInputter.translate(after);
         ActivityInfoChangeWatcher.getActivityWatcher(PRODUCT_LOSS_LOG_ACTIVITY).setShouldWatch(false);

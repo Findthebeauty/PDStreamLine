@@ -590,8 +590,8 @@ public class MyApplication extends Application {
             origin.setProductName(product.getProductName());
 
             if(product.getProductEXP() != null &&
-                    !product.getProductEXP().equals("") &&
-                    !product.getProductEXP().equals("0")) {
+                    (!product.getProductEXP().equals("")) &&
+                    (!product.getProductEXP().equals("0"))) {
 
                 origin.setProductEXP(product.getProductEXP());
                 origin.setProductEXPTimeUnit(product.getProductEXPTimeUnit());

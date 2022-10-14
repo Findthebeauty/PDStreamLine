@@ -98,7 +98,7 @@ public class HttpDao {
         Product p = new Product();
         p.setProductCode(object.getString("barcode"));
         p.setProductName(object.getString("name"));
-        p.setProductEXP(object.getString("exp") == null ? "1" : object.getString("exp"));
+        p.setProductEXP(object.getString("exp") == null || object.getString("exp").equals("0") ? "1" : object.getString("exp"));
         p.setProductEXPTimeUnit(object.getString("expTimeUnit") == null ? "天" : object.getString("expTimeUnit"));
         p.setProductSpec(object.getString("unit"));
         p.setUpdated(false);

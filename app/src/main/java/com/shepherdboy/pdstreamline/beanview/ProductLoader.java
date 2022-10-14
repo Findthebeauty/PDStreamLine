@@ -1,5 +1,6 @@
 package com.shepherdboy.pdstreamline.beanview;
 
+import static com.shepherdboy.pdstreamline.MyApplication.PRODUCT_LOSS_LOG_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.PROMOTION_TIMESTREAM_ACTIVITY;
 import static com.shepherdboy.pdstreamline.MyApplication.closableScrollView;
 import static com.shepherdboy.pdstreamline.MyApplication.sqLiteDatabase;
@@ -123,6 +124,7 @@ public class ProductLoader {
         switch (activityIndex) {
 
             case PROMOTION_TIMESTREAM_ACTIVITY:
+            case PRODUCT_LOSS_LOG_ACTIVITY:
 
                 while (combCount > size) {
 

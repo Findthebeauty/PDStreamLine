@@ -36,20 +36,22 @@ public class PDInfoWrapper {
     @SuppressLint("Range")
     public static String getProductName(String productCode, SQLiteDatabase sqLiteDatabase) {
 
-        String name;
+        Product product = getProduct(productCode, sqLiteDatabase, MyDatabaseHelper.PLAIN_PRODUCT_WITH_NO_TIMESTREAM);
 
-        Cursor cursor = MyDatabaseHelper.query(sqLiteDatabase, MyDatabaseHelper.PRODUCT_INFO_TABLE_NAME,
-                new String[]{"*"},"product_code=?", new String[]{productCode});
-        try {
+//        String name;
+//
+//        Cursor cursor = MyDatabaseHelper.query(sqLiteDatabase, MyDatabaseHelper.PRODUCT_INFO_TABLE_NAME,
+//                new String[]{"*"},"product_code=?", new String[]{productCode});
+//        try {
+//
+//            cursor.moveToFirst();
+//            name = cursor.getString(cursor.getColumnIndex("product_name"));
+//        } catch (Exception e) {
+//
+//            name = "null";
+//        }
 
-            cursor.moveToFirst();
-            name = cursor.getString(cursor.getColumnIndex("product_name"));
-        } catch (Exception e) {
-
-            name = "null";
-        }
-
-        return name;
+        return product.getProductName();
 
     }
 
