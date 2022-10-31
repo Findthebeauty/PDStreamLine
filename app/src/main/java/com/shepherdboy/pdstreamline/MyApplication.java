@@ -30,7 +30,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 import com.shepherdboy.pdstreamline.activities.MainActivity;
 import com.shepherdboy.pdstreamline.activities.PDInfoActivity;
 import com.shepherdboy.pdstreamline.activities.PossiblePromotionTimestreamActivity;
@@ -454,8 +454,9 @@ public class MyApplication extends Application {
         String scopeSetting = MyDatabaseHelper.getSetting(SettingActivity.DATE_OFFSET_INDEX, MyApplication.sqLiteDatabase);
         String singletonSetting = MyDatabaseHelper.getSetting(SettingActivity.SETTING_SINGLETON_INDEX_NAME, MyApplication.sqLiteDatabase);
 
-        String notPromotionTS = JSON.toJSONString(notPromotionTimestreams);
-        String promotionTS = JSON.toJSONString(promotionTimestreams);
+        Gson gson = new Gson();
+        String notPromotionTS = gson.toJson(notPromotionTimestreams);
+        String promotionTS = gson.toJson(promotionTimestreams);
 
         String url = "https://h41548z146.goho.co";
 

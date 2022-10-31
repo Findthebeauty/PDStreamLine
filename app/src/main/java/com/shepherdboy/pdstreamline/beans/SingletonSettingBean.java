@@ -1,6 +1,6 @@
 package com.shepherdboy.pdstreamline.beans;
 
-import com.alibaba.fastjson.annotation.JSONField;
+import com.google.gson.annotations.Expose;
 import com.shepherdboy.pdstreamline.utils.DateUtil;
 
 import java.text.ParseException;
@@ -9,7 +9,7 @@ import java.util.Date;
 
 public class SingletonSettingBean {
 
-    @JSONField(serialize = false)
+    @Expose(serialize = false, deserialize = false)
     private boolean updated;
 
     private boolean autoCombine = true;

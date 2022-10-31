@@ -4,9 +4,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
+import com.google.gson.Gson;
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.beans.Product;
 import com.shepherdboy.pdstreamline.view.ActivityInfoChangeWatcher;
@@ -19,6 +17,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class HttpDao {
 
     private static final String SERVER_ADDRESS =
-            "https://www.shepherdboy.cool/webserver/product/";
+            "https://www.shepherdboy.cool/product/";
     private static final String QUERY_PRODUCT_MAPPING_PREFIX = "queryProduct";
     private static final String SYNC_PRODUCT_MAPPING_PREFIX = "syncProductInfo";
 
@@ -68,9 +67,12 @@ public class HttpDao {
                 Product product = null;
                 if (!response.equals("null")) {
 
-                    JSONObject object = JSON.parseObject(response);
+                    Gson gson = new Gson();
 
-                    product = parseProduct(object);
+                    Map map = gson.fromJson(response, Map.class);
+//                    JSONObject object = JSON.parseObject(response);
+
+                    product = parseProduct(map);
 
                     product.setUpdated(false);
                     MyApplication.getAllProducts().put(productCode, product);
@@ -90,17 +92,17 @@ public class HttpDao {
 
     /**
      * 将JSONObject解析为Product对象
-     * @param object JSONObject
+     * @param map JSONObject
      * @return Product
      */
-    private static Product parseProduct(JSONObject object) {
+    private static Product parseProduct(Map map) {
 
         Product p = new Product();
-        p.setProductCode(object.getString("barcode"));
-        p.setProductName(object.getString("name"));
-        p.setProductEXP(object.getString("exp") == null || object.getString("exp").equals("0") ? "1" : object.getString("exp"));
-        p.setProductEXPTimeUnit(object.getString("expTimeUnit") == null ? "天" : object.getString("expTimeUnit"));
-        p.setProductSpec(object.getString("unit"));
+        p.setProductCode((String) map.get("barcode"));
+        p.setProductName((String) map.get("name"));
+        p.setProductEXP(map.get("exp") == null || map.get("exp").equals("0") ? "1" : (String) map.get("exp"));
+        p.setProductEXPTimeUnit(map.get("expTimeUnit") == null ? "天" : (String) map.get("expTimeUnit"));
+        p.setProductSpec((String) map.get("unit"));
         p.setUpdated(false);
 
         return p;
@@ -136,7 +138,6 @@ public class HttpDao {
         totalCount = -1;
         transmitEnd = false;
 
-
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -168,9 +169,6 @@ public class HttpDao {
                 }).start();
             }
         }).start();
-
-
-
     }
 
     private static void limitQuery(Integer start, int count, String lastSyncTime) {
@@ -189,18 +187,25 @@ public class HttpDao {
 
             response = getInfo(url);
 
-            JSONObject object = JSON.parseObject(response);
+            Gson gson = new Gson();
 
-            JSONObject head = object.getObject("head", JSONObject.class);
-            if (head.getString("code").equals("0")) return;
+//            JSONObject object = JSON.parseObject(response);
 
-            int totalCount = Integer.parseInt(head.getString("totalCount"));
+            Map map = gson.fromJson(response, Map.class);
 
-            List<JSONObject> data = object.getObject("data", new TypeReference<List<JSONObject>>(){});
+//            JSONObject head = object.getObject("head", JSONObject.class);
+            Map head = (Map) map.get("head");
+            if (head.get("code").equals(0)) return;
 
-            for (JSONObject productObj : data) {
+            int totalCount = Integer.valueOf((String) head.get("totalCount"));
 
-                Product p = parseProduct(productObj);
+//            List<JSONObject> data = object.getObject("data", new TypeReference<List<JSONObject>>(){});
+
+            List data = (List) map.get("data");
+
+            for (Object productObj : data) {
+
+                Product p = parseProduct((Map) productObj);
                 products.add(p);
             }
 

@@ -40,8 +40,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.Cell;
@@ -67,6 +67,7 @@ import com.shepherdboy.pdstreamline.view.ShelfAdapter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -440,8 +441,12 @@ public class TraversalTimestreamActivity extends BaseActivity {
 
             Shelf shelf = null;
             if (shelvesIndexes != null) {
-                ArrayList<String> shelfIds = JSON.parseObject(shelvesIndexes, new TypeReference<ArrayList<String>>() {
-                });
+
+                Gson gson = new Gson();
+                List<String> shelfIds = gson.fromJson(shelvesIndexes, new TypeToken<List<String>>() {
+                }.getType());
+//                ArrayList<String> shelfIds = JSON.parseObject(shelvesIndexes, new TypeReference<ArrayList<String>>() {
+//                });
 
                 if (shelfIds != null && shelfIds.size() > 0){
                     shelf = ShelfDAO.getShelf(shelfIds.get(0));

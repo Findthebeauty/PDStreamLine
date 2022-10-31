@@ -28,8 +28,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.shepherdboy.pdstreamline.MyApplication;
 import com.shepherdboy.pdstreamline.R;
 import com.shepherdboy.pdstreamline.beans.DateScope;
@@ -846,7 +846,8 @@ public class SettingActivity extends BaseActivity {
 
         SettingActivity.applyEXPSetting();
         PossiblePromotionTimestreamActivity.pickOutPossibleStaleTimestream();
-        String setting = JSON.toJSONString(settingInstance);
+        Gson gson = new Gson();
+        String setting = gson.toJson(settingInstance);
         MyDatabaseHelper.saveSetting(SETTING_SINGLETON_INDEX_NAME, setting, MyApplication.sqLiteDatabase);
         settingInstance.setUpdated(true);
     }
@@ -856,8 +857,9 @@ public class SettingActivity extends BaseActivity {
         if (!expSettingChanged) return;
 
         applyEXPSetting();
+        Gson gson = new Gson();
 
-        String setting = JSON.toJSONString(new ArrayList(dateSettingMap.values()));
+        String setting = gson.toJson(new ArrayList(dateSettingMap.values()));
         MyDatabaseHelper.saveSetting(DATE_OFFSET_INDEX, setting, MyApplication.sqLiteDatabase);
         setExpSettingChanged(false);
     }
@@ -943,8 +945,9 @@ public class SettingActivity extends BaseActivity {
 
             return;
         }
+        Gson gson = new Gson();
 
-        settingInstance = JSON.parseObject(settingSingleton, SingletonSettingBean.class);
+        settingInstance = gson.fromJson(settingSingleton, SingletonSettingBean.class);
     }
 
     private static void getDefaultSingletonSetting() {
@@ -990,7 +993,9 @@ public class SettingActivity extends BaseActivity {
 
         if (setting != null) {
 
-            scopeList = JSON.parseObject(setting, new TypeReference<List<DateScope>>(){});
+            Gson gson = new Gson();
+
+            scopeList = gson.fromJson(setting, new TypeToken<List<DateScope>>(){}.getType());
 
         } else {
 
